@@ -1,7 +1,5 @@
 package io.choerodon.hap.system.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.hap.account.dto.Role;
 import io.choerodon.hap.account.dto.User;
 import io.choerodon.hap.account.service.IUserService;
@@ -15,7 +13,7 @@ import io.choerodon.hap.function.mapper.RoleFunctionMapper;
 import io.choerodon.hap.function.service.IResourceService;
 import io.choerodon.hap.system.service.IAccessService;
 import io.choerodon.web.core.IRequest;
-import net.minidev.json.JSONObject;
+import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -47,7 +45,6 @@ public class AccessServiceImpl implements IAccessService {
     private static final String ACTION_MAINTAIN = "MAINTAIN";
 
     private Logger logger = LoggerFactory.getLogger(AccessServiceImpl.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private IResourceService resourceService;
@@ -160,11 +157,7 @@ public class AccessServiceImpl implements IAccessService {
                 }
             }
         }
-        try {
-            return OBJECT_MAPPER.writeValueAsString(accessData);
-        } catch (JsonProcessingException e) {
-            return null;
-        }
+        return JSONObject.fromObject(accessData).toString();
     }
 
     /**
@@ -198,9 +191,9 @@ public class AccessServiceImpl implements IAccessService {
                 formList.add(form);
             }
             if (ResourceItemElement.TYPE_FORM_BUTTONS.equalsIgnoreCase(element.getType())) {
-                buildElement(element.getProperty(), element.getPropertyValue(), form, "fields");
-            } else if (ResourceItemElement.TYPE_FORM_FIELD.equalsIgnoreCase(element.getType())) {
                 buildElement(element.getProperty(), element.getPropertyValue(), form, "buttons");
+            } else if (ResourceItemElement.TYPE_FORM_FIELD.equalsIgnoreCase(element.getType())) {
+                buildElement(element.getProperty(), element.getPropertyValue(), form, "fields");
             }
         } else if (ResourceItem.TYPE_GRID.equalsIgnoreCase(type)) {
             List<Map> gridList = (List<Map>) accessData.get(ResourceItem.TYPE_GRID);
