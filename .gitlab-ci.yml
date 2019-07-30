@@ -8,7 +8,7 @@ maven-test-branches:
   stage: mvn-package
   script:
     - git_merge master
-    - mvn clean package source:jar javadoc:jar -DskipTests=true
+    - mvn clean package source:jar -DskipTests=true
   only:
     - branches
   except:
@@ -22,7 +22,7 @@ maven-test-build:
   script:
     - update_pom_version
     - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Dmaven.test.failure.ignore=true -DskipTests=false -U
-    - mvn --batch-mode  verify sonar:sonar  -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=$GROUP_NAME:$PROJECT_NAME
+    - mvn --batch-mode verify sonar:sonar -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=$GROUP_NAME:$PROJECT_NAME
   only:
     - master
     - tags
@@ -33,7 +33,7 @@ maven-test-build:
 maven-deploy-choerodon:
   stage: maven-deploy
   script:
-    - mvn clean package source:jar javadoc:jar -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_REPOSITORY_ID}::default::${CHOERODON_REPOSITORY_URL}
+    - mvn clean package source:jar -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_REPOSITORY_ID}::default::${CHOERODON_REPOSITORY_URL}
   only:
     - master
     - tags
