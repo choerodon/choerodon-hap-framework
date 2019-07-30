@@ -1,0 +1,280 @@
+<#include "../include/header.html" />
+
+<body>
+<script src="${base.contextPath}/common/code?authType=API.AUTH_TYPE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?grantType=API.GRANT_TYPE" type="text/javascript"></script>
+<script type="text/javascript">
+
+    var authModel = kendo.observable({
+        model: {
+            authType: 'NONE',
+            grantType: 'CLIENT',
+        },
+        confirm: function (e) {
+            var viewModel = window.parent.viewModel;
+            viewModel.set("model.authType", authModel.model.authType);
+            viewModel.set("model.grantType", authModel.model.grantType);
+            viewModel.set("model.accessTokenUrl", authModel.model.accessTokenUrl);
+            viewModel.set("model.clientId", authModel.model.clientId);
+            viewModel.set("model.clientSecret", authModel.model.clientSecret);
+            viewModel.set("model.authUsername", authModel.model.authUsername);
+            viewModel.set("model.authPassword", authModel.model.authPassword);
+            window.parent.$("#dialogAuthConfigEdit").data("kendoWindow").close();
+        },
+        closeWin: function (e) {
+            window.parent.$("#dialogAuthConfigEdit").data("kendoWindow").close();
+        }
+    });
+
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <form class="form-horizontal">
+            <div class="panel-body">
+                <div id="editForm">
+
+                    <div class="row">
+                        <!-- 校验模式 -->
+                        <div id="authTypeDiv" class="col-xs-6">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"server.authtype"/></label>
+                                <div class="col-xs-8">
+                                    <input id="authType" type="text" style="width: 100%"
+                                           data-bind="value: model.authType">
+                                    <script>kendo.bind($('#authType'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 授权模式 -->
+                        <div class="col-xs-6" id="grantTypeDiv">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"interface.granttype"/></label>
+                                <div class="col-xs-8">
+                                    <input type="text" id="grantType"
+                                           style="width: 100%" data-bind="value: model.grantType"/>
+                                    <script>kendo.bind($('#grantType'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- 校验用户名-->
+                        <div class="col-xs-6" id="authUsernameDiv">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"hapinterfaceheader.authusername"/></label>
+                                <div class="col-xs-8">
+                                    <input data-role="maskedtextbox" type="text" id="authUsername"
+                                           style="width: 100%" data-bind="value: model.authUsername" class="k-textbox"/>
+                                    <script>kendo.bind($('#authUsername'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 校验密码-->
+                        <div class="col-xs-6" id="authPasswordDiv">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"hapinterfaceheader.authpassword"/></label>
+                                <div class="col-xs-8">
+                                    <input data-role="maskedtextbox" id="authPassword" type="text" style="width: 100%"
+                                           class="k-textbox" data-bind="value: model.authPassword"/>
+                                    <script>kendo.bind($('#authPassword'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- clientID-->
+                        <div class="col-xs-6" id="clientIdDiv">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"hapinterfaceheader.clientid"/></label>
+                                <div class="col-xs-8">
+                                    <input data-role="maskedtextbox" type="text" id="clientId"
+                                           style="width: 100%" data-bind="value: model.clientId" class="k-textbox"/>
+                                    <script>kendo.bind($('#clientId'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- clientSecret-->
+                        <div class="col-xs-6" id="clientSecretDiv">
+                            <div class="form-group">
+                                <!--hapinterfaceheader.clientsecret-->
+                                <label class="col-xs-4 control-label"><@spring.message"ClientSecret"/></label>
+                                <div class="col-xs-8">
+                                    <input data-role="maskedtextbox" type="text" id="clientSecret"
+                                           style="width: 100%" data-bind="value: model.clientSecret" class="k-textbox"/>
+                                    <script>kendo.bind($('#clientSecret'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!--授权地址-->
+                        <div class="col-xs-6" id="accessTokenUrlDiv">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"server.accesstokenurl"/></label>
+                                <div class="col-xs-8">
+                                    <input data-role="maskedtextbox" type="text" id="accessTokenUrl"
+                                           style="width: 100%" data-bind="value: model.accessTokenUrl"
+                                           class="k-textbox"/>
+                                    <script>kendo.bind($('#accessTokenUrl'), authModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="text-right k-window-toolbar">
+    <span class="btn btn-primary" id="confirm" data-bind="click:confirm" style="margin-right:5px"><@spring.message "hap.confirm"/></span>
+    <span class="btn btn-default" id="cancel" type="button" data-bind="click:closeWin" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+    <script>
+        kendo.bind($('#confirm'), authModel);
+        kendo.bind($('#cancel'), authModel);
+    </script>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var model = window.parent.viewModel.model;
+        authModel.set("model.authType", model.authType);
+        authModel.set("model.grantType", model.grantType);
+        authModel.set("model.accessTokenUrl", model.accessTokenUrl);
+        authModel.set("model.clientId", model.clientId);
+        authModel.set("model.clientSecret", model.clientSecret);
+        authModel.set("model.authUsername", model.authUsername);
+        authModel.set("model.authPassword", model.authPassword);
+        loadFunc();
+    });
+
+    var loadFunc = function () {
+        if (authModel.model.authType == "BASIC") {
+            authTypeBasic();
+        } else if (authModel.model.authType == "OAUTH2") {
+            authTypeOauth2();
+        } else {
+            authTypeNone();
+        }
+    };
+
+    $("#authType").kendoDropDownList({
+        dataTextField: "meaning",
+        dataValueField: "value",
+        valuePrimitive: true,
+        dataSource: authType,
+        change: function (e) {
+            var value = this.value();
+            if (value == "BASIC") {
+                authTypeBasic();
+            } else if (value == "OAUTH2") {
+                $("#grantType").data("kendoDropDownList").select(0);
+                $("#grantType").data("kendoDropDownList").trigger("change");
+                authTypeOauth2();
+            } else {
+                authTypeNone();
+            }
+        }
+    });
+
+    $("#grantType").kendoDropDownList({
+        dataTextField: "meaning",
+        dataValueField: "value",
+        valuePrimitive: true,
+        dataSource: grantType,
+        change: function (e) {
+            var value = this.value();
+            if (value == "PASSWORD") {
+                grantTypePwd();
+            } else {
+                grantTypeClient();
+            }
+        }
+    });
+
+
+    function grantTypePwd() {
+        $("#authUsername").attr("disabled", false);
+        $("#authPassword").attr("disabled", false);
+        $("#authUsername").removeClass("k-state-disabled");
+        $("#authPassword").removeClass("k-state-disabled");
+    }
+
+    function grantTypeClient() {
+        $("#authUsername").attr("disabled", true);
+        $("#authPassword").attr("disabled", true);
+        $("#authUsername").addClass("k-state-disabled");
+        $("#authPassword").addClass("k-state-disabled");
+
+        $("#authUsername").val("");
+        $("#authPassword").val("");
+    }
+
+    function authTypeBasic() {
+        $("#accessTokenUrl").attr("disabled", true);
+        $("#clientId").attr("disabled", true);
+        $("#clientSecret").attr("disabled", true);
+
+        $("#accessTokenUrl").addClass("k-state-disabled");
+        $("#clientId").addClass("k-state-disabled");
+        $("#clientSecret").addClass("k-state-disabled");
+
+        $("#accessTokenUrl").val("");
+        $("#clientId").val("");
+        $("#clientSecret").val("");
+
+        $("#grantType").data("kendoDropDownList").enable(false);
+        $("#grantType").data("kendoDropDownList").text("");
+        $("#authUsername").attr("disabled", false);
+        $("#authPassword").attr("disabled", false);
+        $("#authUsername").removeClass("k-state-disabled");
+        $("#authPassword").removeClass("k-state-disabled");
+    }
+
+    function authTypeOauth2() {
+        $("#grantType").data("kendoDropDownList").enable(true);
+        $("#accessTokenUrl").attr("disabled", false);
+        $("#clientId").attr("disabled", false);
+        $("#clientSecret").attr("disabled", false);
+        $("#accessTokenUrl").removeClass("k-state-disabled");
+        $("#clientId").removeClass("k-state-disabled");
+        $("#clientSecret").removeClass("k-state-disabled");
+
+        if (authModel.model.grantType == "PASSWORD") {
+            grantTypePwd();
+        } else {
+            grantTypeClient();
+        }
+    }
+
+    function authTypeNone() {
+        $("#grantType").data("kendoDropDownList").enable(false);
+        $("#grantType").data("kendoDropDownList").text("");
+        $("#accessTokenUrl").attr("disabled", true);
+        $("#clientId").attr("disabled", true);
+        $("#clientSecret").attr("disabled", true);
+        $("#authUsername").attr("disabled", true);
+        $("#authPassword").attr("disabled", true);
+
+        $("#accessTokenUrl").addClass("k-state-disabled");
+        $("#clientId").addClass("k-state-disabled");
+        $("#clientSecret").addClass("k-state-disabled");
+        $("#authUsername").addClass("k-state-disabled");
+        $("#authPassword").addClass("k-state-disabled");
+
+        $("#accessTokenUrl").val("");
+        $("#clientId").val("");
+        $("#clientSecret").val("");
+        $("#authUsername").val("");
+        $("#authPassword").val("");
+    }
+
+
+</script>
+</body>
+</html>

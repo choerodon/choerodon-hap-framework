@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.hr.mapper.EmployeeAssignMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.hr.dto.EmployeeAssign">
+        <id column="ASSIGN_ID" property="assignId" jdbcType="DECIMAL"/>
+        <result column="EMPLOYEE_ID" property="employeeId" jdbcType="DECIMAL"/>
+        <result column="POSITION_ID" property="positionId" jdbcType="DECIMAL"/>
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR"/>
+        <result column="PRIMARY_POSITION_FLAG" property="primaryPositionFlag" jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME" property="positionName" jdbcType="VARCHAR"/>
+        <result column="UNIT_NAME" property="unitName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getCompanyByEmployeeId" resultType="java.lang.Long" parameterType="java.lang.Long">
+        SELECT HOUB.COMPANY_ID
+        FROM HR_EMPLOYEE_ASSIGN HEA
+        INNER JOIN  HR_ORG_POSITION_B  HOPB
+        ON ( HEA.POSITION_ID = HOPB.POSITION_ID AND HEA.EMPLOYEE_ID = #{employeeId} AND HEA.PRIMARY_POSITION_FLAG = 'Y')
+        INNER JOIN HR_ORG_UNIT_B HOUB
+        ON HOUB.UNIT_ID = HOPB.UNIT_ID
+    </select>
+
+    <select id="selectByEmployeeId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            PU.UNIT_ID ,
+            PU.POSITION_NAME ,
+            PU.UNIT_NAME ,
+            A.*
+        FROM
+            HR_EMPLOYEE_ASSIGN A ,
+            (
+                SELECT
+                    P.POSITION_ID ,
+                    PT. NAME POSITION_NAME ,
+                    U.UNIT_ID ,
+                    UT. NAME UNIT_NAME
+                FROM
+                    HR_ORG_POSITION_B P
+                LEFT OUTER JOIN HR_ORG_POSITION_TL PT ON(
+                    P.POSITION_ID = PT.POSITION_ID
+                    AND PT.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String}
+                ) ,
+                HR_ORG_UNIT_B U
+            LEFT OUTER JOIN HR_ORG_UNIT_TL UT ON(
+                U.UNIT_ID = UT.UNIT_ID
+                AND UT.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String}
+            )
+            WHERE
+                P.UNIT_ID = U.UNIT_ID
+            ) PU
+        WHERE
+            A.POSITION_ID = PU.POSITION_ID
+        AND A.EMPLOYEE_ID = #{employeeId}
+    </select>
+
+    <delete id="deleteByEmployeeId" parameterType="java.lang.Long">
+        DELETE FROM HR_EMPLOYEE_ASSIGN
+        WHERE EMPLOYEE_ID=#{employeeId}
+    </delete>
+
+    <delete id="deleteByPositionId" parameterType="java.lang.Long">
+        DELETE FROM HR_EMPLOYEE_ASSIGN
+        WHERE POSITION_ID=#{positionId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.ResourceMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.Resource" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL"/>
+        <result column="URL" property="url" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="LOGIN_REQUIRE" property="loginRequire" jdbcType="VARCHAR"/>
+        <result column="ACCESS_CHECK" property="accessCheck" jdbcType="VARCHAR"/>
+        <result column="LOCKED_BY" property="lockedBy" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        RESOURCE_ID, URL, TYPE, NAME, DESCRIPTION, ACCESS_CHECK,LOGIN_REQUIRE,LOCKED_BY
+    </sql>
+
+    <select id="selectResourceByUrl" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_RESOURCE_B
+        WHERE URL = #{url,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectResourcesByFunction" resultMap="BaseResultMap" parameterType="io.choerodon.hap.function.dto.Function">
+        SELECT B.RESOURCE_ID, T.NAME, T.DESCRIPTION
+        FROM SYS_RESOURCE_B B
+        LEFT JOIN  SYS_RESOURCE_TL T ON (B.RESOURCE_ID = T.RESOURCE_ID AND T.LANG =  #{request.locale,jdbcType=VARCHAR})
+        JOIN SYS_FUNCTION_RESOURCE SFR ON ( B.RESOURCE_ID = SFR.RESOURCE_ID )
+        WHERE  SFR.FUNCTION_ID = #{functionId,jdbcType=DECIMAL}
+        ORDER BY B.RESOURCE_ID
+  </select>
+
+    <select id="selectExcludePageByOptions" resultMap="BaseResultMap" parameterType="io.choerodon.hap.function.dto.Resource">
+        SELECT
+        B.RESOURCE_ID,B.URL, B.TYPE,T.NAME, T.DESCRIPTION,B.ACCESS_CHECK,B.LOGIN_REQUIRE,B.LOCKED_BY,
+        B.OBJECT_VERSION_NUMBER, B.REQUEST_ID,B.PROGRAM_ID,
+        B.CREATION_DATE, B.CREATED_BY, B.LAST_UPDATED_BY, B.LAST_UPDATE_DATE,
+        B.ATTRIBUTE_CATEGORY, B.ATTRIBUTE1, B.ATTRIBUTE2, B.ATTRIBUTE3, B.ATTRIBUTE4, B.ATTRIBUTE5, B.ATTRIBUTE6,
+        B.ATTRIBUTE7, B.ATTRIBUTE8, B.ATTRIBUTE9, B.ATTRIBUTE10, B.ATTRIBUTE11, B.ATTRIBUTE12, B.ATTRIBUTE13,
+        B.ATTRIBUTE14, B.ATTRIBUTE15
+        FROM SYS_RESOURCE_B B
+        LEFT JOIN SYS_RESOURCE_TL T ON (B.RESOURCE_ID = T.RESOURCE_ID AND T.LANG = #{request.locale,jdbcType=VARCHAR})
+        <where>
+            B.TYPE != 'PAGE'
+            <if test="name!=null">
+                AND T.NAME LIKE concat('%', concat(#{name,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="url!=null">
+                AND B.URL LIKE concat('%', concat(#{url,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="type!=null">
+                AND B.TYPE = #{type,jdbcType=VARCHAR}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            ORDER BY B.${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            ORDER BY B.RESOURCE_ID DESC
+        </if>
+    </select>
+
+    <select id="selectPageByOptions" resultMap="BaseResultMap" parameterType="io.choerodon.hap.function.dto.Resource">
+        SELECT
+        B.RESOURCE_ID,B.URL, B.TYPE,T.NAME, T.DESCRIPTION,B.ACCESS_CHECK,B.LOGIN_REQUIRE,M.LOCKED_BY,
+        B.OBJECT_VERSION_NUMBER, B.REQUEST_ID,B.PROGRAM_ID,
+        B.CREATION_DATE, B.CREATED_BY, B.LAST_UPDATED_BY, B.LAST_UPDATE_DATE,
+        B.ATTRIBUTE_CATEGORY, B.ATTRIBUTE1, B.ATTRIBUTE2, B.ATTRIBUTE3, B.ATTRIBUTE4, B.ATTRIBUTE5, B.ATTRIBUTE6,
+        B.ATTRIBUTE7, B.ATTRIBUTE8, B.ATTRIBUTE9, B.ATTRIBUTE10, B.ATTRIBUTE11, B.ATTRIBUTE12, B.ATTRIBUTE13,
+        B.ATTRIBUTE14, B.ATTRIBUTE15
+        FROM SYS_RESOURCE_B B
+        LEFT JOIN SYS_RESOURCE_TL T ON (B.RESOURCE_ID = T.RESOURCE_ID AND T.LANG = #{request.locale,jdbcType=VARCHAR})
+        LEFT JOIN metadata M ON (M.NAME=B.URL AND M.DATA_TYPE='PAGE')
+        <where>
+            B.TYPE = 'PAGE'
+            <if test="name!=null">
+                AND T.NAME LIKE concat('%', concat(#{name,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="description!=null">
+                AND T.DESCRIPTION LIKE concat('%', concat(#{description,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            ORDER BY B.${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            ORDER BY B.RESOURCE_ID DESC
+        </if>
+    </select>
+
+
+</mapper>

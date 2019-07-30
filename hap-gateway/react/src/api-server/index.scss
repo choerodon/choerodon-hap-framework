@@ -1,0 +1,25 @@
+.gateway-input-import-url {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  width: 100%;
+  border-left: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: solid 1px #a0a9b4;
+}
+
+.gateway-wrap {
+  display: flex;
+
+  .gateway-label {
+    width: 100px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: .1rem .05rem;
+    text-align: right;
+  }
+
+  .gateway-table {
+    margin-top: .05rem;
+    padding-left: .05rem;
+  }
+}

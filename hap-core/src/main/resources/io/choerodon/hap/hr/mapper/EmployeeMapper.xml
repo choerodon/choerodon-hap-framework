@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.hr.mapper.EmployeeMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.hr.dto.Employee">
+        <id column="EMPLOYEE_ID" property="employeeId" jdbcType="DECIMAL"/>
+        <result column="EMPLOYEE_CODE" property="employeeCode" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="BORN_DATE" property="bornDate" javaType="DATE"/>
+        <result column="EMAIL" property="email" jdbcType="VARCHAR"/>
+        <result column="MOBIL" property="mobil" jdbcType="VARCHAR"/>
+        <result column="JOIN_DATE" property="joinDate" javaType="DATE"/>
+        <result column="GENDER" property="gender" jdbcType="VARCHAR"/>
+        <result column="CERTIFICATE_ID" property="certificateId" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME" property="positionName" jdbcType="VARCHAR"/>
+        <result column="UNIT_NAME" property="unitName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        EMPLOYEE_ID, EMPLOYEE_CODE,NAME, BORN_DATE, EMAIL, MOBIL, JOIN_DATE,GENDER,CERTIFICATE_ID,STATUS,ENABLED_FLAG
+    </sql>
+
+    <select id="queryAll" resultMap="BaseResultMap" parameterType="io.choerodon.hap.hr.dto.Employee">
+        SELECT
+        E1.EMPLOYEE_ID,
+        E1.EMPLOYEE_CODE,
+        E1.NAME,
+        E1.BORN_DATE,
+        E1.EMAIL,
+        E1.MOBIL,
+        E1.JOIN_DATE,
+        (
+        SELECT P1.NAME FROM HR_ORG_POSITION_B P1
+        WHERE P1.POSITION_ID = EA1.POSITION_ID
+        ) POSITION_NAME,
+        (
+        SELECT
+        (
+        SELECT U1.NAME FROM HR_ORG_UNIT_B U1
+        WHERE U1.UNIT_ID = P1.UNIT_ID
+        ) UNIT_NAME
+        FROM HR_ORG_POSITION_B P1
+        WHERE P1.POSITION_ID = EA1.POSITION_ID
+        ) UNIT_NAME
+        FROM
+        HR_EMPLOYEE E1
+        LEFT OUTER JOIN HR_EMPLOYEE_ASSIGN EA1 ON (
+        E1.EMPLOYEE_ID = EA1.EMPLOYEE_ID AND EA1.PRIMARY_POSITION_FLAG='Y')
+        <where>
+            <if test="enabledFlag !=null ">
+                E1.ENABLED_FLAG = #{enabledFlag}
+            </if>
+            <if test="positionId !=null ">
+                AND EA1.POSITION_ID = #{positionId}
+            </if>
+            <if test="unitId!=null">
+                AND EA1.POSITION_ID IN (SELECT P1.POSITION_ID FROM HR_ORG_POSITION_B P1 WHERE P1.UNIT_ID = #{unitId} )
+            </if>
+            <if test="employeeCode!=null">
+                AND E1.EMPLOYEE_CODE LIKE CONCAT('%', CONCAT(#{employeeCode,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="name!=null">
+                AND E1.NAME LIKE CONCAT('%', CONCAT(#{name,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="idList!=null">
+                AND E1.EMPLOYEE_ID NOT IN
+                <foreach collection="idList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY E1.EMPLOYEE_CODE ASC
+    </select>
+
+    <select id="queryInfoByCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        E1.EMPLOYEE_ID,
+        E1.EMPLOYEE_CODE,
+        E1.NAME,
+        (
+        SELECT P1.NAME FROM HR_ORG_POSITION_B P1
+        WHERE P1.POSITION_ID = EA1.POSITION_ID
+        ) POSITION_NAME,
+        (
+        SELECT U1.NAME FROM HR_ORG_UNIT_B U1 ,HR_ORG_POSITION_B P1
+        WHERE U1.UNIT_ID = P1.UNIT_ID AND P1.POSITION_ID = EA1.POSITION_ID
+        ) UNIT_NAME
+        FROM
+        HR_EMPLOYEE E1
+        LEFT OUTER JOIN HR_EMPLOYEE_ASSIGN EA1 ON (
+        E1.EMPLOYEE_ID = EA1.EMPLOYEE_ID AND EA1.PRIMARY_POSITION_FLAG='Y')
+        WHERE
+        E1.EMPLOYEE_CODE = #{employeeCode,jdbcType=VARCHAR}
+    </select>
+
+    <select id="queryByCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+            *
+        FROM
+            HR_EMPLOYEE
+        WHERE
+            upper(EMPLOYEE_CODE) = upper(#{employeeCode})
+    </select>
+
+    <select id="getDirector" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+            E1.*
+        FROM
+            HR_EMPLOYEE E1 ,
+            HR_ORG_POSITION_B P1 ,
+            HR_EMPLOYEE_ASSIGN A1
+        WHERE
+            A1.POSITION_ID = p1.POSITION_ID
+        AND A1.EMPLOYEE_ID = e1.EMPLOYEE_ID
+        AND A1.PRIMARY_POSITION_FLAG = 'Y'
+        AND p1.POSITION_ID =(
+            SELECT
+                p.PARENT_POSITION_ID
+            FROM
+                HR_ORG_POSITION_B p ,
+                HR_EMPLOYEE_ASSIGN a ,
+                HR_EMPLOYEE e
+            WHERE
+                P.POSITION_ID = a.POSITION_ID
+            AND A.EMPLOYEE_ID = e.EMPLOYEE_ID
+            AND A.PRIMARY_POSITION_FLAG = 'Y'
+            AND E.EMPLOYEE_CODE = #{userId}
+        )
+    </select>
+
+    <select id="getDeptDirector" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+             E1.*
+        FROM HR_EMPLOYEE E1 ,
+             HR_ORG_POSITION_B P1 ,
+             HR_EMPLOYEE_ASSIGN A1
+        WHERE
+             A1.POSITION_ID = P1.POSITION_ID
+        AND  A1.EMPLOYEE_ID = E1.EMPLOYEE_ID
+        AND  A1.PRIMARY_POSITION_FLAG = 'Y'
+        AND  P1.POSITION_ID =(
+             SELECT
+                 U.MANAGER_POSITION
+             FROM
+                 HR_ORG_UNIT_B U
+             WHERE
+                 U.UNIT_ID =(
+                     SELECT
+                          P.UNIT_ID
+                     FROM
+                          HR_ORG_POSITION_B P ,
+                          HR_EMPLOYEE_ASSIGN A ,
+                          HR_EMPLOYEE E
+                     WHERE
+                          P.POSITION_ID = A.POSITION_ID
+                          AND A.EMPLOYEE_ID = E.EMPLOYEE_ID
+                          AND A.PRIMARY_POSITION_FLAG = 'Y'
+                          AND E.EMPLOYEE_CODE = #{employeeCode}
+                )
+        )
+    </select>
+
+    <select id="selectByPostionCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        E.EMPLOYEE_ID,
+        E.EMPLOYEE_CODE,
+        E.NAME,
+        P.NAME POSITION_NAME,
+        (
+        SELECT U1.NAME FROM HR_ORG_UNIT_B U1
+        WHERE U1.UNIT_ID = P.UNIT_ID
+        ) UNIT_NAME
+        FROM
+        HR_EMPLOYEE E ,HR_EMPLOYEE_ASSIGN EA, HR_ORG_POSITION_B P
+        WHERE
+        E.EMPLOYEE_ID = EA.EMPLOYEE_ID AND EA.PRIMARY_POSITION_FLAG='Y'
+        AND EA.POSITION_ID = P.POSITION_ID AND  upper(P.POSITION_CODE) = upper(#{positionCode})
+    </select>
+
+    <select id="selectByRoleCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT DISTINCT
+        E.EMPLOYEE_ID,
+        E.EMPLOYEE_CODE
+        FROM
+        HR_EMPLOYEE E
+        LEFT JOIN SYS_USER U ON U.EMPLOYEE_ID = E.EMPLOYEE_ID
+        LEFT JOIN IAM_MEMBER_ROLE IMR ON (IMR.MEMBER_ID = U.USER_ID AND IMR.MEMBER_TYPE = 'user')
+        INNER JOIN IAM_ROLE IR ON (IMR.ROLE_ID = IR.ID AND IR.IS_ENABLED = 1)
+        WHERE IR.CODE = #{roleCode}
+    </select>
+</mapper>

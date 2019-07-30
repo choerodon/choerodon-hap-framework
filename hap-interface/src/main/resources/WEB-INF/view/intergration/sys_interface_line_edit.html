@@ -1,0 +1,297 @@
+<#--
+* description:接口查看操作页面
+* version: 1.0
+* author:xiangyu.qi@hand-china.com
+* -->
+<#include "../include/header.html">
+<body>
+	<script type="text/javascript">
+
+    var viewModel2 = Hap.createGridViewModel("#grid");
+
+    var headerId = "${RequestParameters.headerId!0}";
+
+    var crudServiceBaseUrl = '${base.contextPath}/sys/interface',
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl + "/getLinesByHeaderId",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    create : {
+                        url : crudServiceBaseUrl + "/insertLine",
+                        contentType: "application/json",
+                        type : "POST"
+                    },
+                    update : {
+                        url : crudServiceBaseUrl + "/updateLine",
+                        contentType: "application/json",
+                        type : "POST"
+                    },
+                    destroy : {
+                        url : crudServiceBaseUrl + "/deleteLine",
+                        contentType: "application/json",
+                        type : "POST"
+                    },
+
+                    parameterMap: function (options, type) {
+
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type);
+                            for(var i in datas){
+                                datas[i].headerId = headerId;
+                            }
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            var p = Hap.prepareQueryParameter(viewModel2.model.toJSON(), options);
+                            p.headerId = headerId;
+                            return p;
+                        }
+                    },
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "lineCode",
+                        fields: {
+                             lineCode:{validation: { required: true }},
+                             lineName:{validation: { required: true }},
+                             iftUrl:{validation: { required: true }},
+                             enableFlag:{
+                                 defaultValue: 'Y',type:'boolean' ,checkedValue:'Y',uncheckedValue:'N'
+                             }
+                        }
+                    }
+                }
+            });
+
+
+    //   kendo.bind($("#queryEdit"), viewModel2);
+
+
+    var viewModel = kendo.observable({
+        model: {}
+
+    });
+    $.ajax({
+        url: crudServiceBaseUrl + "/getHeaderByHeaderId",
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",
+        data: {headerId:"${RequestParameters.headerId!0}"},
+        success: function (args) {
+            var profile = args.rows[0]||{};
+            for(var i in profile){
+                if(profile[i] != null)
+                    viewModel.set("model."+i,profile[i]);
+            }
+        }
+    });
+
+</script>
+
+	<!-- 编辑界面 -->
+	<div id="dialog"></div>
+	<div id="content-container">
+		<div id="page-content">
+			<div class="panel" style="padding: 0px;">
+				<form class="form-horizontal" id="lovForm">
+					<input type="hidden" name="headerId" />
+					<div class="panel-body">
+						<div class="col-sm-12">
+							<!--  第一列-->
+							<div class="col-sm-4">
+								<div class="form-group ">
+									<label class="col-sm-4 control-label"><@spring.message"interface.systemcode"/></label>
+									<div class="col-sm-8">
+										<input name="code" id="code" data-role="maskedtextbox" class="k-textbox k-state-disabled"
+											type="text" style="width: 100%" data-bind="value:model.interfaceCode"
+											 disabled='disabled'>
+										<script>kendo.bind($('#code'), viewModel);</script>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label"><@spring.message"interface.systemurl"/></label>
+									<div class="col-sm-8">
+										<input id="domainUrl" data-role="maskedtextbox" type="text"
+											style="width: 100%" data-bind="value:model.domainUrl"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#domainUrl'), viewModel);</script>
+									</div>
+								</div>
+
+
+								<div class="form-group">
+									<label class="col-sm-4 control-label"><@spring.message"interface.checkusername"/></label>
+									<div class="col-sm-8">
+										<input id="checkuser" data-role="maskedtextbox" type="text"
+											style="width: 100%" data-bind="value:model.authUsername"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#checkuser'), viewModel);</script>
+									</div>
+								</div>
+							</div>
+							<!--  第二列-->
+							<div class="col-sm-4">
+								<div class="form-group required-input">
+									<label class="col-sm-4 control-label"><@spring.message"interface.systemname"/></label>
+									<div class="col-sm-8">
+										<input name="name" id="name" data-role="maskedtextbox"
+											type="text" style="width: 100%" data-bind="value:model.name"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#name'), viewModel);</script>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="col-sm-4 control-label"><@spring.message"interface.requestmethod"/></label>
+									<div class="col-sm-8 ">
+										<input id="requestMethod" data-role="maskedtextbox" type="text"
+											style="width: 100%" data-bind="value:model.requestMethod"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#requestMethod'), viewModel);</script>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label"><@spring.message"interface.enableflag"/></label>
+									<div class="col-sm-8">
+										<input id="enableFlag" data-role="maskedtextbox" type="text"
+											style="width: 100%" data-bind="value:model.enableFlag"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#enableFlag'), viewModel);</script>
+									</div>
+								</div>
+							</div>
+							<!--  第三列-->
+							<div class="col-sm-4">
+								<div class="form-group required-input">
+									<label class="col-sm-4 control-label"><@spring.message "interface.interfacetype"/></label>
+									<div class="col-sm-8">
+										<input name="interfaceType" id="interfaceType" data-role="maskedtextbox"
+											type="text" style="width: 100%" data-bind="value:model.interfaceType"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#interfaceType'), viewModel);</script>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label"><@spring.message"interface.requestformat"/></label>
+									<div class="col-sm-8">
+										<input id="requestFormat" data-role="maskedtextbox" type="text"
+											style="width: 100%" data-bind="value:model.requestFormat"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#requestFormat'), viewModel);</script>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label"><@spring.message"interface.authflag"/></label>
+									<div class="col-sm-8">
+										<input id="authFlag" data-role="maskedtextbox" type="text"
+											style="width: 100%" data-bind="value:model.authFlag"
+											class="k-textbox" disabled="disabled">
+										<script>kendo.bind($('#authFlag'), viewModel);</script>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</form>
+			</div>
+            <div id="gpage-content">
+                <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                    <span class="btn btn-primary" style="float:left;margin-right:5px;"  data-bind="click:create"><@spring.message "hap.new"/></span>
+                    <span class="btn btn-success k-grid-save-changes"  style="float:left;margin-right:5px;" data-bind="click:save"><@spring.message "hap.save"/></span>
+                    <span data-bind="click:remove" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+                </div>
+                <script>kendo.bind($('#toolbar-btn'), viewModel2);</script>
+                <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                    <input data-role="maskedtextbox" placeholder='<@spring.message "interface.line.interfacecode"/>' type="text" style="width: 150px;float:left;margin-right:5px;" data-bind="value:model.lineCode" class="k-textbox">
+                    <input data-role="maskedtextbox" placeholder='<@spring.message "interface.line.interfacename"/>' type="text" style="width: 150px;float:left;margin-right:5px;" data-bind="value:model.lineName" class="k-textbox">
+                    <span class="btn btn-primary" data-bind="click:query" style="width: 80px;float:left;margin-right:5px;" type="submit"><@spring.message "hap.query"/></span>
+                    <span class="btn btn-default" data-bind="click:reset"  style="width: 80px;float:left;margin-right:5px;" type="button"><@spring.message "hap.reset"/></span>
+                    <div style="clear:both"></div>
+                </div>
+                <script>kendo.bind($('#query-form'), viewModel2);</script>
+                <div style="clear: both;">
+                    <div id="grid"></div>
+                </div>
+            </div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+
+    Hap.initEnterQuery('#gpage-content', viewModel2.query);
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: dataSource,
+        navigatable: false,
+        height:'100%',
+        selectable : 'multiple, rowbox',
+        resizable: true,
+        scrollable: true,
+        columns: [
+            //接口代码
+            {
+                field: "lineCode",
+                title: '<@spring.message "interface.line.interfacecode"/>',
+                width: 50,
+
+            },
+            //接口名称
+            {
+                field: "lineName",
+                title: '<@spring.message "interface.line.interfacename"/>',
+                width: 50,
+                editor: function (container, options) {
+                    $('<input name="' + options.field + '" required />')
+                            .appendTo(container)
+                            .kendoTLEdit({
+                                idField: 'lineId',
+                                field: 'lineName',
+                                dto: "io.choerodon.hap.intergration.dto.HapInterfaceLine",
+                                model: options.model
+                            });
+                }
+
+            },
+            //接口地址
+            {
+                field: "iftUrl",
+                title: '<@spring.message "interface.lind.interfaceurl"/>',
+                width: 100,
+
+            },
+            //是否有效
+            {
+                field: "enableFlag",
+                title: '<@spring.message "interface.enableflag"/>',
+                attributes: {style: "text-align:center"},
+                width: 50,
+            },
+
+        ],
+        editable: true
+    }).data("kendoGrid");
+   Hap.autoResizeGrid("#grid");
+
+    
+</script>
+<style>
+
+  /*  .panel .k-textbox{
+        background: #eeeeee;
+
+    }*/
+
+
+
+
+</style>
+</body>
+</html>

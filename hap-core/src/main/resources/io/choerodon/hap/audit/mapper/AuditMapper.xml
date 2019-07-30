@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.audit.mapper.AuditMapper">
+    <update id="auditInsert" parameterType="java.util.Map">
+        INSERT INTO ${_AUDIT_TABLE_NAME}
+        (AUDIT_ID,AUDIT_TRANSACTION_TYPE,AUDIT_TIMESTAMP,AUDIT_SESSION_ID, LANG, AUDIT_TAG, LAST_UPDATED_BY,
+        <foreach collection="_COLS" index="i" item="value" separator=",">
+            ${value}
+        </foreach>
+        ) VALUES(#{_AUDIT_ID},#{_AUDIT_TYPE},CURRENT_TIMESTAMP,#{_AUDIT_SESSION_ID}, #{_LANGUAGE}, 1,
+        #{_LAST_UPDATED_BY},
+        <foreach collection="_FIELD_VALUE" index="i" item="value" separator=",">
+            ${value}
+        </foreach>)
+    </update>
+
+    <select id="selectOperateRecord" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        <foreach collection="_DYN_FIELDS" index="i" item="value" separator=",">
+            ${value}
+        </foreach>
+        FROM ${_BASE_TABLE_NAME}
+        <if test="_LANGUAGE_TABLE_NAME != null">
+            , ${_LANGUAGE_TABLE_NAME} TL
+            WHERE ${_WHERE_CLAUSE}
+            AND TL.${_MAJOR_FIELD} = ${_MAJOR_FIELD_B}
+            AND TL.LANG = #{_LANGUAGE}
+        </if>
+        <if test="_LANGUAGE_TABLE_NAME == null">
+            WHERE ${_WHERE_CLAUSE}
+        </if>
+    </select>
+
+    <update id="auditUpdateTag" parameterType="java.util.Map">
+        UPDATE ${_AUDIT_TABLE_NAME}
+        SET AUDIT_TAG = 0 WHERE ${_WHERE_CLAUSE}
+        <if test="_LANG != null">
+            AND LANG = #{_LANG}
+        </if>
+    </update>
+
+    <update id="auditUpdateTagSqlserver" parameterType="java.util.Map">
+        UPDATE ${_ALIAS}
+        SET AUDIT_TAG = 0
+        FROM ${_AUDIT_TABLE_NAME}
+        WHERE ${_WHERE_CLAUSE}
+        <if test="_LANG != null">
+            AND LANG = #{_LANG}
+        </if>
+    </update>
+
+</mapper>

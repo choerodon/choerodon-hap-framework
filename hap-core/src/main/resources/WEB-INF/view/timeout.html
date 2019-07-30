@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<body>
+    <script>
+        if(top.sessionExpiredLogin){
+            top.sessionExpiredLogin();
+        }else{
+            top.location.href = "${base.contextPath}/login"
+        }
+    </script>
+</body>
+</html>

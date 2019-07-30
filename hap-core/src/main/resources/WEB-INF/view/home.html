@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<!-- BEGIN HEAD -->
+<head>
+    <meta charset="utf-8" />
+    <title>HAP</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta name="_csrf" content="${_csrf.token}"/>
+    <meta name="_csrf_header" content="X-CSRF-TOKEN" />
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="${base.contextPath}/lib/font-awesome-4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+    <link href="${base.contextPath}/lib/assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="${base.contextPath}/lib/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <script src="${base.contextPath}/lib/assets/global/plugins/jquery.min.js"></script>
+
+    <script src="${base.contextPath}/lib/assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+
+    <!-- BEGIN THEME GLOBAL STYLES -->
+    <#include "include/components.html">
+    <!-- END THEME GLOBAL STYLES -->
+
+    <!-- BEGIN THEME LAYOUT STYLES -->
+    <link href="${base.contextPath}/lib/assets/layouts/layout4/css/layout.css" rel="stylesheet" type="text/css" />
+    <link href="${base.contextPath}/lib/assets/layouts/layout4/css/themes/default.css" rel="stylesheet" type="text/css" id="style_color" />
+    <link href="${base.contextPath}/lib/assets/layouts/layout4/css/custom.css" rel="stylesheet" type="text/css" />
+    <!-- END THEME LAYOUT STYLES -->
+</head>
+<body>
+<style>
+    body{
+        overflow:hidden;
+    }
+</style>
+    <div class="row" style="margin-top:20px;">
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat blue">
+                <div class="visual">
+                    <i class="fa fa-comments"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="1349">0</span>
+                    </div>
+                    <div class="desc"> New Feedbacks </div>
+                </div>
+                <a class="more" href="javascript:;"> View more
+                    <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat red">
+                <div class="visual">
+                    <i class="fa fa-bar-chart-o"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="12,5">0</span>M$ </div>
+                    <div class="desc"> Total Profit </div>
+                </div>
+                <a class="more" href="javascript:;"> View more
+                    <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat green">
+                <div class="visual">
+                    <i class="fa fa-shopping-cart"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="549">0</span>
+                    </div>
+                    <div class="desc"> New Orders </div>
+                </div>
+                <a class="more" href="javascript:;"> View more
+                    <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat purple">
+                <div class="visual">
+                    <i class="fa fa-globe"></i>
+                </div>
+                <div class="details">
+                    <div class="number"> +
+                        <span data-counter="counterup" data-value="89"></span>% </div>
+                    <div class="desc"> Brand Popularity </div>
+                </div>
+                <a class="more" href="javascript:;"> View more
+                    <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+
+
+    <#assign new_row = false/>
+    <#list dashboards as dashboard>
+        <#assign new_row = dashboard_index%2 ==0/>
+        <#if new_row == true>
+            <div class="row">
+        </#if>
+        <div class="col-md-6 col-sm-6">
+            <!-- BEGIN PORTLET-->
+            <div class="portlet light bordered">
+                <div class="portlet-title tabbable-line">
+                    <div class="caption">
+                        <i class="icon-globe font-green-sharp"></i>
+                        <span class="caption-subject font-green-sharp bold uppercase">${dashboard.dashboardTitle} </span>
+                    </div>
+                </div>
+                <div class="portlet-body" id="${dashboard.dashboardCode}">
+                   <!-- <script>
+                        $('#${dashboard.dashboardCode}').load('${dashboard.dashboardUrl}')
+                    </script>-->
+                    <script type="text/JavaScript">
+                        var html=$.ajax({url:'${dashboard.dashboardUrl}',async:false});
+                        $("#${dashboard.dashboardCode}").html(html.responseText);
+                    </script>
+                </div>
+            </div>
+        </div>
+        <#if new_row == false>
+            </div>
+        </#if>
+    </#list>
+
+
+
+
+    <div class="row">
+    <div class="col-md-6 col-sm-6">
+        <!-- BEGIN PORTLET-->
+        <div class="portlet light bordered">
+            <div class="portlet-title tabbable-line">
+                <div class="caption">
+                    <i class="icon-globe font-green-sharp"></i>
+                    <span class="caption-subject font-green-sharp bold uppercase">Feeds</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <!--BEGIN TABS-->
+
+                        <div class="scroller" style="height: 339px;" data-always-visible="1" data-rail-visible="0">
+                            <ul class="feeds">
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> You have 4 pending tasks.
+                                                    <span class="label label-sm label-info"> Take action
+                                                        <i class="fa fa-share"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> Just now </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> You have 4 pending tasks.
+                                                    <span class="label label-sm label-info"> Take action
+                                                        <i class="fa fa-share"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> Just now </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> You have 4 pending tasks.
+                                                    <span class="label label-sm label-info"> Take action
+                                                        <i class="fa fa-share"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> Just now </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> You have 4 pending tasks.
+                                                    <span class="label label-sm label-info"> Take action
+                                                        <i class="fa fa-share"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> Just now </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> You have 4 pending tasks.
+                                                    <span class="label label-sm label-info"> Take action
+                                                        <i class="fa fa-share"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> Just now </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="javascript:;">
+                                        <div class="col1">
+                                            <div class="cont">
+                                                <div class="cont-col1">
+                                                    <div class="label label-sm label-success">
+                                                        <i class="fa fa-bell-o"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="cont-col2">
+                                                    <div class="desc"> New version v1.4 just lunched! </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col2">
+                                            <div class="date"> 20 mins </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-danger">
+                                                    <i class="fa fa-bolt"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> Database server #12 overloaded. Please fix the issue. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 24 mins </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-info">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 30 mins </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 40 mins </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-warning">
+                                                    <i class="fa fa-plus"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New user registered. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 1.5 hours </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> Web server hardware needs to be upgraded.
+                                                    <span class="label label-sm label-default "> Overdue </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 2 hours </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-default">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 3 hours </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-warning">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 5 hours </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                </div>
+                <!--END TABS-->
+
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption caption-md">
+                        <i class="icon-bar-chart font-green"></i>
+                        <span class="caption-subject font-green bold uppercase">Customer Support</span>
+                        <span class="caption-helper">45 pending</span>
+                    </div>
+                    <div class="inputs">
+                        <div class="portlet-input input-inline input-small ">
+                            <div class="input-icon right">
+                                <i class="icon-magnifier"></i>
+                                <input type="text" class="form-control form-control-solid input-circle" placeholder="search..."> </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="scroller" style="height: 338px;" data-always-visible="1" data-rail-visible1="0" data-handle-color="#D7DCE2">
+                        <div class="general-item-list">
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Nick Larson</a>
+                                        <span class="item-label">3 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-success"></span> Open</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Mark</a>
+                                        <span class="item-label">5 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-warning"></span> Pending</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat tincidunt ut laoreet. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Nick Larson</a>
+                                        <span class="item-label">8 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-primary"></span> Closed</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Nick Larson</a>
+                                        <span class="item-label">12 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-danger"></span> Pending</span>
+                                </div>
+                                <div class="item-body"> Consectetuer adipiscing elit Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Richard Stone</a>
+                                        <span class="item-label">2 days ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-danger"></span> Open</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Dan</a>
+                                        <span class="item-label">3 days ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-warning"></span> Pending</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Larry</a>
+                                        <span class="item-label">4 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-success"></span> Open</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+    <div class="col-md-6 col-sm-6">
+        <!-- BEGIN PORTLET-->
+        <div class="portlet light bordered">
+            <div class="portlet-title tabbable-line">
+                <div class="caption">
+                    <i class="icon-globe font-green-sharp"></i>
+                    <span class="caption-subject font-green-sharp bold uppercase">Feeds</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <!--BEGIN TABS-->
+                        <div class="scroller" style="height: 339px;" data-always-visible="1" data-rail-visible="0">
+                            <ul class="feeds">
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> You have 4 pending tasks.
+                                                    <span class="label label-sm label-info"> Take action
+                                                        <i class="fa fa-share"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> Just now </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="javascript:;">
+                                        <div class="col1">
+                                            <div class="cont">
+                                                <div class="cont-col1">
+                                                    <div class="label label-sm label-success">
+                                                        <i class="fa fa-bell-o"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="cont-col2">
+                                                    <div class="desc"> New version v1.4 just lunched! </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col2">
+                                            <div class="date"> 20 mins </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-danger">
+                                                    <i class="fa fa-bolt"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> Database server #12 overloaded. Please fix the issue. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 24 mins </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-info">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 30 mins </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 40 mins </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-warning">
+                                                    <i class="fa fa-plus"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New user registered. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 1.5 hours </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-success">
+                                                    <i class="fa fa-bell-o"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> Web server hardware needs to be upgraded.
+                                                    <span class="label label-sm label-default "> Overdue </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 2 hours </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-default">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 3 hours </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col1">
+                                        <div class="cont">
+                                            <div class="cont-col1">
+                                                <div class="label label-sm label-warning">
+                                                    <i class="fa fa-bullhorn"></i>
+                                                </div>
+                                            </div>
+                                            <div class="cont-col2">
+                                                <div class="desc"> New order received. Please take care of it. </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col2">
+                                        <div class="date"> 5 hours </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                </div>
+                <!--END TABS-->
+
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption caption-md">
+                        <i class="icon-bar-chart font-green"></i>
+                        <span class="caption-subject font-green bold uppercase">Customer Support</span>
+                        <span class="caption-helper">45 pending</span>
+                    </div>
+                    <div class="inputs">
+                        <div class="portlet-input input-inline input-small ">
+                            <div class="input-icon right">
+                                <i class="icon-magnifier"></i>
+                                <input type="text" class="form-control form-control-solid input-circle" placeholder="search..."> </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="scroller" style="height: 338px;" data-always-visible="1" data-rail-visible1="0" data-handle-color="#D7DCE2">
+                        <div class="general-item-list">
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Nick Larson</a>
+                                        <span class="item-label">3 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-success"></span> Open</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Mark</a>
+                                        <span class="item-label">5 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-warning"></span> Pending</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat tincidunt ut laoreet. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Nick Larson</a>
+                                        <span class="item-label">8 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-primary"></span> Closed</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Nick Larson</a>
+                                        <span class="item-label">12 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-danger"></span> Pending</span>
+                                </div>
+                                <div class="item-body"> Consectetuer adipiscing elit Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Richard Stone</a>
+                                        <span class="item-label">2 days ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-danger"></span> Open</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Dan</a>
+                                        <span class="item-label">3 days ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-warning"></span> Pending</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-head">
+                                    <div class="item-details">
+                                        <a href="" class="item-name primary-link">Larry</a>
+                                        <span class="item-label">4 hrs ago</span>
+                                    </div>
+                                    <span class="item-status">
+                                        <span class="badge badge-empty badge-success"></span> Open</span>
+                                </div>
+                                <div class="item-body"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="${base.contextPath}/lib/assets/global/scripts/app.js" type="text/javascript"></script>
+</body>
+</html>

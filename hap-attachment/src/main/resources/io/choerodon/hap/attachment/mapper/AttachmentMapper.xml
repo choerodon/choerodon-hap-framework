@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.attachment.mapper.AttachmentMapper" >
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.attachment.dto.Attachment" >
+        <id column="ATTACHMENT_ID" property="attachmentId" jdbcType="DECIMAL" />
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR" />
+        <result column="SOURCE_KEY" property="sourceKey" jdbcType="VARCHAR" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="START_ACTIVE_DATE" property="startActiveDate" jdbcType="TIMESTAMP" />
+        <result column="END_ACTIVE_DATE" property="endActiveDate" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <!-- find one -->
+    <select id="selectAttachment" resultMap="BaseResultMap" parameterType="io.choerodon.hap.attachment.dto.Attachment" >
+        select
+        *
+        from SYS_ATTACHMENT
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+        					<if test="sourceType != null ">
+        						AND SOURCE_TYPE = #{sourceType,jdbcType=VARCHAR}
+        					</if>
+        					<if test="sourceKey != null ">
+        						AND SOURCE_KEY = #{sourceKey,jdbcType=VARCHAR}
+        					</if>
+					</trim>
+    </select>
+    <!-- find list -->
+    <select id="selectAttachments" resultMap="BaseResultMap" parameterType="io.choerodon.hap.attachment.dto.Attachment" >
+        select 
+        *
+        from SYS_ATTACHMENT
+        <trim prefix="WHERE" prefixOverrides="AND | OR">  
+        					1 = 1 
+        					<if test="sourceType != null ">
+        						AND SOURCE_TYPE = #{sourceType,jdbcType=VARCHAR}
+        					</if>
+        					<if test="sourceKey != null ">
+        						AND SOURCE_KEY = #{sourceKey,jdbcType=VARCHAR}
+        					</if>
+        					<if test="categoryId != null ">
+        						AND CATEGORY_ID = #{categoryId,jdbcType=DECIMAL}
+        					</if>
+					</trim>    
+       
+    </select>
+
+    <update id="upgradeSourceKey" parameterType="java.util.Map" >
+        UPDATE sys_attachment sa
+           SET sa.source_key = #{newSourceKey,jdbcType=VARCHAR}
+         WHERE sa.source_type = #{sourceType,jdbcType=VARCHAR}
+           AND sa.source_key = #{oldSourceKey,jdbcType=VARCHAR}
+    </update>
+</mapper>

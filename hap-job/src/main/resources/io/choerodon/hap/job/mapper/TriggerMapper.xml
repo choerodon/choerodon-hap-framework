@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.job.mapper.TriggerMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.job.dto.TriggerDto">
+        <id column="SCHED_NAME" property="schedName" jdbcType="VARCHAR"/>
+        <id column="TRIGGER_NAME" property="triggerName" jdbcType="VARCHAR"/>
+        <id column="TRIGGER_GROUP" property="triggerGroup" jdbcType="VARCHAR"/>
+        <result column="JOB_NAME" property="jobName" jdbcType="VARCHAR"/>
+        <result column="JOB_GROUP" property="jobGroup" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="NEXT_FIRE_TIME" property="nextFireTime" jdbcType="BIGINT"/>
+        <result column="PREV_FIRE_TIME" property="prevFireTime" jdbcType="BIGINT"/>
+        <result column="PRIORITY" property="priority" jdbcType="INTEGER"/>
+        <result column="TRIGGER_STATE" property="triggerState" jdbcType="VARCHAR"/>
+        <result column="TRIGGER_TYPE" property="triggerType" jdbcType="VARCHAR"/>
+        <result column="START_TIME" property="startTime" jdbcType="BIGINT"/>
+        <result column="END_TIME" property="endTime" jdbcType="BIGINT"/>
+        <result column="CALENDAR_NAME" property="calendarName" jdbcType="VARCHAR"/>
+        <result column="MISFIRE_INSTR" property="misfireInstr" jdbcType="SMALLINT"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, JOB_NAME, JOB_GROUP, DESCRIPTION, NEXT_FIRE_TIME, 
+        PREV_FIRE_TIME, PRIORITY, TRIGGER_STATE, TRIGGER_TYPE, START_TIME, END_TIME, CALENDAR_NAME, 
+        MISFIRE_INSTR
+    </sql>
+    <sql id="Blob_Column_List">
+        JOB_DATA
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="io.choerodon.hap.job.dto.TriggerDto">
+        select
+        <include refid="Base_Column_List"/>
+        from qrtz_triggers
+        where SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+        and TRIGGER_NAME = #{triggerName,jdbcType=VARCHAR}
+        and TRIGGER_GROUP = #{triggerGroup,jdbcType=VARCHAR}
+    </select>
+    <select id="selectTriggers" resultMap="BaseResultMap" parameterType="io.choerodon.hap.job.dto.TriggerDto">
+        select
+        <include refid="Base_Column_List"/>
+        from qrtz_triggers
+        <where>
+            <if test="schedName != null">
+                SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+            </if>
+            <if test="triggerName != null">
+                AND TRIGGER_NAME = #{triggerName,jdbcType=VARCHAR}
+            </if>
+            <if test="triggerGroup != null">
+                AND TRIGGER_GROUP = #{triggerGroup,jdbcType=VARCHAR}
+            </if>
+            <if test="jobName != null">
+                AND JOB_NAME = #{jobName,jdbcType=VARCHAR}
+            </if>
+            <if test="jobGroup != null">
+                AND JOB_GROUP = #{jobGroup,jdbcType=VARCHAR}
+            </if>
+            <if test="triggerState != null">
+                AND TRIGGER_STATE = #{triggerState,jdbcType=VARCHAR}
+            </if>
+            <if test="description != null">
+                AND DESCRIPTION like concat('%',concat(#{description,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+    </select>
+</mapper>

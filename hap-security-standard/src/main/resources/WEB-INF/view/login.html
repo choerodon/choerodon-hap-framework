@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html>
+<!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <title>${SYS_TITLE!'Hand Application Platform'}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <link href="${base.contextPath}/lib/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="${base.contextPath}/lib/font-awesome-4.6.3/css/font-awesome.css" rel="stylesheet" type="text/css"/>
+    <#include "include/components_css.html">
+    <link href="${base.contextPath}/lib/assets/pages/css/login-5.css" rel="stylesheet" type="text/css" />
+    <script src="${base.contextPath}/lib/assets/global/plugins/jquery.min.js" type="text/javascript"></script>
+    <link href="${base.contextPath}${systemInfo.faviconImageSrc}" rel="shortcut icon"/>
+    <script>var _baseContext = '${base.contextPath}'</script>
+    <script src="${base.contextPath}/lib/jquery-placeholder/jquery.placeholder.js"></script>
+</head>
+<style>
+    input::-ms-clear{
+        display:none;
+    }
+    .my-placeholder { color: #aaa; }
+</style>
+<body class=" login">
+    <script>
+        $(function() {
+            if( ! ("placeholder" in document.createElement('input'))){
+                $('input, textarea').placeholder({customClass:'my-placeholder'});
+            }
+        });
+        function changeCaptchaCode() {
+            $("#imgObj").attr("src", '${base.contextPath}/verifiCode?_r='+Math.random());
+        }
+    </script>
+    <style>
+        .user-login-5 input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px white inset !important;
+        }
+    </style>
+    <!-- BEGIN : LOGIN PAGE 5-1 -->
+    <div class="user-login-5">
+        <script>
+            if(top.sessionExpiredLogin){
+                top.sessionExpiredLogin();
+                $('.user-login-5').hide();
+            }
+        </script>
+        <div class="row bs-reset">
+            <div class="col-md-6 bs-reset">
+                <div class="login-bg" style="background-image:url(${base.contextPath}/lib/assets/pages/img/login/bg1.jpg)">
+                    <img class="login-logo" src="${base.contextPath}${systemInfo.logoImageSrc}" width="140"/>
+                </div>
+            </div>
+            <div class="col-md-6 login-container bs-reset">
+                <div class="login-content">
+                    <h1>${systemInfo.title!'Hand Application Platform'} Login</h1>
+                    <#if msg?exists>
+                        <div class="alert alert-danger">
+                            <button class="close" data-close="alert"></button>
+                            <span>${msg!}</span>
+                        </div>
+                    </#if>
+                    <form class="login-form" action="login" method="post" autocomplete="off">
+                        <input type="password" hidden="">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6">
+                                <input class="form-control form-control-solid placeholder-no-fix" type="text" autocomplete="off" placeholder="<@spring.message "user.username"/>" name="username" />
+                            </div>
+                            <div class="col-xs-12 col-sm-6">
+                                <input type="password"  style="display:none;width:0;height:0;" />
+                                <input id="password" type="password" autocomplete="new-password" name="password"
+                                       class="form-control form-control-solid placeholder-no-fix <#if code! == "LOGIN_NOT_MATCH">error</#if>"  placeholder="<@spring.message "user.password"/>"  />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6"  style="position:relative">
+                                <#if ENABLE_CAPTCHA >
+                                    <input class="form-control form-control-solid placeholder-no-fix <#if code! == 'CAPTCHA_INVALID'>error</#if>"  placeholder="<@spring.message 'user.verifiCode'/>" type="text" name="verifiCode" />
+                                    <img id="imgObj" title="<@spring.message 'sys.login.refreshverificationcode'/>" src="${base.contextPath}/verifiCode" style="cursor:pointer;position:absolute;right:15px;top:-20px" onclick="changeCaptchaCode()" />
+
+                                </#if>
+                            </div>
+                            <div class="col-sm-6 text-right">
+                                <!--<div class="forgot-password">-->
+                                    <!--<a href="javascript:;" id="forget-password" class="forget-password">忘记密码 ?</a>-->
+                                <!--</div>-->
+                                <button class="btn blue" type="submit" style="min-width:100px"><@spring.message "hap.login"/></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="login-footer">
+                    <div class="row bs-reset">
+                        <div class="col-xs-12 bs-reset">
+                            <div class="login-copyright text-right">
+                                <p>  Copyright © 1996 - 2017 上海汉得信息技术股份有限公司.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--[if lt IE 9]>
+    <script src="${base.contextPath}/lib/assets/global/plugins/respond.min.js"></script>
+    <script src="${base.contextPath}/lib/assets/global/plugins/excanvas.min.js"></script>
+    <![endif]-->
+    <script src="${base.contextPath}/lib/assets/global/plugins/backstretch/jquery.backstretch.min.js" type="text/javascript"></script>
+    <script src="${base.contextPath}/lib/assets/pages/scripts/login-5.js" type="text/javascript"></script>
+</body>
+</html>

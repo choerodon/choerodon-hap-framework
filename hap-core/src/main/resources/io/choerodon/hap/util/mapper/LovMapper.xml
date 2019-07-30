@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.util.mapper.LovMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.util.dto.Lov" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="LOV_ID" property="lovId" jdbcType="DECIMAL"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="SQL_ID" property="sqlId" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_SQL" property="customSql" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_URL" property="customUrl" jdbcType="VARCHAR"/>
+        <result column="QUERY_COLUMNS" property="queryColumns" jdbcType="SMALLINT"/>
+        <result column="VALUE_FIELD" property="valueField" jdbcType="VARCHAR"/>
+        <result column="TEXT_FIELD" property="textField" jdbcType="VARCHAR"/>
+        <result column="TITLE" property="title" jdbcType="VARCHAR"/>
+        <result column="WIDTH" property="width" jdbcType="SMALLINT"/>
+        <result column="HEIGHT" property="height" jdbcType="SMALLINT"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="PLACEHOLDER" property="placeholder" jdbcType="VARCHAR"/>
+        <result column="DELAY_LOAD" property="delayLoad" jdbcType="VARCHAR"/>
+        <result column="EDITABLE" property="editableFlag" jdbcType="VARCHAR"/>
+        <result column="CAN_POPUP" property="canPopup" jdbcType="VARCHAR"/>
+        <result column="NEED_QUERY_PARAM" property="needQueryParam" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="LOV_PAGE_SIZE" property="lovPageSize" jdbcType="VARCHAR"/>
+        <result column="TREE_FLAG" property="treeFlag" jdbcType="VARCHAR"/>
+        <result column="ID_FIELD" property="idField" jdbcType="VARCHAR"/>
+        <result column="PARENT_ID_FIELD" property="parentIdField" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        PARENT_ID_FIELD,ID_FIELD,TREE_FLAG,LOV_PAGE_SIZE,LOV_ID, DESCRIPTION, SQL_ID,CUSTOM_SQL,CUSTOM_URL,QUERY_COLUMNS,VALUE_FIELD, TEXT_FIELD, TITLE,WIDTH, HEIGHT, CODE, PLACEHOLDER,DELAY_LOAD,CAN_POPUP,EDITABLE,NEED_QUERY_PARAM, CREATION_DATE, CREATED_BY,LAST_UPDATED_BY, LAST_UPDATE_DATE,OBJECT_VERSION_NUMBER
+    </sql>
+
+    <select id="selectByCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_LOV
+        WHERE CODE = #{code,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectLovs" resultMap="BaseResultMap" parameterType="io.choerodon.hap.util.dto.Lov">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_LOV
+        <where>
+            <if test="code != null">
+                CODE LIKE concat('%',concat(#{code,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="description != null">
+                AND DESCRIPTION LIKE
+                concat('%',concat(#{description,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY LOV_ID DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.system.mapper.ProfileValueMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.system.dto.ProfileValue"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="PROFILE_VALUE_ID" jdbcType="DECIMAL" property="profileValueId"/>
+        <result column="PROFILE_ID" jdbcType="DECIMAL" property="profileId"/>
+        <result column="LEVEL_ID" jdbcType="DECIMAL" property="levelId"/>
+        <result column="LEVEL_VALUE" jdbcType="VARCHAR" property="levelValue"/>
+        <result column="LEVEL_NAME" jdbcType="VARCHAR" property="levelName"/>
+        <result column="PROFILE_VALUE" jdbcType="VARCHAR" property="profileValue"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        T.PROFILE_VALUE_ID, T.PROFILE_ID, T.LEVEL_ID, T.LEVEL_VALUE, T.PROFILE_VALUE, T.OBJECT_VERSION_NUMBER, T.
+        REQUEST_ID, T.PROGRAM_ID, T.CREATION_DATE, T.CREATED_BY, T.LAST_UPDATED_BY, T.LAST_UPDATE_DATE
+    </sql>
+
+    <select id="selectLevelValuesForUser" resultMap="BaseResultMap" parameterType="io.choerodon.hap.system.dto.ProfileValue">
+        SELECT SU.USER_NAME LEVEL_NAME, SU.USER_ID LEVEL_VALUE, '30' LEVEL_ID
+        FROM SYS_USER SU
+        <where>
+            <if test="levelName != null">
+                AND SU.USER_NAME LIKE CONCAT('%', CONCAT(#{levelName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="levelValue != null">
+                AND SU.USER_ID LIKE CONCAT('%', CONCAT(#{levelValue,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        ORDER BY SU.USER_ID
+    </select>
+
+    <select id="selectLevelValuesForRole" resultMap="BaseResultMap" parameterType="io.choerodon.hap.system.dto.ProfileValue">
+        SELECT IR.CODE LEVEL_NAME, IR.ID LEVEL_VALUE, '20' LEVEL_ID
+        FROM IAM_ROLE IR
+        <where>
+            <if test="levelName != null">
+                AND IR.CODE LIKE CONCAT('%', CONCAT(#{levelName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="levelValue != null">
+                AND IR.ID LIKE CONCAT('%', CONCAT(#{levelValue,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        ORDER BY IR.ID
+    </select>
+
+    <select id="selectProfileValues" resultMap="BaseResultMap" parameterType="io.choerodon.hap.system.dto.ProfileValue">
+        <bind name="__current_lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        SELECT
+        <include refid="Base_Column_List"/>,
+        (
+        CASE
+        WHEN T.LEVEL_ID='30' THEN
+        (SELECT SU.USER_NAME LEVEL_NAME
+        FROM SYS_USER SU
+        WHERE CAST(SU.USER_ID AS CHAR(80))=CAST(T.LEVEL_VALUE AS CHAR(80))
+        )
+        WHEN T.LEVEL_ID='20' THEN
+        (SELECT IRT.NAME LEVEL_NAME
+        FROM IAM_ROLE IR LEFT JOIN IAM_ROLE_TL IRT ON (IR.ID = IRT.ID AND IRT.LANG = #{__current_lang})
+        WHERE CAST(IR.ID AS CHAR(80))=CAST(T.LEVEL_VALUE AS CHAR(80))
+        )
+        WHEN T.LEVEL_ID='10' THEN T.LEVEL_VALUE
+        END
+        ) LEVEL_NAME
+        FROM SYS_PROFILE_VALUE T
+        <where>
+            <if test="profileValueId != null">
+                T.PROFILE_VALUE_ID = #{profileValueId,jdbcType=DECIMAL}
+            </if>
+            <if test="profileId != null">
+                AND T.PROFILE_ID = #{profileId,jdbcType=DECIMAL}
+            </if>
+            <if test="levelId != null">
+                AND T.LEVEL_ID = #{levelId,jdbcType=DECIMAL}
+            </if>
+            <if test="levelValue != null">
+                AND T.LEVEL_VALUE = #{levelValue,jdbcType=VARCHAR}
+            </if>
+            <if test="profileValue != null">
+                AND T.PROFILE_VALUE = #{profileValue,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY T.PROFILE_VALUE_ID
+    </select>
+
+    <delete id="deleteByProfileId" parameterType="io.choerodon.hap.system.dto.ProfileValue">
+      DELETE
+        FROM SYS_PROFILE_VALUE
+       WHERE PROFILE_ID = #{profileId,jdbcType=DECIMAL}
+    </delete>
+
+    <select id="selectByProfileIdAndUserId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_PROFILE_VALUE T
+        WHERE PROFILE_ID = #{profileId,jdbcType=DECIMAL}
+        AND ((LEVEL_ID='30' AND LEVEL_VALUE = #{userId,jdbcType=DECIMAL}) OR
+        (LEVEL_ID='20' AND LEVEL_VALUE IN (
+        SELECT ROLE_ID FROM SYS_USER_ROLE
+        WHERE USER_ID = #{userId,jdbcType=DECIMAL})) OR LEVEL_ID='10' )
+        ORDER BY LEVEL_ID DESC,LEVEL_VALUE
+    </select>
+
+    <select id="selectPriorityValues" resultMap="BaseResultMap" parameterType="java.lang.String">
+	    SELECT SPV.PROFILE_VALUE_ID,
+	           SPV.PROFILE_ID,
+	           SPV.LEVEL_ID,
+	           SPV.LEVEL_VALUE,
+	           SPV.PROFILE_VALUE
+	      FROM SYS_PROFILE_VALUE SPV,
+	      	   SYS_PROFILE SP
+	     WHERE SPV.PROFILE_ID = SP.PROFILE_ID
+	       AND SP.PROFILE_NAME =  #{profileName,jdbcType=VARCHAR}
+	       AND ((SPV.LEVEL_ID = '30' AND SPV.LEVEL_VALUE = #{request.userId,jdbcType=DECIMAL,javaType=java.lang.Long})
+	           OR (SPV.LEVEL_ID = '20' AND SPV.LEVEL_VALUE = #{request.roleId,jdbcType=DECIMAL,javaType=java.lang.Long})
+	           OR (SPV.LEVEL_ID = '10'))
+	  ORDER BY SPV.LEVEL_ID DESC
+    </select>
+</mapper>

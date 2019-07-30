@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.mail.mapper.MessageAccountMapper" >
+  <resultMap id="BaseResultMap" type="io.choerodon.hap.mail.dto.MessageAccount" extends="io.choerodon.mybatis.mapper.StdMapper.STD" >
+    <id column="ACCOUNT_ID" property="accountId" jdbcType="DECIMAL" />
+    <result column="ACCOUNT_TYPE" property="accountType" jdbcType="VARCHAR" />
+    <result column="ACCOUNT_CODE" property="accountCode" jdbcType="VARCHAR" />
+    <result column="USER_NAME" property="userName" jdbcType="VARCHAR" />
+    <result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <!-- 故意不显示password -->
+  <select id="selectMessageAccounts" resultMap="BaseResultMap" parameterType="io.choerodon.hap.mail.dto.MessageAccount">
+       SELECT *
+       FROM SYS_MESSAGE_ACCOUNT
+       <where>
+       	  <if test="accountId != null">
+              AND ACCOUNT_ID = #{accountId,jdbcType=DECIMAL}
+          </if>
+          <if test="accountCode != null">
+              AND ACCOUNT_CODE LIKE CONCAT('%',CONCAT(#{accountCode,jdbcType=VARCHAR},'%'))
+          </if>
+          <if test="accountType != null">
+              AND ACCOUNT_TYPE = #{accountType,jdbcType=VARCHAR}
+          </if>
+          <if test="description != null">
+              AND DESCRIPTION LIKE CONCAT('%',CONCAT(#{description,jdbcType=VARCHAR},'%'))
+          </if>
+       </where>
+      ORDER BY ACCOUNT_ID
+  </select>
+  <select id="selectMessageAccountPassword" resultMap="BaseResultMap" parameterType="io.choerodon.hap.mail.dto.MessageAccount">
+       SELECT
+        *
+       FROM SYS_MESSAGE_ACCOUNT
+       <where>
+       	  <if test="accountId != null">
+              ACCOUNT_ID = #{accountId,jdbcType=DECIMAL}
+          </if>
+       </where>
+      ORDER BY ACCOUNT_ID
+  </select>
+
+  <select id="selectByUniqueCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT
+    *
+    FROM SYS_MESSAGE_ACCOUNT
+    WHERE ACCOUNT_CODE = #{accountCode,jdbcType=VARCHAR}
+    ORDER BY ACCOUNT_ID
+  </select>
+
+  <select id="getMsgAccountByCodeAndMarketId" resultMap="BaseResultMap">
+		SELECT
+		*
+		FROM SYS_MESSAGE_ACCOUNT ACC
+		<where>
+			<if test="accountCode != null">
+				ACC.ACCOUNT_CODE = #{accountCode,jdbcType=VARCHAR}
+			</if>
+			<if test="marketId == null">
+				AND ACC.MARKET_ID IS NULL
+			</if>
+			<if test="marketId != null">
+				AND ACC.MARKET_ID = #{marketId,jdbcType=DECIMAL}
+			</if>
+			<if test="accountId != null">
+				AND ACC.ACCOUNT_ID != #{accountId, jdbcType=DECIMAL}
+			</if>
+		</where>
+        ORDER BY ACCOUNT_ID
+	</select>
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.security.oauth.mapper.Oauth2ClientDetailsMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.security.oauth.dto.Oauth2ClientDetails" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="ID" property="id" jdbcType="DECIMAL"/>
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR"/>
+        <result column="CLIENT_SECRET" property="clientSecret" jdbcType="VARCHAR"/>
+        <result column="AUTHORIZED_GRANT_TYPES" property="authorizedGrantTypes" jdbcType="VARCHAR"/>
+        <result column="RESOURCE_IDS" property="resourceIds" jdbcType="VARCHAR"/>
+        <result column="AUTHORITIES" property="authorities" jdbcType="VARCHAR"/>
+        <result column="AUTO_APPROVE" property="autoApprove" jdbcType="VARCHAR"/>
+        <result column="SCOPE" property="scope" jdbcType="VARCHAR"/>
+        <result column="ACCESS_TOKEN_VALIDITY" property="accessTokenValidity" jdbcType="DECIMAL"/>
+        <result column="REFRESH_TOKEN_VALIDITY" property="refreshTokenValidity" jdbcType="DECIMAL"/>
+        <result column="WEB_SERVER_REDIRECT_URI" property="redirectUri" jdbcType="VARCHAR"/>
+        <result column="ADDITIONAL_INFORMATION" property="additionalInformation" jdbcType="VARCHAR"/>
+        <result column="AUTH_OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="authField">
+        AUTH.ID, AUTH.CLIENT_ID, AUTH.CLIENT_SECRET, AUTH.AUTHORIZED_GRANT_TYPES, AUTH.RESOURCE_IDS,
+        AUTH.AUTHORITIES, AUTH.AUTO_APPROVE, AUTH.SCOPE, AUTH.ACCESS_TOKEN_VALIDITY,
+        AUTH.REFRESH_TOKEN_VALIDITY, AUTH.WEB_SERVER_REDIRECT_URI, AUTH.ADDITIONAL_INFORMATION,AUTH.OBJECT_VERSION_NUMBER AS AUTH_OBJECT_VERSION_NUMBER
+    </sql>
+
+    <select id="selectByClientId" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        <include refid="authField"/>
+        FROM SYS_OAUTH_CLIENT_DETAILS AUTH
+        WHERE AUTH.CLIENT_ID = #{clientId}
+    </select>
+
+    <update id="updatePassword">
+        UPDATE SYS_OAUTH_CLIENT_DETAILS
+        SET SYS_OAUTH_CLIENT_DETAILS.CLIENT_SECRET = #{clientSecret,jdbcType=VARCHAR}
+        WHERE SYS_OAUTH_CLIENT_DETAILS.ID = #{id,jdbcType=DECIMAL}
+    </update>
+
+
+    <select id="selectAllClient" resultMap="BaseResultMap">
+        SELECT
+        <include refid="authField"/>
+        FROM SYS_OAUTH_CLIENT_DETAILS AUTH
+    </select>
+
+</mapper>

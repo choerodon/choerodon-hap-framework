@@ -1,0 +1,492 @@
+<#--
+ * description: 邮件发送测试
+ * version: 2.0
+ * author:jialong.zuo@hand-china.com
+ * #{copyright}#
+        *
+-->
+
+<#include "../include/header.html">
+<body>
+<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script>
+    viewModel = new kendo.observable({
+        model: {}
+    });
+    var attachmentModel = kendo.observable({
+        model: {},
+        queryResource: function () {
+            $('#chooseGrid').data('kendoGrid').dataSource.page(1);
+        }
+    });
+    var addAttachModel = kendo.observable({
+        saveFunction: function () {
+            var selection = $("#attachGrid").data("kendoGrid").dataSource.data();
+            var users = [];
+            for (var i = 0; i < selection.length; i++) {
+                users[i] = selection[i].fileId;
+            }
+            viewModel.model.set("attachments",users);
+            $("#attachmentWin").data("kendoWindow").close();
+        }
+    });
+
+
+</script>
+
+<div class="col-sm-12" style="margin-top: 10px;">
+    <ul class="nav nav-tabs" id="mytab">
+        <li class="active"><a href="#maintain" onclick="cleanAttach()" data-toggle="tab"><@spring.message "message.templatetest"/></a></li>
+       <!-- <li class=""><a href="#minortain" onclick="cleanAttach()" data-toggle="tab"><@spring.message "message.customtest"/></a></li>-->
+    </ul>
+    <div id="tabContent" class="tab-content">
+        <div class="tab-pane fade in active" style="margin-top: 10px;" id="maintain">
+            <div style="padding:15px 15px 0">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="panel">
+                            <form class="form-horizontal" id="form-query" style="width:100%">
+                                <div class="panel-body">
+                                   <!-- <div class="form-group">
+                                        <label class="col-sm-5 control-label"><@spring.message "messageemailconfig.accountcode"/>
+                                            :</label>
+                                        <div class="col-sm-4">
+                                            <input id="accountCode" name="accountCode" type=text
+                                                   data-bind="value:model.accountCode"
+                                                   data-label="<@spring.message 'messageemailconfig.accountcode'/>"
+                                                   style="width:50%"
+                                                   required/>
+                                        </div>
+                                        <script>
+                                            $("#accountCode").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MESSAGE_ACCOUNT")}, {
+                                                query: function (e) {
+                                                e.param['enable'] = 'Y';
+                                            }}))
+                                        </script>
+                                    </div>-->
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label"><@spring.message "message.receivers"/>
+                                            :</label>
+                                        <div class="col-sm-4">
+                                            <input id="receivers" name="receivers" type="text"
+                                                   data-bind="value:model.receivers"
+                                                   data-label="<@spring.message 'message.receivers'/>" style="width:50%"
+                                                   class="k-textbox" required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label"><@spring.message "messagetemplate.templatecode"/>
+                                            :</label>
+                                        <div class="col-sm-4">
+                                            <input id="templateCode" name="templateCode" type=text
+                                                   data-bind="value:model.templateCode"
+                                                   data-label="<@spring.message 'messagetemplate.templatecode'/>"
+                                                   style="width:50%"
+                                                   required
+                                            />
+                                        </div>
+                                        <script>
+                                            $("#templateCode").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MESSAGE_TEMPLATE")}, {}))
+                                        </script>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">
+                                            <div><a style="text-decoration:underline" href="javascript:void(0)"
+                                                    onclick="addAttachment()"><@spring.message
+                                                "mailtest.addattachment"/></a></div>
+                                        </label>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="panel-footer text-center" id="toolbar">
+                                   <span class="btn btn-success" onclick="submitform('template')"><i class="fa fa-save" style="margin-right:3px;"></i><@spring.message "hap.submit"/></span>
+                                </div>
+                            </form>
+                            <script>kendo.bind($('#form-query'), viewModel);</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       <!-- <div id="minortain" class="tab-pane fade">
+            <div style="padding:15px 15px 0">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="panel">
+                            <form class="form-horizontal" id="form-query1" style="width:100%">
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.accountcode"/>
+                                            :</label>
+                                        <div class="col-sm-7">
+                                            <input id="accountCode1" name="accountCode1" type=text
+                                                   data-bind="value:model.accountCode"
+                                                   style="width:50%"
+                                                   required
+                                                   data-label="<@spring.message 'messageemailconfig.accountcode'/>"/>
+                                        </div>
+
+                                        <script>
+                                            $("#accountCode1").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MESSAGE_ACCOUNT")}, {}))
+                                        </script>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label"><@spring.message "message.receivers"/>
+                                            :</label>
+                                        <div class="col-sm-7">
+                                            <input id="receivers1" name="receivers1" type="text"
+                                                   data-bind="value:model.receivers"
+                                                   style="width:50%"
+                                                   class="k-textbox" required
+                                                   data-label="<@spring.message 'message.receivers'/>"/>
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label"><@spring.message "message.subject"/>
+                                            :</label>
+                                        <div class="col-sm-7">
+                                            <input id="subject" name="subject" type="text" required
+                                                   data-bind="value:model.subject"
+                                                   data-label="<@spring.message 'message.subject'/>"
+                                                   style="width:50%" class="k-textbox"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label"><@spring.message "message.content"/>
+                                            :</label>
+                                        <div class="col-sm-7">
+                                            <textarea id="content" type="text" data-bind="value:model.content"
+                                                      style="width:50%;height: 200px" required
+                                                      data-label="<@spring.message 'message.content'/>"
+                                            ></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">
+                                                <div><a style="text-decoration:underline" href="javascript:void(0)"
+                                                        onclick="addAttachment()"><@spring.message
+                                                    "mailtest.addattachment"/></a></div>
+                                            </label>
+                                            <div class="col-sm-4">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel-footer text-center" id="toolbar1">
+                                        <span class="btn btn-success" onclick="submitform('custom')"><i class="fa fa-save" style="margin-right:3px;"></i><@spring.message "hap.submit"/></span>
+                                    </div>
+                                </div>
+                            </form>
+                            <script>kendo.bind($('#form-query1'), viewModel);</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+    </div>
+</div>
+
+<div id="attachmentWin" style="display: none">
+    <div class="pull-left" style="padding-bottom:10px;">
+                <span class="btn btn-primary" style="float:left;margin-right:5px;"
+                      onclick="openChooseAttachmentWin()"><@spring.message "mailtest.choseattachment"/></span>
+    </div>
+    <div class="pull-left" style="padding-bottom:10px;">
+                                <span id="saveForm" class="btn btn-success k-grid-save-changes"
+                                      style="float:center;margin-right:5px;"
+                                      data-bind="click:saveFunction"><@spring.message "hap.save"/></span>
+        <script>kendo.bind($('#saveForm'), addAttachModel);</script>
+    </div>
+    <div style="clear:both;">
+        <div id="attachGrid" style="clear: both"></div>
+    </div>
+</div>
+
+<div id="chooseAttachmentWin" style="display: none">
+    <div class="pull-left" id="toolbar-btn1" style="padding-bottom:10px;">
+        <span onclick="saveAttach()" class="btn btn-success k-grid-add" style="float:left;margin-right:5px;"><@spring.message "hap.add"/></span>
+    </div>
+
+    <div class="pull-right" id="query-form-role" style="padding-bottom:10px;">
+        <input data-role="maskedtextbox" placeholder="<@spring.message "sysfile.filename"/>" type="text" class="k-textbox"
+               type="text" style="float:left;width:150px;margin-right:5px;"
+               data-bind="value:model.fileName"/>
+        <input data-role="maskedtextbox" placeholder="<@spring.message "sysfile.filetype"/>" type="text" class="k-textbox"
+               type="text" style="float:left;width:150px;margin-right:5px;"
+               data-bind="value:model.fileType"/>
+        <span class="btn btn-primary" data-bind="click:queryResource"
+              type="submit"><@spring.message "hap.query"/></span>
+    </div>
+    <script>kendo.bind($('#query-form-role'), attachmentModel);</script>
+
+    <div style="clear:both;">
+        <div id="chooseGrid" style="clear: both"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    var validator = $("#maintain").kendoValidator({
+        valid: function (e) {
+        },
+        invalidMessageType: "tooltip"
+    }).data("kendoValidator");
+
+    var validator1 = $("#minortain").kendoValidator({
+        valid: function (e) {
+        },
+        invalidMessageType: "tooltip"
+    }).data("kendoValidator");
+
+    function openChooseAttachmentWin() {
+        var win = $("#chooseAttachmentWin").data("kendoWindow");
+        win.center().open();
+    }
+
+    function saveAttach() {
+        var selection = $('#chooseGrid').data('kendoGrid').selectedDataItems();
+        for (var i = 0; i < selection.length; i++) {
+            if($("#attachGrid").data("kendoGrid").dataSource.data().length==0){
+                var userGridData={};
+                userGridData["fileName"]=selection[i].fileName;
+                userGridData["fileType"]=selection[i].fileType;
+                userGridData["fileSize"]=selection[i].fileSize;
+                userGridData["fileId"]=selection[i].fileId;
+                $("#attachGrid").data("kendoGrid").dataSource.add(userGridData);
+            }else{
+                var key = true;
+                for(var j=0;j<$("#attachGrid").data("kendoGrid").dataSource.data().length;j++){
+                    if ($("#attachGrid").data("kendoGrid").dataSource.data()[j].fileId == selection[i].fileId) {
+                        key = false;
+                    }
+                }
+                if (key) {
+                    var userGridData = {};
+                    userGridData["fileName"] = selection[i].fileName;
+                    userGridData["fileType"] = selection[i].fileType;
+                    userGridData["fileSize"] = selection[i].fileSize;
+                    userGridData["fileId"] = selection[i].fileId;
+                    $("#attachGrid").data("kendoGrid").dataSource.add(userGridData);
+                }
+            }
+        }
+
+        $("#chooseAttachmentWin").data("kendoWindow").close();
+
+    }
+
+    $("#chooseAttachmentWin").kendoWindow({
+        title: $l('<@spring.message "mailtest.choseattachment"/>'),
+        width: 600,
+        height: 450,
+        modal: true,
+        //初始化时设置为隐藏状态
+        visible: false,
+    });
+    $("#attachmentWin").kendoWindow({
+        actions: ["Close"],
+        title: $l('<@spring.message "mailtest.addattachment"/>'),
+        draggable: true,
+        width: 700,
+        height: 500,
+        modal: true,
+        resizable: false,
+        //初始化时设置为隐藏状态
+        visible: false,
+        close: refreshRoleGrid
+    });
+
+    function refreshRoleGrid() {
+        $("#chooseGrid").data('kendoGrid').dataSource.page(1);
+    }
+
+
+    function addAttachment(){
+        var win = $("#attachmentWin").data("kendoWindow");
+        win.center().open();
+    }
+
+    function submitform(mode) {
+        if (validator.validate() || validator1.validate()) {
+        viewModel.model.set("mode",mode);
+        $.ajax({
+            url: '${base.contextPath}/sys/message/sendTest',
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json",
+            data: kendo.stringify(viewModel.model),
+            success: function (result) {
+                if (result.success) {
+                    kendo.ui.showInfoDialog({
+                        message:'<@spring.message "hap.tip.success"/>'
+                    }).done(function(){
+                    })
+                }else{
+                    kendo.ui.showErrorDialog({
+                        title: $l('hap.error'),
+                        message: result.message
+                    }).done(function () {
+                    });
+                }
+            }
+        });
+  /*      var formData = viewModel.model.toJSON();
+        for (var k in formData) {
+            viewModel.model.set(k, null);
+        }*/
+        viewModel.model.set("attachments",null);
+        $("#attachGrid").data("kendoGrid").dataSource.data([]);
+        }
+    }
+
+    function deleteDataSource(e) {
+        var grid = $("#attachGrid").data("kendoGrid");
+        grid.dataSource.remove(grid.dataSource.get(e));
+    }
+
+
+    modalDataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: "${base.contextPath}/sys/attach/file/queryFiles",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type);
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                           return Hap.prepareQueryParameter(attachmentModel.model.toJSON(), options);
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        //如果想动态的添加，需要这边加上唯一标识
+                        id: "fileId"
+                    }
+                }
+            });
+
+    $("#chooseGrid").kendoGrid({
+        dataSource: modalDataSource,
+        navigatable: false,
+        resizable: true,
+        scrollable: true,
+        height: 395,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            //可以选择一个页面多少条数据
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "fileName",
+                title: '<@spring.message "sysfile.filename"/>',
+                width: 300
+            },
+            {
+                field: "fileSize",
+                title: '<@spring.message "sysfile.filesize"/>',
+                width: 100,
+            },
+            {
+                field: "fileType",
+                title: '<@spring.message "sysfile.filetype"/>',
+                width: 100,
+            },
+
+        ],
+        editable: false,
+        dataBound: function () {
+            if(parent.autoResizeIframe){
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+
+    }).data("kendoGrid")
+
+
+    $("#attachGrid").kendoGrid({
+        dataSource: {
+            data: {},
+            schema: {
+                data: "data",
+                total: "total",
+                model: {
+                    id: "fileId",
+                }
+            }
+        },
+        navigatable: false,
+        height: '445px',
+        resizable: true,
+        scrollable: true,
+        pageable: {
+            //可以选择一个页面多少条数据
+            refresh: true
+        },
+        columns: [
+            {
+                field: "fileName",
+                title: '<@spring.message "sysfile.filename"/>',
+                width: 300
+            },
+            {
+                field: "fileSize",
+                title: '<@spring.message "sysfile.filesize"/>',
+                width: 100,
+            },
+            {
+                field: "fileType",
+                title: '<@spring.message "sysfile.filetype"/>',
+                width: 100,
+            },
+            {
+                title: '<@spring.message "hap.delete"/>',
+                width:100,
+                template:function(dataItem){ return '<span  onclick="deleteDataSource('+dataItem.fileId+')" class="btn btn-danger"><@spring.message "hap.delete"/></span>'}
+            }
+
+        ],
+        editable: false,
+        dataBound: function () {
+            if(parent.autoResizeIframe){
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+
+    }).data("kendoGrid");
+
+    function cleanAttach() {
+        viewModel.model.set("attachments",null);
+        viewModel.model.set("receivers", null);
+        viewModel.model.set("accountCode", null);
+        viewModel.model.set("templateCode", null);
+        viewModel.model.set("subject", null);
+        viewModel.model.set("content", null);
+        $("#attachGrid").data("kendoGrid").dataSource.data([]);    }
+
+</script>
+</body>
+</html>

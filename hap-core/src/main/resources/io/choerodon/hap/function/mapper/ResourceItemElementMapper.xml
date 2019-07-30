@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.ResourceItemElementMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.ResourceItemElement"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="ELEMENT_ID" property="elementId" jdbcType="DECIMAL"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="PROPERTY" property="property" jdbcType="VARCHAR"/>
+        <result column="PROPERTY_VALUE" property="propertyValue" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="RESOURCE_ITEM_ID" property="resourceItemId" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="selectByResourceItemId" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.function.dto.ResourceItemElement">
+        SELECT SRIE.ELEMENT_ID,SRIE.TYPE,SRIE.PROPERTY,SRIE.PROPERTY_VALUE,SRIE.NAME,SRIE.RESOURCE_ITEM_ID,SRIE.OBJECT_VERSION_NUMBER
+        FROM SYS_RESOURCE_ITEM_ELEMENT SRIE
+        WHERE SRIE.RESOURCE_ITEM_ID = #{resourceItemId,jdbcType=DECIMAL}
+        ORDER BY SRIE.TYPE DESC
+    </select>
+
+    <delete id="deleteByResourceItemId">
+        DELETE FROM SYS_RESOURCE_ITEM_ELEMENT
+        WHERE RESOURCE_ITEM_ID = #{resourceItemId}
+    </delete>
+</mapper>

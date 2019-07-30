@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- ~ #{copyright}# -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.job.mapper.JobDetailMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.job.dto.JobDetailDto">
+        <id column="SCHED_NAME" property="schedName" jdbcType="VARCHAR" />
+        <id column="JOB_NAME" property="jobName" jdbcType="VARCHAR" />
+        <id column="JOB_GROUP" property="jobGroup" jdbcType="VARCHAR" />
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+        <result column="JOB_CLASS_NAME" property="jobClassName" jdbcType="VARCHAR" />
+        <result column="IS_DURABLE" property="isDurable" jdbcType="VARCHAR" />
+        <result column="IS_NONCONCURRENT" property="isNonconcurrent" jdbcType="VARCHAR" />
+        <result column="IS_UPDATE_DATA" property="isUpdateData" jdbcType="VARCHAR" />
+        <result column="REQUESTS_RECOVERY" property="requestsRecovery" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="InfoResultMap" extends="BaseResultMap"
+        type="io.choerodon.hap.job.dto.JobInfoDetailDto">
+        <result column="JOB_RESULT" property="jobResult" jdbcType="VARCHAR" />
+        <result column="JOB_STATUS" property="jobStatus" jdbcType="VARCHAR" />
+        <result column="JOB_STATUS_MESSAGE" property="jobStatusMessage" jdbcType="VARCHAR" />
+        <result column="TRIGGER_NAME" property="triggerName" jdbcType="VARCHAR" />
+        <result column="TRIGGER_GROUP" property="triggerGroup" jdbcType="VARCHAR" />
+        <result column="PREVIOUS_FIRE_TIME" property="previousFireTime" jdbcType="TIMESTAMP" />
+        <result column="FIRE_TIME" property="fireTime" jdbcType="TIMESTAMP" />
+        <result column="NEXT_FIRE_TIME" property="nextFireTime" jdbcType="TIMESTAMP" />
+        <result column="REFIRE_COUNT" property="refireCount" jdbcType="DECIMAL" />
+        <result column="FIRE_INSTANCE_ID" property="fireInstanceId" jdbcType="VARCHAR" />
+        <result column="SCHEDULER_INSTANCE_ID" property="schedulerInstanceId" jdbcType="VARCHAR" />
+        <result column="SCHEDULED_FIRE_TIME" property="scheduledFireTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <resultMap id="jobInfoDetailDto" extends="BaseResultMap" type="io.choerodon.hap.job.dto.JobInfoDetailDto">
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        SCHED_NAME, JOB_NAME, JOB_GROUP, DESCRIPTION, JOB_CLASS_NAME, IS_DURABLE,
+        IS_NONCONCURRENT,
+        IS_UPDATE_DATA, REQUESTS_RECOVERY
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap"
+        parameterType="io.choerodon.hap.job.dto.JobDetailDto">
+        select
+        <include refid="Base_Column_List" />
+        from qrtz_job_details
+        where SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+        and JOB_NAME = #{jobName,jdbcType=VARCHAR}
+        and JOB_GROUP = #{jobGroup,jdbcType=VARCHAR}
+    </select>
+    <select id="selectJobDetails" resultMap="BaseResultMap"
+        parameterType="io.choerodon.hap.job.dto.JobDetailDto">
+        select
+        <include refid="Base_Column_List" />
+        from qrtz_job_details j
+        <where>
+            <if test="schedName != null">
+                j.sched_name  LIKE concat('%', concat(#{schedName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="jobName != null">
+                AND j.job_name  LIKE concat('%', concat(#{jobName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="jobGroup != null">
+                AND j.job_group LIKE concat('%', concat(#{jobGroup,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        order by j.JOB_NAME
+    </select>
+    <!--<select id="selectJobInfoDetails" resultMap="InfoResultMap"-->
+        <!--parameterType="JobDetailDto">-->
+        <!--select i.scheduled_fire_time,-->
+        <!--i.FIRE_TIME,-->
+        <!--i.NEXT_FIRE_TIME,-->
+        <!--i.PREVIOUS_FIRE_TIME,-->
+        <!--i.TRIGGER_NAME,-->
+        <!--i.TRIGGER_Group,-->
+        <!--i.JOB_STATUS,-->
+        <!--i.JOB_STATUS_MESSAGE,-->
+        <!--i.JOB_RESULT,-->
+        <!--j.JOB_NAME,-->
+        <!--j.JOB_GROUP,-->
+        <!--j.DESCRIPTION,-->
+        <!--j.JOB_CLASS_NAME-->
+        <!--from qrtz_job_details j-->
+        <!--left outer join sys_job_running_info i-->
+        <!--on (j.job_name = i.job_name and j.job_group = i.job_group)-->
+        <!--where (i.JOB_RUNNING_INFO_ID =-->
+        <!--(select max(ii.JOB_RUNNING_INFO_ID)-->
+        <!--from sys_job_running_info ii-->
+        <!--where ii.job_name = j.job_name-->
+        <!--and ii.job_group = j.job_group)-->
+        <!--or i.JOB_RUNNING_INFO_ID is null)-->
+        <!--<if test="schedName != null">-->
+            <!--AND j.sched_name = #{schedName,jdbcType=VARCHAR}-->
+        <!--</if>-->
+        <!--<if test="jobName != null">-->
+            <!--AND j.job_name = #{jobName,jdbcType=VARCHAR}-->
+        <!--</if>-->
+        <!--<if test="jobGroup != null">-->
+            <!--AND j.job_group = #{jobGroup,jdbcType=VARCHAR}-->
+        <!--</if>-->
+        <!--order by j.JOB_NAME-->
+    <!--</select>-->
+
+
+
+    <select id="selectJobInfoDetails" resultMap="jobInfoDetailDto"  parameterType="io.choerodon.hap.job.dto.JobDetailDto">
+        SELECT J.SCHED_NAME, J.JOB_NAME, J.JOB_GROUP, J.DESCRIPTION, J.JOB_CLASS_NAME,J.IS_DURABLE,J.IS_NONCONCURRENT,J.IS_UPDATE_DATA,J.REQUESTS_RECOVERY
+        FROM QRTZ_JOB_DETAILS J
+        <where>
+            <if test="jobName != null">
+                AND J.JOB_NAME = #{jobName,jdbcType=VARCHAR}
+            </if>
+            <if test="jobGroup != null">
+                AND J.JOB_GROUP = #{jobGroup,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY J.JOB_NAME
+    </select>
+</mapper>

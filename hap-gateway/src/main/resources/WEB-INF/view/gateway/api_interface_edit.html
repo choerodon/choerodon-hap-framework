@@ -1,0 +1,367 @@
+<#include "../include/header.html" />
+
+<body>
+<script src="${base.contextPath}/common/code?soapVersion=API.SOAP_VERSION" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?requestMethod=API.REQUEST_METHOD" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?requestContentType=API.REQUEST_CONTENT_TYPE" type="text/javascript"></script>
+<script type="text/javascript">
+    var serverId = '${RequestParameters.serverId!0}';
+    var uid = '${RequestParameters.uid!0}';
+    var serviceType = '${RequestParameters.serviceType!0}';
+    var bMappingUrl = '${RequestParameters.bMappingUrl!}';
+    var viewModel = kendo.observable({
+        isEnabled: <#if RequestParameters.uid??>false<#else>true</#if>,
+        model: {
+            enableFlag: 'Y',
+            invokeRecordDetails: 'N',
+            soapVersion: 'SOAP12',
+            requestMethod: 'GET',
+            requestContentType: 'application/json'
+        },
+        confirm: function (e) {
+            var validator = $("#editForm").kendoValidator({
+                rules: {
+                    codeCheck: function(input) {
+                        //校验接口code是否重复,原则：一个server下的接口code唯一
+                        if (input.is("[id=code]")) {
+                            var data = window.parent.interfaceDataSource.data();
+                            for (var i=0; i<data.length;i++){
+                                if (data[i].uid != uid && data[i].code == viewModel.model.code){
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    },
+                    mappingUrlCheck: function(input) {
+                        //校验接口mappingUrl是否重复,原则：一个server下的接口mappingUrl唯一
+                        if (input.is("[id=mappingUrl]")) {
+                            var data = window.parent.interfaceDataSource.data();
+                            for (var i=0; i<data.length;i++){
+                                if (data[i].uid != uid && data[i].mappingUrl == viewModel.model.mappingUrl){
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    },
+                    mappingUrlRuleCheck: function(input) {
+                        if (input.is("[id=mappingUrl]")) {
+                            if (viewModel.model.mappingUrl.indexOf("/")!=-1){
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                },
+                messages: {
+                    codeCheck: "<@spring.message'interface.line.interfacecode.existed'/>",
+                    mappingUrlCheck: "<@spring.message'server.mappingurl.existed'/>",
+                    mappingUrlRuleCheck: "<@spring.message'server.mappingurl.error'/>",
+                },
+                invalidMessageType : "tooltip"
+            }).data("kendoValidator");
+
+            if (validator.validate()) {
+                if(uid != 0 ){
+                    var profile = window.parent.interfaceDataSource.getByUid(uid);
+                    profile['code'] = viewModel.model.code;
+                    profile['enableFlag'] = viewModel.model.enableFlag;
+                    profile['interfaceUrl'] = viewModel.model.interfaceUrl;
+                    profile['mappingClass'] = viewModel.model.mappingClass;
+                    profile['mappingUrl'] = viewModel.model.mappingUrl;
+                    profile['name'] = viewModel.model.name;
+                    profile['interfaceId'] = viewModel.model.interfaceId;
+                    profile['soapVersion'] =  viewModel.model.soapVersion;
+                    profile['requestMethod'] =  viewModel.model.requestMethod;
+                    profile['invokeRecordDetails'] =  viewModel.model.invokeRecordDetails;
+
+                    var contentType = viewModel.model.contentType;
+                    var jsonHead = JSON.parse(viewModel.model.requestHead);
+                    for(var i in jsonHead){
+                        jsonHead[i]["Content-Type"] = contentType;
+                    }
+                    profile['requestHead'] = JSON.stringify(jsonHead);//viewModel.model.requestHead;
+                    profile['dirty'] = true;
+                    window.parent.grid.refresh();
+                }else {
+                    var contentType = viewModel.model.contentType;
+                    viewModel.set("model.requestHead", '[{"Content-Type":"' + contentType + '"}]');
+                    var data = window.parent.interfaceDataSource.add(viewModel.model);
+                    data.dirty = true;
+                }
+                window.parent.$("#dialogInterfaceEdit").data("kendoWindow").close();
+            }
+        },
+        closeWin: function (e) {
+            window.parent.$("#dialogInterfaceEdit").data("kendoWindow").close();
+        }
+    });
+
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <form class="form-horizontal">
+            <div class="panel-body">
+                <div id="editForm">
+
+                    <!-- interface 代码 -->
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"interface.line.interfacecode"/></label>
+                            <div class="col-xs-8">
+                                <input id="code" name="code" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'interface.line.interfacecode'/>"
+                                       required data-bind="enabled:isEnabled,value: model.code"/>
+                                <script>kendo.bind($('#code'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface 名称-->
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"interface.line.interfacename"/></label>
+                            <div class="col-xs-8">
+                                <input id="name" name="name" data-role="maskedtextbox" type="text"
+                                       style="width: 100%"  class="k-textbox"
+                                       data-label="<@spring.message'interface.line.interfacename'/>"
+                                       required data-bind="value:model.name"/>
+                                <script>kendo.bind($('#name'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface 地址-->
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message "interface.interfaceurl"/></label>
+                            <div class="col-xs-8">
+                                <input id="interfaceUrl" name="interfaceUrl" required
+                                       data-label="<@spring.message'interface.interfaceUrl'/>"
+                                       style="width: 100%" class="k-textbox" data-bind="value: model.interfaceUrl"/>
+                                <script>kendo.bind($('#interfaceUrl'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface 发布地址-->
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message "server.mappingurl"/></label>
+                            <div class="col-xs-8" >
+                                <div style="width: 40%;float: left">
+                                <input id="bMappingUrl" name="bMappingUrl" disabled
+                                       style="width: 100%; background-color: #ededed !important;" class="k-textbox"/>
+                                </div>
+                                <div style="width: 59%;float: right;">
+                                <input id="mappingUrl" name="mappingUrl" required
+                                       data-label="<@spring.message'server.mappingurl'/>"
+                                       style="width: 100%;" class="k-textbox" data-bind="value: model.mappingUrl"/>
+                                <script>kendo.bind($('#mappingUrl'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface 映射类-->
+                    <div class="col-xs-6" id="mapperClassDiv" style="display: none;">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message "interface.mapperclass"/></label>
+                            <div class="col-xs-8">
+                                <input id="mappingClass" name="mappingClass"
+                                       data-label="<@spring.message'interface.mappingClass'/>"
+                                       style="width: 100%" class="k-textbox" data-bind="value: model.mappingClass"/>
+                                <script>kendo.bind($('#mappingClass'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface SOAP 版本-->
+                    <div class="col-xs-6" id="soapVersionDiv" style="display: none;">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"server.soapversion"/></label>
+                            <div class="col-xs-8">
+                                <input id="soapVersion" name="soapVersion" type="text"
+                                       style="width: 100%" data-bind="value:model.soapVersion"/>
+                                <script>kendo.bind($('#soapVersion'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface SOAP Action  SOAP11 -->
+                    <div class="col-xs-6" id="soapActionDiv" style="display: none;">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"hapinterfaceheader.soapaction"/></label>
+                            <div class="col-xs-8">
+                                <input id="soapAction" name="soapAction" data-role="maskedtextbox" type="text"
+                                       style="width: 100%"  class="k-textbox"
+                                       data-label="<@spring.message'hapinterfaceheader.soapaction'/>"
+                                       data-bind="value:model.soapAction"/>
+                                <script>kendo.bind($('#soapAction'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 请求方式 -->
+                    <div class="col-xs-6" id="requestMethodDiv">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message "interface.requestmethod"/></label>
+                            <div class="col-xs-8">
+                                <input id="requestMethod" name="requestMethod"
+                                       data-label="<@spring.message'interface.requestMethod'/>"
+                                       style="width: 100%" data-bind="value: model.requestMethod"/>
+                                <script>
+                                    $("#requestMethod").kendoDropDownList({
+                                        dataTextField: "meaning",
+                                        dataValueField: "value",
+                                        valuePrimitive: true,
+                                        dataSource: requestMethod,
+                                    });
+                                    kendo.bind($('#requestMethod'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- content-type -->
+                    <div id="restContentType" class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label">ContentType</label>
+                            <div class="col-xs-8">
+                                <select id="contentType" data-role="combobox" data-value-primitive="true"
+                                        data-text-field="meaning" data-value-field="value"
+                                        data-bind="value:model.contentType" style="width: 100%;"></select>
+                                <script>
+                                    //content-Type
+                                    $("#contentType").kendoComboBox({
+                                        dataSource: requestContentType,
+                                        valuePrimitive: true,
+                                        dataTextField: "meaning",
+                                        clearNoData: false,
+                                        dataValueField: "value"
+                                    });
+                                    kendo.bind($('#contentType'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <!--interface 是否启用-->
+                    <div class="col-xs-6" style="height: 45px;">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label" for="enableFlag"><@spring.message
+                                "hap.enableflag"/></label>
+                            <div class="col-xs-8" style="text-align: left;">
+                                <input id="enableFlag" style="margin-top:8px" type="checkbox" data-bind="value: model.enableFlag"/>
+                                <script>
+                                    $("#enableFlag").kendoCheckbox({
+                                        checkedValue: 'Y',
+                                        uncheckedValue: 'N'
+                                    });
+                                    kendo.bind($('#enableFlag'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--interface 是否记录调用详情-->
+                    <div class="col-xs-6" style="height: 45px;">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label" for="enableFlag"><@spring.message
+                                "interface.invokeRecordDetails"/></label>
+                            <div class="col-xs-8" style="text-align: left;">
+                                <input id="invokeRecordDetails" style="margin-top:8px" type="checkbox" data-bind="value: model.invokeRecordDetails"/>
+                                <script>
+                                    $("#invokeRecordDetails").kendoCheckbox({
+                                        checkedValue: 'Y',
+                                        uncheckedValue: 'N'
+                                    });
+                                    kendo.bind($('#invokeRecordDetails'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="text-right k-window-toolbar">
+    <span class="btn btn-primary" id="confirm" data-bind="click:confirm" style="margin-right:5px"><@spring.message "hap.confirm"/></span>
+    <span class="btn btn-default" id="cancel" type="button" data-bind="click:closeWin" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+    <script>
+        kendo.bind($('#confirm'), viewModel);
+        kendo.bind($('#cancel'), viewModel);
+    </script>
+</div>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $("#bMappingUrl").val(bMappingUrl);
+        var profile;
+        if (uid != 0) {
+            profile = window.parent.interfaceDataSource.getByUid(uid);
+            if(profile) {
+                viewModel.set("model",profile);
+                var jsonHead = JSON.parse(profile['requestHead']);
+                var contentType = '';
+                for(var i in jsonHead){
+                    contentType = jsonHead[i]["Content-Type"];
+                }
+                viewModel.set("model.contentType", contentType);
+            }
+        }
+        loadFunc();
+
+    });
+
+    $("#soapVersion").kendoDropDownList({
+        dataTextField: "meaning",
+        dataValueField: "value",
+        valuePrimitive: true,
+        dataSource: soapVersion,
+        change:function (e) {
+            var value = this.value();
+            if (value == "SOAP11"){
+                $("#soapActionDiv").show();
+            }else {
+                $("#soapActionDiv").hide();
+            }
+        }
+    });
+
+    var loadFunc = function() {
+        if (serviceType == "REST") {
+            $("#requestHeadDiv").show();
+            $("#mapperClassDiv").show();
+            $("#soapVersionDiv").hide();
+            $("#soapActionDiv").hide();
+            $("#restContentType").show();
+            $("#requestMethodDiv").show();
+        }else {
+            $("#soapVersionDiv").show();
+            $("#requestHeadDiv").hide();
+            $("#restContentType").hide();
+            $("#requestMethodDiv").hide();
+            $("#mapperClassDiv").hide();
+            var soapVersion = $("#soapVersion").val();
+            if (soapVersion == "SOAP11"){
+                $("#soapActionDiv").show();
+            }else {
+                $("#soapActionDiv").hide();
+            }
+        }
+    };
+
+    var container = $("#editForm");
+    kendo.init(container);
+    container.kendoValidator({
+        messages: {
+            required: '<@spring.message "hap.validation.notempty"/>'
+        },
+        invalidMessageType : "tooltip"
+    });
+
+</script>
+</body>
+</html>

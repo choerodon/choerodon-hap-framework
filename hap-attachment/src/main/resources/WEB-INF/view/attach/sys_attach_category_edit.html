@@ -1,0 +1,252 @@
+<#--
+ * description:  附件目录创建页面
+ * version: 1.0 
+ * author:qingliang.zeng@hand-china.com
+ *
+-->
+<#include "../include/header.html">
+    <style>
+        span.k-invalid-msg {
+            margin:0px !important;
+            border:none !important;
+            background:none !important;
+            line-height: normal !important;
+            padding:0 !important;
+        }
+        .help-block {
+            margin-bottom:0px;
+        }
+    </style>
+<body>
+<div style="border-bottom:1px solid #ccc;padding:8px;padding-left:15px;">
+    <h4><@spring.message "attachcategory.createattachmentdirectory"/></h4>
+</div>
+<script>
+    window.viewModel = kendo.observable({
+        model: {
+            leafFlag: '0',
+            isEnabled: false
+        },
+        setType: function (isFolder) {
+            viewModel.model.set('isEnabled', !isFolder);
+            $("#mainform").data("kendoValidator").hideMessages();
+            $(".k-invalid").removeClass('k-invalid');
+            if (isFolder) {
+                viewModel.model.set("categoryPath", null);
+                viewModel.model.set("isUnique", null);
+                viewModel.model.set("allowedFileType", null);
+                viewModel.model.set("allowedFileSize", null);
+                viewModel.model.set("sourceType", null);
+            }
+        },
+        save: function (e) {
+            var validator = $("#mainform").data("kendoValidator");
+            if (validator.validate()) {
+                var data = viewModel.model.toJSON();
+                if (data.isUnique == true) {
+                    data.isUnique = "Y";
+                } else {
+                    data.isUnique = "N";
+
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/sys/attachment/category/submit',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify([data]),
+                    success: function (data) {
+                        if(data.success) {
+                            window.parent.refreshGrid();
+                            window.parent.closeEditWindow();
+                        }else{
+                            Hap.resolveError(data)
+                        }
+                    }
+                });
+            }
+        },
+        closeWin: function (e) {
+            window.parent.$("#editWin").data("kendoWindow").close()
+        }
+    });
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <form id="mainform" class="form-horizontal">
+            <div class="panel-body">
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top:0px;"><@spring.message
+                            "attachcategory.categorytype"/></label>
+                        <div class="col-sm-6">
+                            <div id="categoryType" data-bind="value:model.leafFlag"></div>
+                            <script>
+                                $("#categoryType").kendoRadio({
+                                    enable: true,
+                                    readonly: false,
+                                    items: [{
+                                        label: '<@spring.message "attachcategory.categorytype.folder"/>',
+                                        value: '0'
+                                    }, {
+                                        label: '<@spring.message "attachcategory.categorytype.filefolder"/>',
+                                        value: '1'
+                                    }],
+                                    change: function (o) {
+                                        viewModel.setType(o.values == '0')
+                                    }
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><@spring.message "attachcategory.categoryname"/></label>
+                        <div class="col-sm-6">
+                            <input type="text" required style="width:50%" id="categoryName" name="categoryName"  data-bind="value:model.categoryName"/>
+                            <span class="help-block"><span data-for="categoryName" class="k-invalid-msg"></span> <@spring.message "attachcategory.categoryname.help"/></span>
+                            <script>
+                                $("#categoryName").kendoTLEdit({
+                                    idField: 'categoryId',
+                                    field: 'categoryName',
+                                    dto: "io.choerodon.hap.attachment.dto.AttachCategory",
+                                    model: viewModel.model
+                                })
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><@spring.message "code.description"/></label>
+                        <div class="col-sm-6">
+                            <input type="text" style="width:100%" id="description" name="description" data-bind="value:model.description">
+                            <script>
+                                $("#description").kendoTLEdit({
+                                    idField: 'categoryId',
+                                    field: 'description',
+                                    dto: "io.choerodon.hap.attachment.dto.AttachCategory",
+                                    model: viewModel.model
+                                })
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><@spring.message "attachcategory.sourcetype"/></label>
+                        <div class="col-sm-6">
+                            <input type="text" required id="souceType" style="width:50%" name="sourceType" data-role="maskedtextbox" data-bind="enabled: model.isEnabled, value:model.sourceType"/>
+                            <span class="help-block"><span data-for="sourceType" class="k-invalid-msg"></span> <@spring.message "attachcategory.sourcetype.help"/></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><@spring.message "attachcategory.categorypath"/></label>
+                        <div class="col-sm-6">
+                            <input type="text" required style="width:100%" name="categoryPath" data-bind="enabled: model.isEnabled, value:model.categoryPath" data-role="maskedtextbox">
+                            <span class="help-block"><span data-for="categoryPath" class="k-invalid-msg"></span> <@spring.message "attachcategory.categorypath.help"/></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><@spring.message "attachcategory.allowedFileType"/></label>
+                        <div class="col-sm-6">
+                            <input type="text" required style="width:100%" name="allowedFileType" data-bind="enabled: model.isEnabled, value:model.allowedFileType" data-role="maskedtextbox">
+                            <span class="help-block"><span data-for="allowedFileType" class="k-invalid-msg"></span> <@spring.message "attachcategory.allowedFileType.help"/></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><@spring.message "attachcategory.allowedFileSize"/></label>
+                        <div class="col-sm-6">
+                            <input type="text" required style="width:50%" id="allowedFileSize" name="allowedFileSize" data-bind="enabled: model.isEnabled,value:model.allowedFileSize">
+                            <span class="help-block"><span data-for="allowedFileSize" class="k-invalid-msg"></span> <@spring.message "attachcategory.allowedFileSize.help"/></span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"></label>
+                        <div class="col-sm-6">
+                            <input type="checkbox" id="isUnique" style="margin-top:8px" name="isUnique" data-bind="enabled: model.isEnabled, checked:model.isUnique">
+                            <label for="isUnique" class="help-block" style="display:inline-block"><@spring.message "attachcategory.isunique"/></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group"  style="margin-bottom:0px;">
+                        <label class="col-sm-3 control-label"></label>
+                        <div class="col-sm-6">
+                            <span class="btn btn-primary" data-bind="click:save" type="submit" style="margin-right: 10px;width:100px"><@spring.message "hap.save"/></span>
+                            <span class="btn btn-default" data-bind="click:closeWin" type="button" style="width:100px"><@spring.message "hap.cancel"/></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+ 
+<script type="text/javascript">
+	$(document).ready(function () {
+
+
+        $("#allowedFileSize").kendoNumericTextBox({
+            min: 0,
+            step: 1,
+            format: "0"
+        });
+        var container = $("#mainform");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: '<@spring.message "hap.validation.required"/>'
+            }
+        });
+        kendo.bind($('#page-content'), viewModel);
+
+        viewModel.model.set("parentCategoryId", "${RequestParameters.parentCategoryId!'-1'}");
+
+        var categoryId = "${RequestParameters.categoryId!0}";
+        if (categoryId != "0") {
+            var data = window.parent.$("#grid").data("kendoGrid").dataSource.get(categoryId);
+            viewModel.model.set("categoryId", data.categoryId);
+            viewModel.model.set("categoryName", data.categoryName);
+            viewModel.model.set("categoryPath", data.categoryPath);
+            viewModel.model.set("description", data.description);
+            viewModel.model.set("isUnique", data.isUnique == 'Y');
+            viewModel.model.set("allowedFileType", data.allowedFileType);
+            viewModel.model.set("allowedFileSize", data.allowedFileSize);
+            viewModel.model.set("path", data.path);
+            viewModel.model.set("sourceType", data.sourceType);
+            viewModel.model.set("_token", data._token);
+
+            $("#souceType").attr("readonly", "true");
+            //readonly
+            if (data.sourceType) {
+                viewModel.setType(false)
+                viewModel.model.set('leafFlag', '1')
+            } else {
+                viewModel.setType(true)
+                viewModel.model.set('leafFlag', '0')
+            }
+            $("#categoryType").data('kendoRadio').enable(false);
+
+        }
+	});
+
+</script>
+</body>
+</html>

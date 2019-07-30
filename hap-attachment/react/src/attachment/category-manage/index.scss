@@ -1,0 +1,17 @@
+.headerdiv {
+  margin-bottom: 10px;
+  a {
+    font-size: 15px;
+    color: #337ab7;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.active {
+  color: #777;
+  font-size: 15px;
+}

@@ -1,0 +1,64 @@
+<#include "../include/head.html">
+<style>
+    table {
+        width: 400px;
+        border-collapse: collapse;
+    }
+
+    td {
+        height: 27px;
+        border: 1px #cccccc solid;
+    }
+
+    span {
+        padding: 0 10px;
+    }
+
+    label {
+        font-weight: bold;
+        line-height: 18px;
+        height: 18px;
+        width: 80px;
+        display: inline-block;
+        padding: 0 10px;
+        vertical-align: middle;
+    }
+</style>
+<body style="padding: 3px; overflow: hidden;">
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            url    : '${base.contextPath}/job/trigger?triggerName=${RequestParameters.name}&triggerGroup=${RequestParameters.group}&triggerType=${RequestParameters.type}',
+            success: function (json) {
+                if (json.success) {
+                    var row = json.rows[0] || {};
+                    $("#triggerName").text(row.triggerName);
+                    $("#triggerGroup").text(row.triggerGroup);
+                    $("#cronExpression").text(row.cronExpression);
+                    $("#timeZoneId").text(row.timeZoneId);
+                }
+            }
+        });
+    });
+</script>
+
+<table>
+    <tr>
+        <td><label><@spring.message "crontriggerdto.triggername"/>:</label></td>
+        <td><span id="triggerName"></span></td>
+    </tr>
+    <tr>
+        <td><label><@spring.message "crontriggerdto.triggergroup"/>:</label></td>
+        <td><span id="triggerGroup"></span></td>
+    </tr>
+    <tr>
+        <td><label><@spring.message "crontriggerdto.cronexpression"/>:</label></td>
+        <td><span id="cronExpression"></span></td>
+    </tr>
+    <tr>
+        <td><label><@spring.message "crontriggerdto.timezoneid"/>:</label></td>
+        <td><span id="timeZoneId"></span></td>
+    </tr>
+</table>
+</body>
+</html> 

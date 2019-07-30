@@ -1,0 +1,182 @@
+<#-- 
+ * description: 执行记录
+ * version: 1.0 
+ * author:hailin.xu@hand-china.com 
+ * --> 
+<#include "../include/header.html">
+<body>
+  <script type="text/javascript">
+           var viewModel = kendo.observable({
+               model:{},
+               queryResource: function(e) {
+               $('#jobGrid').data('kendoGrid').dataSource.page(1);
+           }
+       });
+  </script>
+  <div id="page-content">
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input type="text"  data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "jobdetaildto.jobname"/>' data-bind="value:model.jobName" class="k-textbox"> 
+        <input type="text"  data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "jobdetaildto.jobgroup"/>' data-bind="value:model.jobGroup" class="k-textbox">
+        <input type="text"  data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "jobrunninginfodto.jobstatus"/>' data-bind="value:model.jobStatus" class="k-textbox">
+        <span class="btn btn-primary" style="float:left;width:70px;" data-bind="click:queryResource" type="submit"><i class="fa fa-search" style="margin-right:3px;"></i><@spring.message "hap.query"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="jobGrid"></div>
+    </div>
+  </div>
+
+	<script type="text/javascript">
+		$('#query-form input').keydown(function (e) {
+		    if (e.keyCode == 13) {
+		        e.target.blur();
+		        viewModel.queryResource(e);
+		    }
+		});
+          var crudServiceBaseUrl = '${base.contextPath}/job/jobinfo/query?sortname=scheduledFireTime&sortorder=desc',
+          dataSource = new kendo.data.DataSource({
+              transport: {
+                 read:  {
+                    url: crudServiceBaseUrl,
+                    type : "POST",
+                    dataType: "json"
+                }, 
+                parameterMap: function(options) {
+                    var map = viewModel.model.toJSON();
+                    map.page = options.page;
+                    map.pagesize = options.pageSize;
+                    for (var k in map) {
+                        if (map[k] === '' || map[k] === null || map[k] === undefined)
+                            delete map[k]
+                    }
+                    return map;
+                }
+             },
+             batch: true,
+             serverPaging : true,
+             pageSize: 20,
+             schema: {
+                 data:'rows',
+                 total:'total',
+                 model: {
+                     id: "jobName"
+                 }
+             }
+         }); 
+    
+     $("#jobGrid").kendoGrid({
+            dataSource: dataSource,
+            dataBound: function () {
+             if(parent.autoResizeIframe){
+                 parent.autoResizeIframe('${RequestParameters.functionCode!}')
+             }
+            },
+            navigatable: false,
+            resizable: true,
+            scrollable: true,
+            editable:false,
+            pageable: {
+                pageSizes:[5, 10, 20, 50],
+                refresh:true,
+                buttonCount:5
+            },
+            columns: [
+                {
+                	field: "jobName", 
+                	title: '<@spring.message "jobdetaildto.jobname"/>', 
+                	width: 150
+                },
+                { 
+                	field: "jobGroup",
+                	title: '<@spring.message "jobdetaildto.jobgroup"/>', 
+                	width: 100
+                },
+                {
+                    field: "ipAddress",
+                    title: '<@spring.message "jobdetaildto.executeip"/>',
+                    width: 140,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style  : "text-align: center"
+                    },
+                    attributes:{
+                        style  : "text-align: center"
+                    }
+                },
+                { 
+                	field: "jobStatus", 
+                	title: '<@spring.message "jobrunninginfodto.jobstatus"/>',
+                	width: 80,
+                    template: function (item) {
+                        if (item.jobStatus == 'Finish') {
+                            return "<span style='color:green;'>FINISH</span>"
+                        }
+                        if (item.jobStatus == 'Failed') {
+                            return "<span style='color:red;'>FAILED</span>"
+                        }
+                        if (item.jobStatus == 'Vetoed') {
+                            return "<span style='color:orange;'>VETOED</span>"
+                        }
+                        return item.jobStatus;
+                    }
+                },
+                { 
+                	field: "executionSummary", 
+                	title: '<@spring.message "jobrunninginfodto.executionsummary"/>', 
+                	width: 230
+                },
+                { 
+                	field: "previousFireTime", 
+                	title: '<@spring.message "jobrunninginfodto.previousfiretime"/>',
+                	width: 180 ,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                	    style  : "text-align: center"
+                	},
+                    attributes:{
+                        style  : "text-align: center"
+                    }
+                },
+                { 
+                	field:"scheduledFireTime",
+                	title:'<@spring.message "jobrunninginfodto.scheduledfiretime"/>',
+                	width:180,
+                    attributes:{
+                        style  : "text-align: center"
+                    },
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                	    style  : "text-align: center"
+                	}
+                },
+                {
+                	field: "nextFireTime",
+                	title: '<@spring.message "jobrunninginfodto.nextfiretime"/>',
+                	width:180,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                	    style  : "text-align: center"
+                	},
+                    attributes:{
+                        style  : "text-align: center"
+                    }
+                },
+                { 
+                	field: "fireTime", 
+                	title: '<@spring.message "jobrunninginfodto.firetime"/>', 
+                	width: 180,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                	    style  : "text-align: center"
+                	},
+                    attributes:{
+                        style  : "text-align: center"
+                    }
+                }
+            ]
+        });
+
+</script>
+</body>
+</html>

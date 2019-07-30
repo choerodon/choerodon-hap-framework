@@ -1,0 +1,61 @@
+<#include "../include/header.html">
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel('#grid', {});
+</script>
+<body>
+
+<div id="receiverGrid">
+
+</div>
+
+<script type="text/javascript">
+    var receiverDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: "${base.contextPath}/sys/message/messageReceiver?messageId=" + '${RequestParameters.messageId!}',
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                }
+            }
+        },
+        batch: true,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "receiverId",
+            }
+        }
+    });
+    var receiverGrid = $("#receiverGrid").kendoGrid({
+        dataSource: receiverDataSource,
+        navigatable: true,
+        height: 285,
+        sortable: true,
+        columns: [{
+            field: "messageType",
+            title: '<@spring.message "message.receivertype"/>',
+            width: 120,
+            template: function (dataItem) {
+                var type = dataItem.messageType;
+                if ("NORMAL" == type) {
+                    return '<@spring.message "message.receivers"/>';
+                } else if ("CC" == type) {
+                    return '<@spring.message "message.copyto"/>';
+                } else if ("BCC" == type) {
+                    return '<@spring.message "message.secretto"/>';
+                }
+            }
+        }, {
+            field: "messageAddress",
+            title: '<@spring.message "message.receiveraddress"/>',
+            width: 180,
+        },
+        ],
+    }).data("kendoGrid");
+</script>
+</body>
+</html>

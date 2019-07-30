@@ -1,0 +1,223 @@
+<#include "../include/head.html">
+<style>
+    #job_form td {
+        height: 27px;
+    }
+
+    #job_form label {
+        line-height: 18px;
+        height: 18px;
+        width: 120px;
+        display: inline-block;
+        padding: 0 10px;
+        vertical-align: middle;
+    }
+
+    #job_form input {
+        height: 18px;
+        width: 200px;
+
+    }
+
+    #job_form input[type="radio"] {
+        height: 18px;
+        width: 15px;
+        vertical-align: middle;
+        margin-right: 15px;
+    }
+
+    #job_form table {
+        width: 400px;
+    }
+
+    #job_form hr {
+        height: 1px;
+        border: none;
+        border-top: 1px solid #cccccc;
+    }
+
+</style>
+<body style="padding: 15px">
+<form id="mainform" method="post"
+      enctype="application/json;charset=UTF-8">
+</form>
+<script type="text/javascript">
+
+    $(function () {
+        function getFormJson(frm) {
+            var o = {};
+            var a = $(frm).serializeArray();
+            $.each(a, function () {
+                if (o[this.name] !== undefined) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+
+            return o;
+        }
+
+        function f_save() {
+            var form = document.getElementById('job_form');
+            var json = getFormJson(form);
+            $.ajax({
+                url    : form.action,
+                type   : "POST",
+                data   : json,
+                success: function (json) {
+                    Hap.defaultSuccessHandler({json: json});
+                },
+                error  : function () {
+                    $.ligerDialog.closeWaitting();
+                }
+            });
+        }
+
+        function f_cancel() {
+            var dialog = frameElement.dialog;
+            dialog.close();
+
+
+        }
+
+        //表单底部按钮
+        Hap.setFormDefaultBtn(f_cancel, f_save);
+
+        //$('#job_form').ligerForm();
+        $('.simple').hide();
+
+        $('input[type="radio"]').on('change', function (ipt) {
+            var current = ipt.currentTarget;
+            if (current.value == 'SIMPLE') {
+                $('.cron').hide();
+                $('.simple').show();
+            } else {
+                $('.cron').show();
+                $('.simple').hide();
+            }
+        });
+
+        $("#jobName").on('change', function () {
+            var val = $("#jobName").val();
+            if (val && !$("#triggerName").val()) {
+                $("#triggerName").val(val + "_trigger")
+            }
+        });
+    });
+
+</script>
+
+<form id="job_form" name="job_form" action="${base.contextPath}/job/create" method="post">
+    <table>
+        <tr>
+            <td><label for="jobName"><@spring.message "jobdetaildto.jobname"/>:</label></td>
+            <td>
+                <input id="jobName" name="jobName"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="jobgroup"><@spring.message "jobdetaildto.jobgroup"/>:</label></td>
+            <td>
+                <input id="jobGroup" name="jobGroup" value="DEFAULT"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="description"><@spring.message "jobdetaildto.description"/>
+                :</label></td>
+            <td>
+                <input id="description" name="description"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="jobClassName"><@spring.message "jobdetaildto.jobclassname"/>
+                :</label></td>
+            <td>
+                <input id="jobClassName" name="jobClassName"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="triggerType"><@spring.message "triggerdto.triggertype"/>:</label>
+            </td>
+            <td>
+                <label for="type_cron" style="width: auto;">Cron</label>
+                <input id="type_cron" name="triggerType" type="radio" value="CRON" checked="checked"/>
+                <label for="type_simple" style="width: auto;">Simple</label>
+                <input id="type_simple" name="triggerType" type="radio" value="SIMPLE"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="triggerName"><@spring.message "triggerdto.triggername"/>
+                :</label></td>
+            <td>
+                <input id="triggerName" name="triggerName"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="triggerGroup"><@spring.message "triggerdto.triggergroup"/>
+                :</label></td>
+            <td>
+                <input id="triggerGroup" name="triggerGroup" value="DEFAULT"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="startTime"><@spring.message "triggerdto.starttime"/>
+                :</label></td>
+            <td>
+                <input id="startTime" name="startTime"/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="endTime"><@spring.message "triggerdto.endtime"/>
+                :</label></td>
+            <td>
+                <input id="endTime" name="endTime"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr/>
+            </td>
+        </tr>
+        <tr class="cron">
+            <td><label for="cronExpression"><@spring.message "crontriggerdto.cronexpression"/>
+                :</label></td>
+            <td>
+                <input id="cronExpression" name="cronExpression" value="0 * * * * ?"/>
+            </td>
+        </tr>
+        <tr class="cron">
+            <td></td>
+            <td>
+                <span><@spring.message "crontriggerdto.period"/></span>
+            </td>
+        </tr>
+        <tr class="simple">
+            <td><label
+                    for="repeatInterval"><@spring.message "simpletriggerdto.repeatinterval"/>
+                :</label></td>
+            <td>
+                <input id="repeatInterval" name="repeatInterval"/>
+            </td>
+        </tr>
+        <tr class="simple">
+            <td><label for="repeatCount"><@spring.message "simpletriggerdto.repeatcount"/>
+                :</label></td>
+            <td>
+                <input id="repeatCount" name="repeatCount"/>
+            </td>
+        </tr>
+    </table>
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
+</form>
+</body>
+</html>

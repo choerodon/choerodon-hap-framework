@@ -1,0 +1,31 @@
+import { $l } from '@choerodon/boot';
+
+export default {
+  primaryKey: 'serverId',
+  queryUrl: '/sys/application/app/detail',
+  pageSize: 5,
+  fields: [
+    { name: 'serverId', type: 'number', label: 'server ID' },
+    { name: 'code', type: 'string', label: $l('server.code') },
+    { name: 'name', type: 'string', label: $l('server.name') },
+    { name: 'domainUrl', type: 'string', label: $l('server.domainurl') },
+    { name: 'serviceType', type: 'string', label: $l('server.servicetype') },
+    { name: 'enableFlag', type: 'string', label: $l('hap.enableflag') },
+    { name: 'mappingUrl', type: 'string', label: $l('api.server.mappingurl') },
+    { name: 'namespace', type: 'string', label: $l('api.server.namespace') },
+    { name: 'publishType', type: 'string', label: $l('api.server.type') },
+    { name: 'authType', type: 'string', label: $l('interface.authtype') },
+    { name: 'grantType', type: 'string', label: $l('interface.granttype') },
+    { name: 'accessTokenUrl', type: 'string', label: $l('interface.accesstokenurl') },
+    { name: 'clientId', type: 'string', label: $l('oauth2clientdetails.clientid') },
+    { name: 'clientSecret', type: 'string', label: $l('oauth2clientdetails.clientsecret') },
+    { name: 'authUsername', type: 'string', label: $l('interface.checkusername') },
+    { name: 'authPassword', type: 'string', label: $l('interface.checkpassword') },
+    { name: 'scope', type: 'string', label: 'scope' },
+    { name: 'elementFormDefault', type: 'string', label: $l('server.elementformdefault') },
+    { name: 'wssPasswordType', type: 'string', label: $l('server.wsspasswordtype') },
+    { name: 'username', type: 'string', label: $l('interface.checkusername') },
+    { name: 'password', type: 'string', label: $l('interface.checkpassword') },
+    { name: 'importUrl', type: 'string', label: $l('server.importurl') },
+  ],
+};

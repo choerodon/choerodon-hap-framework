@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.iam.infra.mapper.PermissionMapper">
+
+    <resultMap id="PermissionDTO" type="io.choerodon.hap.iam.infra.dto.PermissionDTO">
+        <id column="id" property="id"/>
+        <result property="within" column="is_within" jdbcType="BOOLEAN"/>
+        <result property="publicAccess" column="is_public_access" jdbcType="BOOLEAN"/>
+        <result property="loginAccess" column="is_login_access" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="checkPermission" resultType="String">
+        select distinct t2.code
+        from
+        ( select ip.code
+        from iam_permission ip
+        inner join iam_role_permission irp on ip.id = irp.permission_id
+        inner join (
+        select distinct imr.role_id
+        from iam_member_role imr
+        inner join iam_role ir
+        on imr.role_id = ir.id
+        and ir.is_enabled = 1
+        and imr.member_type = 'user'
+        where imr.member_id = #{memberId}
+        and imr.role_id in
+        <foreach collection="memberRoleIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ) t1
+        on t1.role_id = irp.role_id
+        union
+        select ip1.code
+        from iam_permission ip1
+        where ip1.is_login_access = 1
+        or ip1.is_public_access = 1) t2
+        <where>
+            <if test="codes != null and !codes.isEmpty()">
+                and t2.code in
+                <foreach collection="codes" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByRoleId" resultMap="PermissionDTO">
+        SELECT iam_permission.*
+        FROM iam_role_permission
+        INNER JOIN iam_permission
+        ON iam_role_permission.permission_id = iam_permission.id
+        WHERE iam_role_permission.role_id = #{roleId}
+        <if test="params != null">
+            AND (
+            iam_permission.code LIKE concat(concat('%', #{params), '%') OR
+            iam_permission.description LIKE concat(concat('%', #{params), '%')
+            )
+        </if>
+    </select>
+
+
+</mapper>

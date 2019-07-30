@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.system.mapper.UserDashboardMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.system.dto.UserDashboard">
+        <id column="USER_DASHBOARD_ID" property="userDashboardId" jdbcType="DECIMAL" />
+        <result column="DASHBOARD_ID" property="dashboardId" jdbcType="DECIMAL" />
+        <result column="DASHBOARD_CODE" property="dashboardCode" jdbcType="VARCHAR" />
+        <result column="DASHBOARD_URL" property="dashboardUrl" jdbcType="VARCHAR" />
+        <result column="DASHBOARD_SEQUENCE" property="dashboardSequence" jdbcType="DECIMAL"/>
+        <result column="TITLE" property="dashboardTitle" jdbcType="VARCHAR" />
+        <result column="URL" property="dashboardUrl" jdbcType="VARCHAR" />
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectMyDashboardConfig" parameterType="io.choerodon.hap.system.dto.UserDashboard" resultMap="BaseResultMap">
+        SELECT SUD.USER_DASHBOARD_ID,SDB.ENABLED_FLAG,SUD.DASHBOARD_ID,SUD.DASHBOARD_SEQUENCE, SDB.DASHBOARD_CODE, RES.URL, SDTL.TITLE
+        FROM SYS_DASHBOARD_B SDB
+        LEFT JOIN SYS_DASHBOARD_TL SDTL ON SDB.DASHBOARD_ID = SDTL.DASHBOARD_ID AND SDTL.LANG = #{request.locale,jdbcType=VARCHAR}
+        LEFT JOIN SYS_RESOURCE_B RES  ON SDB.RESOURCE_ID = RES.RESOURCE_ID
+        LEFT JOIN SYS_USER_DASHBOARD SUD ON SUD.DASHBOARD_ID = SDB.DASHBOARD_ID
+        <where>
+           SUD.USER_ID  = #{request.userId,jdbcType=DECIMAL}
+            <if test="enabledFlag != null">
+                AND SDB.ENABLED_FLAG = #{enabledFlag,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY SUD.DASHBOARD_SEQUENCE ASC
+    </select>
+
+</mapper>

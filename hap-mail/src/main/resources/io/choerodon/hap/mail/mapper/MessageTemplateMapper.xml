@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.mail.mapper.MessageTemplateMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.mail.dto.MessageTemplate"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="TEMPLATE_ID" property="templateId" jdbcType="DECIMAL"/>
+        <result column="ACCOUNT_ID" property="accountId" jdbcType="DECIMAL"/>
+        <result column="TEMPLATE_CODE" property="templateCode" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_TYPE" property="templateType" jdbcType="VARCHAR"/>
+        <result column="PRIORITY_LEVEL" property="priorityLevel" jdbcType="VARCHAR"/>
+        <result column="SUBJECT" property="subject" />
+        <result column="CONTENT" property="content" />
+        <result column="SEND_TYPE" property="sendType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectMessageTemplates" resultMap="BaseResultMap" parameterType="io.choerodon.hap.mail.dto.MessageTemplate">
+        SELECT SMT.TEMPLATE_ID,
+        SMT.ACCOUNT_ID,
+        (SELECT SMEA.USER_NAME
+        FROM SYS_MESSAGE_EMAIL_ACCOUNT SMEA
+        WHERE SMEA.ACCOUNT_ID=SMT.ACCOUNT_ID) USERNAME,
+        SMT.TEMPLATE_CODE,
+        SMT.DESCRIPTION,
+        SMT.TEMPLATE_TYPE,
+        SMT.PRIORITY_LEVEL,
+        SMT.SUBJECT, SMT.CONTENT,
+        SMT.SEND_TYPE,SMT.OBJECT_VERSION_NUMBER
+        FROM SYS_MESSAGE_TEMPLATE SMT
+        <where>
+            <if test="templateId != null">
+                AND SMT.TEMPLATE_ID = #{templateId,jdbcType=DECIMAL}
+            </if>
+            <if test="templateCode != null">
+                AND SMT.TEMPLATE_CODE LIKE CONCAT('%',CONCAT(#{templateCode,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="templateType != null">
+                AND SMT.TEMPLATE_TYPE = #{templateType,jdbcType=VARCHAR}
+            </if>
+            <if test="description != null">
+                AND SMT.DESCRIPTION LIKE CONCAT('%',CONCAT(#{description,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY SMT.TEMPLATE_ID DESC
+    </select>
+
+    <select id="selectByCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT *
+    FROM SYS_MESSAGE_TEMPLATE
+    WHERE TEMPLATE_CODE = #{templateCode,jdbcType=VARCHAR}
+  </select>
+    <select id="getMsgTemByCode" resultMap="BaseResultMap">
+        SELECT
+        *
+        FROM SYS_MESSAGE_TEMPLATE TEM
+        <where>
+            <if test="templateCode != null">
+                TEM.TEMPLATE_CODE = #{templateCode,jdbcType=VARCHAR}
+            </if>
+            <if test="templateId != null">
+                AND TEM.TEMPLATE_ID != #{templateId, jdbcType=DECIMAL}
+            </if>
+        </where>
+    </select>
+</mapper>

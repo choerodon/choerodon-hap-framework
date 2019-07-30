@@ -1,0 +1,31 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+**/out
+overlays/
+
+# Mac
+.DS_Store
+
+# Maven
+**/target
+**/*.log
+**/*.tmp
+
+# frontend
+node_modules
+package-lock.json
+**/lib/dist/
+**/lib/assets/
+**/lib/fonts/
+
+/liquibase
+/temp
+
+**/imageUploadFiles

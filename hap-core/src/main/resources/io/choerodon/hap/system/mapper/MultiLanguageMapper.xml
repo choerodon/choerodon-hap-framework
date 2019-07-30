@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.system.mapper.MultiLanguageMapper" >
+   <resultMap id="BaseResultMap" type="io.choerodon.mybatis.annotation.MultiLanguageField" >
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+    <result column="LANG_CODE" property="langCode" jdbcType="VARCHAR" />
+    <result column="VALUE" property="value" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <select id="select" resultMap="BaseResultMap"  parameterType="map" >
+  select sl.description, sl.lang_code, tl.value
+  from sys_lang_b sl
+  left join (select t.lang as lang_code, t.${tlName} as value from ${table} t where t.${idName} = #{id,jdbcType=DECIMAL}) tl
+    on tl.lang_code = sl.lang_code order by sl.lang_code asc
+  </select>
+</mapper>

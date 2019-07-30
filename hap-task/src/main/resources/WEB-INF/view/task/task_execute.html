@@ -1,0 +1,222 @@
+<#include "../include/header.html" />
+<script src="${base.contextPath}/common/code?taskType=TASK.TYPE" type="text/javascript"></script>
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel("#grid",{
+        taskType: taskType,
+    });
+</script>
+<body>
+<div id="page-content">
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "taskdetail.code"/>'
+               data-bind="value:model.code" class="k-textbox">
+        <input type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "taskdetail.name"/>'
+               data-bind="value:model.name" class="k-textbox">
+        <select data-role="combobox" data-value-primitive="true" placeholder='<@spring.message "taskdetail.type"/>'
+                data-text-field="meaning" data-value-field="value"
+                data-bind="source: taskType,value: model.type" style="width:150px;margin-right:5px;">
+        </select>
+        <span class="btn btn-primary" style="width:70px" data-bind="click:query" type="submit"><@spring.message "hap.query"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="grid"></div>
+    </div>
+    <div id="executeForm"></div>
+    <div id="taskExecutionDetail"></div>
+    <div id="groupExecutionDetail"></div>
+</div>
+
+<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+    var BaseUrl = _basePath;
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/sys/task/detail/executeQuery",
+                type: "POST",
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "taskId",
+                fields: {}
+            }
+        }
+    });
+
+    $("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        editable: false,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "taskdetail.code"/>',
+                width: 80,
+            },{
+                field: 'name',
+                title: '<@spring.message "taskdetail.name"/>',
+                width: 80
+            }, { field: "type",
+                title: '<@spring.message "taskdetail.type"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    var v = dataItem.type ? dataItem.type : "";
+                    $.each(taskType, function (i, n) {
+                        if ((n.value || '').toLowerCase() == (v || '').toLowerCase()) {
+                            v = n.meaning;
+                            return v;
+                        }
+                    })
+                    return v;
+                },
+            }, {
+                field: "description",
+                title: '<@spring.message "taskdetail.description"/>',
+                width: 120
+            }, {
+                title: '<@spring.message "hap.action"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                template: function (rowdata) {
+                    if (!!rowdata.taskId) {
+                        return Hap.createAnchor('<@spring.message "task.execute"/>', executionTask,
+                            rowdata.type, rowdata.taskId, rowdata.ids);
+                    }
+                    return '';
+                }
+            }
+        ],
+    });
+
+    function executionTask(type, taskId, ids) {
+        var url = "${base.contextPath}/task/task_execute_form.html?taskId=" + taskId ;
+        if (type == "GROUP"){
+            url = url + "&ids=" + ids;
+        }
+        var execute = Hap.createWindow('#executeForm', {
+            width: '90%',
+            height: 500,
+            title: '<@spring.message "task.execute.form"/>',
+            url: url
+        });
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 600, function () {
+                execute.center().open();
+            })
+        } else {
+            execute.center().open();
+        }
+    }
+
+    function resultView(code, type) {
+        kendo.ui.showInfoDialog({
+            title: '提示',
+            message: '<@spring.message "task.execution.executionnumber"/>' + ": " + code[0],
+            buttons: [
+                {
+                    text: '<@spring.message "task.execution.show"/>',
+                    type: 'primary',
+                    click: function (e) {
+
+                        if('GROUP' == type) {
+                            var url = 'task_execution_group.html';
+                            url += '?executionId=' + code[1];
+                            title = '<@spring.message "task.group.detail"/>';
+                            win = '#groupExecutionDetail';
+                            var executeDetail = Hap.createWindow(win, {
+                                width: '80%',
+                                height: 500,
+                                title: title,
+                                url: url
+                            });
+                            if (parent.autoResizeIframe) {
+                                parent.autoResizeIframe('${RequestParameters.functionCode!}', 600, function () {
+                                    executeDetail.center().open();
+                                })
+                            } else {
+                                executeDetail.center().open();
+                            }
+                        }else{
+                            taskExecutionDetail( code[1]);
+                        }
+
+                        e.dialog.destroy();
+                    }
+                }, {
+                    text: '<@spring.message "task.execution.continue"/>',
+                    click: function (e) {
+                        e.dialog.destroy();
+                    }
+                },
+            ]
+        });
+    }
+
+
+    function taskExecutionDetail(executionId , groupExecutionNumber) {
+        var url = "${base.contextPath}/task/task_execution_detail.html?executionId=" + executionId;
+        if (groupExecutionNumber){
+            url = url + "&groupExecutionNumber="+groupExecutionNumber;
+        }
+        var detail = $("#taskExecutionDetail").kendoWindow({
+            resizable: false,
+            width: '80%',
+            height:500,
+            title: false,
+            content: url,
+            iframe: true,
+            visible: false,
+            modal: true,
+        }).data("kendoWindow");
+
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 600, function () {
+                detail.center().open();
+            })
+        } else {
+            detail.center().open();
+        }
+    }
+
+</script>
+</body>
+</html>

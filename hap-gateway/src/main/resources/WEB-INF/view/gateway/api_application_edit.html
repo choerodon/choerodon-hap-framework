@@ -1,0 +1,521 @@
+<#include "../include/header.html" />
+<script type="text/javascript">
+    function isString(str){
+        return (typeof str=='string')&&str.constructor==String;
+    }
+    var changeServerData = "";
+    var viewModel = kendo.observable({
+        model: {
+            isEnabled: <#if RequestParameters.applicationId??> false <#else> true </#if>,
+            clientEnabled:false,
+            enabledFlag: 'Y',
+            client:{},
+        },
+        create: function () {
+            //$('#appSvcGrid').data('kendoGrid').addRow();
+            openWindow();
+        },
+        save: function () {
+            if (validator.validate()) {
+                viewModel.model.__status = <#if RequestParameters.applicationId??> 'update' <#else> 'add'</#if>;
+                if (viewModel.model.client.authorizedGrantTypes != null && !isString(viewModel.model.client.authorizedGrantTypes)) {
+                    var authorizedGrantTypes = viewModel.model.client.authorizedGrantTypes.join(",");
+                    viewModel.model.client.set("authorizedGrantTypes", authorizedGrantTypes);
+                }
+                if(dataSource.data()){
+                    var idLists = "";
+                    dataSource.data().map(function (i,v) {
+                        idLists = idLists +i.code+","
+                    })
+                    viewModel.model.client.set('scope',idLists.substring(0,idLists.length-1));
+                }
+
+               //if(undefined == viewModel.model.servers.interfaces) {
+                    viewModel.set("model.servers", dataSource.data());
+              //  }
+
+                Hap.submitForm({
+                    url: '${base.contextPath}/sys/application/app/submit',
+                    formModel: viewModel.model,
+                    // grid: {"servers": $("#appSvcGrid")},
+                    success: function (data) {
+                        window.parent.viewModel.refresh();
+                        closeWin();
+                    }
+                });
+            }
+        },
+        close: function () {
+            closeWin();
+        },
+        remove:function(){
+            var checked = appSvcGrid.selectedDataItems();
+            if (appSvcGrid.selectedDataItems().length) {
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('hap.tip.delete_confirm')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        var destroyed = [];
+                        $.each(checked, function (i, v) {
+                            appSvcGrid.dataSource.remove(v)
+                        })
+                    }
+                })
+            }
+        }
+    });
+
+
+    <#if RequestParameters.applicationId??>
+    $(document).ready(function() {
+            $.ajax({
+                url: '${base.contextPath}/sys/application/app/${RequestParameters.applicationId}/detail',
+                type: 'POST',
+                success: function (args) {
+                    var a0 = args.rows[0] || {};
+                    for (var k in a0) {
+                        viewModel.model.set(k, a0[k]);
+                    }
+                    var authorized = viewModel.model.client.get("authorizedGrantTypes");
+                    if (authorized) {
+                        viewModel.model.client.set("authorizedGrantTypes", authorized.split(","));
+                    }
+                    dataSource.data(viewModel.model.get("servers"));
+                }
+            });
+        })
+    <#else>
+    $.ajax({
+        type: 'POST',
+        url: "${base.contextPath}/sys/application/app/generatorClientInfo",
+        success: function (data) {
+            viewModel.model.set("client.clientId",data.clientId);
+            viewModel.model.set("client.clientSecret", data.clientSecret);
+        }
+    });
+    </#if>
+
+    function closeWin() {
+        window.parent.$('#appWindow').data("kendoWindow").close();
+    }
+    function closeSvrWin(){
+        $('#serverWin').data("kendoWindow").close();
+    }
+    var SvrViewModel = Hap.createGridViewModel("#svrGrid",{
+        model: {}
+    });
+</script>
+<body>
+<div id="content-container">
+    <div id="page-content" >
+        <form class="form-horizontal" >
+            <div id="form">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4  control-label" style="text-align: right"><@spring.message "api.application.code"/></label>
+                            <div class="col-xs-7">
+                                <input id="code" name="code" type="text" data-bind="enabled: model.isEnabled, value:model.code" data-role="maskedtextbox"
+                                       style="width: 100%;" required data-label="<@spring.message 'api.application.code'/>">
+                                <script>kendo.bind($('#code'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-3 control-label" style="text-align: right"><@spring.message "api.application.name"/></label>
+                            <div class="col-xs-7">
+                                <input id="name" name="name" type="text" data-role="maskedtextbox"
+                                       data-bind="value:model.name" style="width: 100%;"
+                                       required data-label="<@spring.message 'api.application.name'/>">
+                                <script>
+                                    kendo.bind($('#name'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label" style="text-align: right"><@spring.message "oauth2clientdetails.clientid"/></label>
+                            <div class="col-xs-7">
+                                <input id="clientid" name="clientid" type="text"
+                                       data-bind="enabled: model.clientEnabled,value:model.client.clientId" style="width: 100%;" data-role="maskedtextbox">
+                                <script>
+                                    kendo.bind($('#clientid'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6" style="height: 45px; overflow: hidden">
+                        <div class="form-group">
+                            <label class="col-xs-3 control-label" style="text-align: right"><@spring.message "oauth2clientdetails.clientsecret"/></label>
+                            <div class="col-xs-7">
+                                <input id="clientsecret" name="clientsecret" type="text" data-role="maskedtextbox"
+                                       data-bind="enabled: model.clientEnabled,value:model.client.clientSecret" style="width: 100%;" >
+                                <script>
+                                    kendo.bind($('#clientsecret'), viewModel);
+                                </script>
+                            </div>
+                            <div class="col-sm-2 form-group "   style="line-height: 30px">
+                                <a title="<@spring.message 'oauth2clientdetails.updatepasswd'/>" href="javascript:updatePassword()">
+                                    <i class="fa fa-refresh" aria-hidden="true"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message "oauth2clientdetails.accesstokenvalidity"/></label>
+                            <div class="col-xs-7">
+                                <input style="width:100%" id="accessTokenValidity" name="accessTokenValidity"
+                                       data-bind="value:model.client.accessTokenValidity"
+                                       onkeyup='this.value=this.value.replace(/\D/gi,"")' type="number">
+                                <script>
+                                    $("#accessTokenValidity").kendoNumericTextBox({
+                                        format: "0",
+                                        min: 0,
+                                        placeholder: "<@spring.message 'oauth2clientdetails.refreshvaliditydescribe'/>",
+                                    });
+                                    kendo.bind($('#accessTokenValidity'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-3 control-label"><@spring.message
+                                "oauth2clientdetails.refreshtokenvalidity"/></label>
+                            <div class="col-xs-7">
+                                <input style="width:100%" id="refreshTokenValidity" name="refreshTokenValidity"
+                                       data-bind="value:model.client.refreshTokenValidity"
+                                       onkeyup='this.value=this.value.replace(/\D/gi,"")' type="number">
+                                <script>
+                                    $("#refreshTokenValidity").kendoNumericTextBox({
+                                        format: "0",
+                                        min: 0,
+                                        placeholder: "<@spring.message 'oauth2clientdetails.refreshvaliditydescribe'/>",
+                                    });
+                                    kendo.bind($('#refreshTokenValidity'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2  control-label" style="text-align: right"><@spring.message "oauth2clientdetails.redirecturi"/></label>
+                            <div class="col-xs-9">
+                                <input id="redirecturi" name="redirecturi" type="text" data-bind="value:model.client.redirectUri" data-role="maskedtextbox" style="width: 100%;"
+                                        data-label="<@spring.message 'oauth2clientdetails.redirecturi'/>">
+                                <script>kendo.bind($('#redirecturi'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.granttypes"/></label>
+                            <div class="col-sm-9">
+                                <select required style="width:100%" id="multiselect"
+                                        data-label="<@spring.message 'oauth2clientdetails.granttypes'/>"
+                                        data-bind="value:model.client.authorizedGrantTypes"></select>
+                                <script>
+                                    $("#multiselect").kendoMultiSelect({
+                                        dataSource: {
+                                            data: ["implicit", "client_credentials", "password", "authorization_code", "refresh_token"]
+                                        }
+                                    });
+                                    kendo.bind($('#multiselect'), viewModel);
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group"  >
+                        <div class="col-xs-2" style="text-align: right">
+                            <label class="control-label"><@spring.message "api.applicationserver.serverlist"/></label>
+                        </div>
+                        <div class="col-xs-9">
+                            <div class="pull-left" id="toolbar-btn" style="padding-bottom:15px;">
+                                <span id="addGrid" data-bind="click:create" type="button" class="btn btn-default k-grid-add" style="float:left;margin-right:5px">
+                                    <i class="fa fa-plus-square" style="margin-right:3px;"></i>
+                                    <@spring.message "api.server.binding"/>
+                                </span>
+                                <span id="deleteGrid" data-bind="click:remove" class="btn btn-danger" style="float:left;">
+                                    <i class="fa fa-trash-o" style="margin-right:3px;"></i><@spring.message "api.server.unbinding"/>
+                                </span>
+                            </div>
+                            <div style="clear:both;">
+                                <div id="appSvcGrid" style="width: 100%;"></div>
+                            </div>
+                            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+    <div class="text-right k-window-toolbar" id="gridToolbar">
+        <span class="btn btn-primary" style="margin-right: 10px"  data-bind="click:save"> <@spring.message "hap.save"/></span>
+        <span class="btn btn-default" data-bind="click:close" type="button"  ><@spring.message "hap.cancel"/></span>
+    </div>
+    <script>kendo.bind($('#gridToolbar'), viewModel);</script>
+    <div id="serverWin" >
+        <div id="content-container-svr">
+            <div id="page-content-svr">
+                <div style="clear:both">
+                    <div id="svrGrid" style="clear: both"></div>
+                </div>
+                <div class="pull-right" id="toolbar-btn-svr" style="padding-top:10px;">
+                    <span onclick="saveData()" class="btn btn-primary"><@spring.message "hap.confirm"/></span>
+                    <span onclick="closeSvrWin()" class="btn btn-default"><@spring.message "hap.cancel"/></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="editInterface"></div>
+<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+    var validator = $("#form").kendoValidator({
+        invalidMessageType : "tooltip"
+    }).data("kendoValidator");
+
+    var editWin = $("#serverWin").kendoWindow({
+        actions: ["Close"],
+        title: '<@spring.message "hap.edit"/>',
+        draggable: true,
+        width: 700,
+        height: 350,
+        resizable: false,
+        modal: true,
+        visible: false
+    }).data("kendoWindow");
+
+    function openWindow() {
+        modalDataSource.read();
+        editWin.center().open();
+    }
+
+    function saveData() {
+        var checked = svgGrid.selectedDataItems();
+        if (checked.length) {
+            $.each(checked, function (i, v) {
+                appSvcGrid.dataSource.add(v);
+            })
+        }
+        $("#serverWin").data("kendoWindow").close();
+    }
+
+
+    var dataSource = new kendo.data.DataSource({
+        transport: {
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                }
+            }
+        },
+        batch: true,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "code",
+//                fields: {
+//                    enableFlag:{defaultValue: 'Y',type: 'boolean',checkedValue:'Y',uncheckedValue:'N'}
+//                }
+            }
+        },
+    });
+
+    var appSvcGrid = $("#appSvcGrid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        height: '200px',
+        selectable: 'multiple, rowbox',
+        autoBind: false,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        columns: [
+            {
+                title:'<@spring.message "hap.action"/>',
+                width : 90,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                template: function (rowdata) {
+                    if (!!rowdata.uid) {
+                        return Hap.createAnchor('<@spring.message "hap.edit"/>', openEditAccessLimitWindow, rowdata.uid, rowdata.serverId);
+                    }
+                    return '';
+                }
+            }, {
+                field: "code",
+                title: '<@spring.message "server.code"/>',
+                width: 150
+            }, {
+                field: "name",
+                title: '<@spring.message "server.name"/>',
+                width: 150
+            }, {
+                field: "enableFlag",
+                title: '<@spring.message "interface.enableflag"/>',
+                width: 50,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+            },
+        ],
+        editable: false,
+    }).data("kendoGrid");
+
+    function openEditAccessLimitWindow(uid, serverId) {
+        var servers = appSvcGrid.dataSource.data();
+        var needSelect = true;
+
+        if(undefined !=servers) {
+            servers.forEach(function (value) {
+                if (value.uid == uid) {
+                    needSelect = null == value.interfaces;
+                }
+            });
+        }
+        var url = "api_access_limit.html" + "?serverId="+serverId
+            + "&clientId="
+            + viewModel.model.client.clientId
+            + "&uid=" + uid
+            + "&needSelect=" + needSelect;
+
+        var interfaceEditWin = Hap.createWindow('#editInterface', {
+            width: "90%",
+            height:"500px",
+            title: '<@spring.message "api.server.accesslimit"/>',
+            url: url
+        })
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 400, function () {
+                interfaceEditWin.center().open();
+            })
+        } else {
+            interfaceEditWin.center().open();
+        }
+    }
+
+    var svrUrl = "${base.contextPath}/sys/application/app",
+        modalDataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: svrUrl + "/fetchNotServer",
+                    type: "POST",
+                    dataType: "json",
+                    //contentType: 'application/json',
+                },
+                parameterMap: function (options, type) {
+                    if (type === "read") {
+                        if(dataSource.data()){
+                            var idLists = "";
+                            dataSource.data().map(function (i,v) {
+                                idLists = idLists +i.code+","
+                            })
+                            SvrViewModel.model.set('exitsCodes',idLists.substring(0,idLists.length-1));
+                        }
+                        return Hap.prepareQueryParameter(SvrViewModel.model.toJSON(), options);
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "serverId",
+//                    fields: {
+//                        enableFlag:{defaultValue: 'Y',type: 'boolean',checkedValue:'Y',uncheckedValue:'N'}
+//                    }
+                }
+            }
+        });
+
+    var svgGrid = $("#svrGrid").kendoGrid({
+        dataSource: modalDataSource,
+        navigatable: false,
+        height: '290px',
+        resizable: true,
+        scrollable: true,
+        autoBind: false,
+        selectable: 'multiple, rowbox',
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "server.code"/>',
+                width: 120
+            },
+            {
+                field: "name",
+                title: '<@spring.message "server.name"/>',
+                width: 120
+            },
+            /* 是否有效 */
+            {
+                field: "enableFlag",
+                title: '<@spring.message "interface.enableflag"/>',
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                width: 80
+            },
+        ],
+        editable: false,
+        dataBound: function () {
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+
+    }).data("kendoGrid");
+
+    var id = '${RequestParameters.id!0}';
+    var updatePassword = function(){
+        kendo.ui.showConfirmDialog({
+            title: '<@spring.message "hap.tip.info"/>',
+            message: '<@spring.message "oauth2clientdetails.resetpasswd"/>'
+        }).done(function (e) {
+            if(e.button == "OK") {
+                $.ajax({
+                    type: 'POST',
+                    url: "${base.contextPath}/common/generator/uuid",
+                    data: "id=" + id,
+                    success: function (data) {
+                        viewModel.model.set("client.clientSecret", data);
+                    }
+                });
+            }
+        });
+    };
+</script>
+</body>
+</html>

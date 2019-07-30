@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.FunctionResourceMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.FunctionResource"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="FUNC_SRC_ID" property="funcSrcId" jdbcType="DECIMAL"/>
+        <result column="FUNCTION_ID" property="functionId" jdbcType="DECIMAL"/>
+        <result column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        FUNC_SRC_ID, FUNCTION_ID, RESOURCE_ID
+    </sql>
+
+    <delete id="deleteByResource" parameterType="io.choerodon.hap.function.dto.Resource">
+        DELETE FROM SYS_FUNCTION_RESOURCE
+        WHERE RESOURCE_ID = #{resourceId,jdbcType=DECIMAL}
+    </delete>
+
+    <delete id="deleteByFunctionId" parameterType="java.lang.Long">
+        DELETE FROM SYS_FUNCTION_RESOURCE
+        WHERE FUNCTION_ID = #{functionId,jdbcType=DECIMAL}
+    </delete>
+
+    <delete id="deleteFunctionResource">
+        DELETE FROM SYS_FUNCTION_RESOURCE
+        WHERE FUNCTION_ID = #{functionId} AND RESOURCE_ID = #{resourceId}
+    </delete>
+</mapper>

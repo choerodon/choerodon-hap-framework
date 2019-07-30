@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.task.mapper.TaskDetailMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.task.dto.TaskDetail">
+        <result column="TASK_ID" property="taskId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="TYPE" property="type" jdbcType="VARCHAR" />
+        <result column="TASK_CLASS" property="taskClass" jdbcType="VARCHAR" />
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+        <result column="IDS" property="ids" jdbcType="VARCHAR" />
+        <result column="START_DATE" property="startDate" jdbcType="DATE" />
+        <result column="END_DATE" property="endDate" jdbcType="DATE" />
+        <collection property="parameterConfigs" javaType="ArrayList" ofType="io.choerodon.hap.system.dto.ParameterConfig">
+            <id property="parameterId" column="PARAMETER_ID" jdbcType="DECIMAL"/>
+            <result column="PARAM_CODE" property="code" jdbcType="VARCHAR"/>
+            <result column="TARGET_ID" property="targetId" jdbcType="DECIMAL"/>
+            <result column="DISPLAY" property="display" jdbcType="VARCHAR"/>
+            <result column="TABLE_FIELD_NAME" property="tableFieldName" jdbcType="VARCHAR"/>
+            <result column="TITLE" property="title" jdbcType="VARCHAR"/>
+            <result column="PARAM_DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+            <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+            <result column="COLUMN_NUMBER" property="columnNumber" jdbcType="VARCHAR"/>
+            <result column="DISPLAY_LENGTH" property="displayLength" jdbcType="VARCHAR"/>
+            <result column="LABEL_WIDTH" property="labelWidth" jdbcType="INTEGER"/>
+            <result column="DATA_LENGTH" property="dataLength" jdbcType="VARCHAR"/>
+            <result column="REQUIRED" property="required" jdbcType="VARCHAR"/>
+            <result column="READ_ONLY" property="readOnly" jdbcType="VARCHAR"/>
+            <result column="ENABLED" property="enabled" jdbcType="VARCHAR"/>
+            <result column="SOURCE_CODE" property="sourceCode" jdbcType="VARCHAR"/>
+            <result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR"/>
+            <result column="SOURCE_NAME" property="sourceName" jdbcType="VARCHAR"/>
+            <result column="DEFAULT_TYPE" property="defaultType" jdbcType="VARCHAR"/>
+            <result column="DEFAULT_VALUE" property="defaultValue" />
+            <result column="DEFAULT_TEXT" property="defaultText" jdbcType="VARCHAR"/>
+            <result column="EXTRA_ATTRIBUTE" property="extraAttribute" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <sql id="taskDetailSql">
+        TD.TASK_ID,
+        TD.CODE,
+        TDTL.NAME,
+        TD.TYPE,
+        TD.TASK_CLASS,
+        TDTL.DESCRIPTION,
+        TD.IDS,
+        TD.START_DATE,
+        TD.END_DATE
+    </sql>
+
+    <select id="queryChildrenByPrimaryKey"  parameterType="java.util.List" resultMap="BaseResultMap">
+        select
+        <include refid="taskDetailSql" />
+        from SYS_TASK_DETAIL_B TD
+        LEFT OUTER JOIN SYS_TASK_DETAIL_TL TDTL
+        ON ( TDTL.TASK_ID = TD.TASK_ID AND  TDTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            TD.TASK_ID in
+            <foreach collection="idList" index="index" item="item" open="(" separator="," close=")" >
+                #{item}
+            </foreach>
+        </where>
+        order by TD.TASK_ID
+    </select>
+
+    <select id="queryUnboundTasks"  resultMap="BaseResultMap">
+        select
+        <include refid="taskDetailSql" />
+        from SYS_TASK_DETAIL_B TD
+        LEFT OUTER JOIN SYS_TASK_DETAIL_TL TDTL
+        ON ( TDTL.TASK_ID = TD.TASK_ID AND  TDTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            TYPE = 'TASK'
+            <if test="idList != null and idList.size > 0">
+                AND TD.TASK_ID not in
+                <foreach collection="idList" index="index" item="item" open="(" separator="," close=")" >
+                    #{item}
+                </foreach>
+            </if>
+            <if test="taskDetail.code!=null">
+                AND TD.CODE LIKE concat('%', concat(#{taskDetail.code,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="taskDetail.name!=null">
+                AND TD.NAME LIKE concat('%', concat(#{taskDetail.name,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        order by TD.task_id
+    </select>
+
+    <select id="queryTask" resultMap="BaseResultMap">
+        SELECT
+        <include refid="taskDetailSql" />,
+        PARAM.PARAMETER_ID,
+        PARAM.CODE PARAM_CODE,
+        PARAM.TARGET_ID,
+        PARAM.DISPLAY,
+        PARAM.TABLE_FIELD_NAME,
+        PARAM.TITLE,
+        PARAM.DESCRIPTION PARAM_DESCRIPTION,
+        PARAM.LINE_NUMBER,
+        PARAM.COLUMN_NUMBER,
+        PARAM.DATA_LENGTH,
+        PARAM.DISPLAY_LENGTH,
+        PARAM.LABEL_WIDTH,
+        PARAM.REQUIRED,
+        PARAM.READ_ONLY,
+        PARAM.ENABLED,
+        PARAM.SOURCE_CODE,
+        PARAM.SOURCE_TYPE,
+        PARAM.DEFAULT_TYPE,
+        PARAM.DEFAULT_VALUE,
+        PARAM.DEFAULT_TEXT,
+        PARAM.EXTRA_ATTRIBUTE
+        FROM SYS_TASK_DETAIL_B TD
+        LEFT OUTER JOIN SYS_PARAMETER_CONFIG PARAM
+        ON PARAM.TARGET_ID = TD.TASK_ID AND PARAM.CODE = 'TASK' AND PARAM.ENABLED = 'Y'
+        LEFT OUTER JOIN SYS_TASK_DETAIL_TL TDTL
+        ON ( TDTL.TASK_ID = TD.TASK_ID AND  TDTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        WHERE (
+        TD.TASK_ID = #{taskDetail.taskId}
+        <if test="idList != null and idList.size > 0">
+            OR TD.TASK_ID IN
+            <foreach collection="idList" index="index" item="item" open="(" separator="," close=")" >
+                #{item}
+            </foreach>
+        </if>
+        )
+        ORDER BY TD.TYPE ASC
+    </select>
+
+
+    <select id="queryByTask" resultMap="BaseResultMap">
+        SELECT
+        <include refid="taskDetailSql" />
+        FROM SYS_TASK_DETAIL_B TD
+        LEFT OUTER JOIN SYS_TASK_DETAIL_TL TDTL
+        ON ( TDTL.TASK_ID = TD.TASK_ID AND  TDTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        WHERE TD.TASK_ID IN
+        <foreach collection="taskIds" index="index" item="item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+        <if test="null != taskDetail.code">
+            AND TD.CODE LIKE concat('%', concat(#{taskDetail.code,jdbcType=VARCHAR}, '%'))
+        </if>
+        <if test="null != taskDetail.name">
+            AND TD.NAME LIKE concat('%', concat(#{taskDetail.name,jdbcType=VARCHAR}, '%'))
+        </if>
+        <if test="null != taskDetail.type">
+            AND TD.TYPE = #{taskDetail.type}
+        </if>
+        ORDER BY TD.TYPE ASC
+    </select>
+
+</mapper>

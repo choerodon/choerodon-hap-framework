@@ -1,0 +1,37 @@
+.report-definition {
+  .report-url {
+    background-color: lightgrey;
+    border-radius: 3px;
+    color: mediumvioletred;
+    font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
+  }
+
+  .preview-description {
+    margin-top: 5px;
+    color: #b1afaf;
+  }
+
+  .wrap {
+    display: flex;
+    height: 100%;
+    .left {
+      flex: 1;
+      border-right: 1px solid #ddd;
+
+      .icon-wrapper {
+        position: fixed;
+        top: 50vh;
+      }
+    }
+
+    .right-show {
+      padding: 5px;
+      width: 250px;
+    }
+
+    .right-hidden {
+      display: none;
+    }
+  }
+
+}

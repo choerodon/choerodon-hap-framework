@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.util.mapper.PromptMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.util.dto.Prompt" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="PROMPT_ID" property="promptId" jdbcType="DECIMAL"/>
+        <result column="PROMPT_CODE" property="promptCode" jdbcType="VARCHAR"/>
+        <result column="LANG" property="lang" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="MODULE_CODE" property="moduleCode" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        PROMPT_ID, PROMPT_CODE, LANG, DESCRIPTION,MODULE_CODE
+    </sql>
+
+
+    <select id="selectForCache" resultMap="BaseResultMap">
+        SELECT PROMPT_ID, PROMPT_CODE,LANG,DESCRIPTION,MODULE_CODE FROM SYS_PROMPTS
+    </select>
+
+</mapper>

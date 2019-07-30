@@ -1,0 +1,17 @@
+.core-lov-wrap {
+  display: flex;
+
+  .core-lov-label {
+    width: 125px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: .1rem .05rem;
+    text-align: right;
+  }
+
+  .core-lov-table {
+    margin-top: .05rem;
+    padding-left: .05rem;
+    margin-right: .7rem;
+  }
+}

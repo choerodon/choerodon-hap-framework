@@ -1,0 +1,460 @@
+<#include "../include/header.html" >
+    <style type="text/css">
+        html, body {
+            overflow: hidden;
+            color: #333;
+        }
+
+        .approve-block {
+            padding: 0px 20px 20px 20px;
+        }
+
+        .approve-block h3 {
+            font-weight: normal;
+            color: #000;
+            font-size: 16px;
+        }
+
+        .approve-block h4 {
+            font-weight: normal;
+            color: #000;
+            font-size: 14px;
+        }
+
+        .approve-table td {
+            padding: 8px;
+            font-size: 12px;
+            border: #e7ecf1 solid 1px;
+        }
+
+        #historyTable thead td {
+            padding: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        button:before {
+            margin-right: 2px;
+        }
+
+        span[class^='fa']:before {
+            margin-right: 3px;
+        }
+
+        .ui-tooltip table {
+            width: 90%;
+            border-collapse: collapse;
+            border: 1px solid #c0c0c0;
+            font-size: 12px;
+        }
+
+        .ui-tooltip table th {
+            word-break: keep-all;
+            white-space: nowrap;
+            padding: 5px;
+            border: 1px solid #c0c0c0;
+        }
+
+        .ui-tooltip table td {
+            word-break: keep-all;
+            white-space: nowrap;
+            padding: 5px;
+            border: 1px solid #c0c0c0;
+        }
+
+        #tabs .nav {
+            margin: 10px 0px 20px 0px;
+            padding: 0;
+            display: table;
+            width: 100%;
+            border-bottom: 1px solid #efefef;
+        }
+
+        #tabs .nav li {
+            float: left;
+            list-style-type: none;
+        }
+
+        #tabs .nav li a {
+            display: inline-block;
+            padding: 5px 15px;
+            text-decoration: none;
+            color: #8478B3;
+            border: none;
+        }
+
+        #tabs .nav li.active {
+            display: inline-block;
+            background: 0 0;
+            border-bottom: 2px solid #36c6d3 !important;
+        }
+
+        #tabs .nav li.active a {
+            border: none;
+            background: #fff;
+            color: #655c89;
+            outline: none;
+        }
+
+        #tabs .nav li:hover {
+            display: inline-block;
+            background: 0 0;
+            border-bottom: 2px solid #9fe4ea !important;
+        }
+
+        #tabs .nav li a:hover {
+            background: #fff;
+            color: #655c89;
+            outline: none;
+            border: none;
+        }
+
+        .invoke-div {
+            height: 50px;
+        }
+
+        .invoke-lable {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+    </style>
+    <script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="${base.contextPath}/common/code?taskExecuteStatus=TASK.EXECUTE.STATUS" type="text/javascript"></script>
+    <script type="text/javascript">
+        var executionId = "${RequestParameters.executionId!0}";
+        var groupExecutionNumber = "${RequestParameters.groupExecutionNumber!0}";
+        var getExecutionLogState = true;
+        var viewModel = Hap.createGridViewModel("#grid", {
+            isEnabled: false,
+        });
+        var data = {executionId: executionId};
+        $(document).ready(function () {
+            $.ajax({
+                url: '${base.contextPath}/sys/task/execution/detail',
+                type: 'POST',
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (args) {
+                    var data = args.rows[0];
+                    for (var i in data) {
+                        if (i != "taskDetail" && i != "taskExecutionDetail" && data[i] != null) {
+                            if (i != "status"){
+                                $("#" + i).html(data[i]);
+                            }else {
+                                $.each(taskExecuteStatus,function(j,n){
+                                    if( n.value == data[i] ){
+                                        $("#"+i).html(n.meaning);
+                                    }
+                                })
+                            }
+                        } else if (i == "taskDetail" && data[i] != null) {
+                            var taskDetail = data['taskDetail'];
+                            for (var j in taskDetail) {
+                                $("#" + j).html(taskDetail[j]);
+                            }
+                        }
+                    }
+                    if (data['executionNumber'] == null){
+                        $("#executionNumber").html(groupExecutionNumber);
+                    }
+                    var taskExecutionDetail = data['taskExecutionDetail'];
+                    viewModel.set("model.stacktrace", taskExecutionDetail['stacktrace']);
+                    var obj = taskExecutionDetail['parameter'];
+                    if (obj) {
+                        var data = JSON.parse(obj);
+                        dataSource.data(data);
+                        grid.refresh();
+                    }
+                }
+            });
+        });
+
+        var viewModel2 = kendo.observable({
+            close: function (e) {
+                window.parent.$("#taskExecutionDetail").data("kendoWindow").close();
+            }
+        });
+    </script>
+
+    <body>
+    <div style="overflow: hidden;">
+        <div class="approve-block" id="tabs">
+            <ul id="hisTab" class="nav nav-tabs">
+                <li class="active">
+                    <a href="#executionDiv" data-toggle="tab">
+                        <h4><@spring.message "task.execution.detail"/></h4>
+                    </a>
+                </li>
+                <li>
+                    <a href="#executionParamDiv" data-toggle="tab">
+                        <h4><@spring.message "task.execute.parameter"/></h4>
+                    </a>
+                </li>
+                <li>
+                    <a href="#executionErrorDiv" data-toggle="tab">
+                        <h4><@spring.message "api.invokerecord.stacktrace"/></h4>
+                    </a>
+                </li>
+                <li>
+                    <a href="#executionLogDiv" data-toggle="tab" onclick="getExecutionLog()">
+                        <h4><@spring.message "task.execute.executionlog"/></h4>
+                    </a>
+                </li>
+            </ul>
+            <div id="hisTabContent" class="tab-content ">
+                <div id="executionDiv" class="tab-pane fade in active" style="margin-top: 35px">
+                    <form class="form-horizontal" >
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">
+                                    <#if RequestParameters.groupExecutionNumber??>
+                                        <@spring.message"task.execution.groupexecutionnumber"/>
+                                        <#else>
+                                            <@spring.message"task.execution.executionnumber"/>
+                                    </#if>
+                                </label>
+                                <label class="col-xs-8 control-label invoke-lable" id="executionNumber" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message "task.execution.status"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="status" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"> <@spring.message"taskdetail.code"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="code" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message"taskdetail.name"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="name" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"> <@spring.message "taskdetail.taskclass"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="taskClass" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"> <@spring.message "taskdetail.description"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="description" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message "taskdetail.startTime"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="startTime" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message "taskdetail.endTime"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="endTime" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"><@spring.message
+                                    "task.execution.username"/></label>
+                                <label class="col-xs-8 control-label invoke-lable" id="userId" style="text-align: left;"></label>
+                            </div>
+                        </div>
+                        <#if !RequestParameters.groupExecutionNumber??>
+                            <div class="col-xs-6 invoke-div">
+                                <div class="form-group">
+                                    <label class="col-xs-4 control-label"><@spring.message
+                                        "jobrunninginfodto.previousfiretime"/></label>
+                                    <label class="col-xs-8 control-label invoke-lable" id="lastExecuteDate" style="text-align: left;"></label>
+                                </div>
+                            </div>
+                        </#if>
+                    </div>
+
+                    <#if !RequestParameters.groupExecutionNumber??>
+                        <div class="row">
+                            <div class="col-xs-6 invoke-div">
+                                <div class="form-group">
+                                    <label class="col-xs-4 control-label">
+                                        <@spring.message "task.execution.description"/></label>
+                                    <label class="col-xs-8 control-label invoke-lable" id="executionDescription" style="text-align: left;"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </#if>
+                  </form>
+                </div>
+
+                <div id="executionParamDiv" class="fade">
+                    <div class="col-xs-12">
+                        <div id="grid"></div>
+                    </div>
+                    <script>
+                    </script>
+                </div>
+
+                <div id="executionErrorDiv" class="tab-pane fade">
+                    <div class="col-xs-12">
+                     <textarea id="stacktrace" class="form-control" data-role="maskedtextbox" readonly
+                               style="width: 100%;height: 350px;background-color:#000;color: #FFF;resize:none"
+                               data-bind="value: model.stacktrace">
+                     </textarea>
+                        <script>kendo.bind($('#stacktrace'), viewModel);</script>
+                    </div>
+                </div>
+
+                <div id="executionLogDiv" class="tab-pane fade">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                        <textarea id="executionLog" class="form-control" data-role="maskedtextbox" readonly
+                                  style="width: 100%;height: 350px;background-color:#000;color: #FFF;resize:none"
+                                  data-bind="value: model.executionLog"></textarea>
+                            <script>kendo.bind($('#executionLog'), viewModel);</script>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="text-right k-window-toolbar" id="gridToolbar" style="overflow: hidden">
+        <span class="btn btn-default" type="button" style="margin-right: 10px;">
+            <a target="_blank" style="color: #333" href="${base.contextPath}/sys/task/execution/detailDownload?executionId=${RequestParameters.executionId}" ><@spring.message "task.execution.download"/></a>
+        </span>
+        <span id="close" class="btn btn-default" type="button" data-bind="click:close" style="margin-right: 10px;">
+            <@spring.message "task.execution.close"/>
+        </span>
+            <script>
+                kendo.bind($("#close"), viewModel2);
+            </script>
+        </div>
+    </div>
+    </body>
+    <script>
+        $("a[data-toggle='tab']").bind("click",function(){
+            var href = $(this).attr("href");
+            if(href != "#executionParamDiv"){
+                $("#executionParamDiv").hide();
+            }else{
+                $("#executionParamDiv").show();
+            }
+        });
+
+        var dataSource = new kendo.data.DataSource({
+            schema: {
+                model: {id: "key"}
+            }
+        });
+        var grid = $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height:'340px',
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            editable: false,
+            autoBind:false,
+            columns: [
+                {
+                    field: "name",
+                    attributes: {style: "text-align:center"},
+                    title: '<@spring.message "task.execute.parameter"/>',
+                    width: 100,
+                    headerAttributes: {
+                        style  : "text-align: center"
+                    },
+                    attributes: {
+                        style: "text-align: center"
+                    },
+                }, {
+                    field: "value",
+                    title: '<@spring.message "task.execute.value"/>',
+                    width: 100,
+                    headerAttributes: {
+                        style  : "text-align: center"
+                    },
+                    attributes: {
+                        style: "text-align: center"
+                    },
+                    template: function(rowdata){
+                        var str = '';
+                        if(!!rowdata.value) {
+                            if (typeof rowdata.value == 'object') {
+                                rowdata.value.forEach(function (value) {
+                                    str += value + ',';
+                                });
+                                str = str.substring(0, str.length - 1);
+                            }else {
+                                str = rowdata.value;
+                            }
+                        }
+                        return str;
+                    }
+                },{
+                    field: "text",
+                    title: '<@spring.message "task.execute.text"/>',
+                    width: 100,
+                    headerAttributes: {
+                        style  : "text-align: center"
+                    },
+                    attributes: {
+                        style: "text-align: center"
+                    },
+                    template: function(rowdata){
+                        var str = '';
+                        if(!!rowdata.text) {
+                            if (typeof rowdata.text == 'object') {
+                                rowdata.text.forEach(function (value) {
+                                    str += value + ',';
+                                });
+                                str = str.substring(0, str.length - 1);
+                            }else {
+                                str = rowdata.text;
+                            }
+                        }
+                        return str;
+                    }
+                }
+            ],
+        }).data("kendoGrid");
+
+        function getExecutionLog() {
+            if (getExecutionLogState) {
+                getExecutionLogState = false;
+                var data = {executionId: executionId};
+                $.ajax({
+                    url: '${base.contextPath}/sys/task/execution/getExecutionLog',
+                    type: 'POST',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (args) {
+                        var data = args.rows[0];
+                        if (data != null){
+                            viewModel.set("model.executionLog", data.executionLog);
+                        }
+                    }
+                });
+            }
+        }
+        
+    </script>
+    </html>

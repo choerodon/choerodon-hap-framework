@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.flexfield.mapper.FlexModelMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.flexfield.dto.FlexModel">
+        <result column="MODEL_ID" property="modelId" jdbcType="DECIMAL"/>
+        <result column="MODEL_CODE" property="modelCode" jdbcType="VARCHAR"/>
+        <result column="MODEL_NAME" property="modelName" jdbcType="VARCHAR"/>
+        <result column="MODEL_TABLE" property="modelTable" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+</mapper>

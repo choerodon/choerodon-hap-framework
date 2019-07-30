@@ -1,0 +1,238 @@
+<#include "../include/header.html">
+<body>
+<script src="${base.contextPath}/lib/kendoui/js/kendo.editor.js"></script>
+<script src="${base.contextPath}/common/code?priorityLevelData=SYS.PRIORITY_LEVEL" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?templateTypeData=SYS.TEMPLATE_TYPE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?sendTypeData=SYS.SEND_TYPE" type="text/javascript"></script>
+<div id="content-container">
+    <div id="page-content" style="padding-right:30px;">
+        <form class="form-horizontal" id="editForm" enctype="application/json;charset=UTF-8">
+            <input name="templateId" type="hidden">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messagetemplate.templatecode"/></label>
+                        <div class="col-sm-8">
+                            <input id="templateCode" name="templateCode" data-label="<@spring.message 'messagetemplate.templatecode'/>"
+                                   type="text" required autocomplete="off" data-bind="enabled: model.isEnabled,value:model.templateCode"
+                                   style="width:100%" data-role="maskedtextbox">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message"messagetemplate.templateType"/></label>
+                        <div class="col-sm-8">
+                            <input id="templateType" name="templateType" required
+                                   data-label="<@spring.message 'messagetemplate.templateType'/>"
+                                   data-bind="value:model.templateType" style="width: 100%;" />
+                        </div>
+                    </div>
+
+                </div>
+              <!--  <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messagetemplate.prioritylevel"/></label>
+                        <div class="col-sm-8">
+                            <input id="priorityLevel" name="priorityLevel" required data-label="<@spring.message "messagetemplate.prioritylevel"/>" data-bind="value: model.priorityLevel" style="width: 100%;">
+                        </div>
+                    </div>
+                </div>-->
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><@spring.message "messagetemplate.description"/></label>
+                        <div class="col-sm-10">
+                            <input type="text" name="description"
+                                   data-label="<@spring.message 'messagetemplate.description'/>"
+                                   data-bind="value:model.description" style="width:100%" class="k-textbox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6" id="send">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message"messagetemplate.sendtype"/></label>
+                        <div class="col-sm-8">
+                            <input id="sendType" name="sendType" required
+                                   data-label="<@spring.message 'messagetemplate.sendtype'/>"
+                                   data-bind="value:model.sendType"  style="width: 100%;"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6" id="account">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.emailaccounts"/></label>
+                        <div class="col-sm-8">
+                            <input id="accountId" name="accountId" type="text" required
+                                   data-label="<@spring.message 'messageemailconfig.emailaccounts'/>"
+                                   data-bind="value:model.accountId,text:model.userName"  style="width:100%">
+                            <script>
+                                $("#accountId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_MESSAGE_ACCOUNT")}, {
+                                    query: function (e) {
+                                    },
+                                }))
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><@spring.message "messagetemplate.subject"/></label>
+                        <div class="col-sm-10">
+                            <input type="text" name="subject" required
+                                   data-label="<@spring.message 'messagetemplate.subject'/>"
+                                   data-bind="value:model.subject" style="width:100%" class="k-textbox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><@spring.message "messagetemplate.content"/></label>
+                        <div class="col-sm-10">
+                            <textarea id="editor"  required="required"
+                                      data-label="<@spring.message 'messagetemplate.content'/>"
+                                      data-bind="value:model.content" style="height:350px;width:100%" ></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="text-right" style="bottom: 15px;padding-top:15px;border-top:1px solid #ebebeb;width:100%; background: #fff;">
+        <span class="btn btn-primary" data-bind="click:save" type="submit" style="margin-right:5px;"><@spring.message "hap.save"/></span>
+        <span class="btn btn-default" data-bind="click:closeWin" type="button" style="margin-right:35px;"><@spring.message "hap.cancel"/></span>
+    </div>
+</div>
+<script>
+    $("#templateType").kendoComboBox({
+        valuePrimitive:true,
+        dataTextField: "meaning",
+        dataValueField: "value",
+        dataSource: templateTypeData,
+        value:"EMAIL",
+        change: function(e) {
+            var value = this.value();
+            if("EMAIL" == value){
+                $("#send").show();
+                $("#account").show();
+                $("#sendType").attr("required",true);
+                $("#accountId").attr("required",true);
+            }else if("SITE" == value){
+                $("#send").hide();
+                $("#account").hide();
+                $("#sendType").removeAttr("required");
+                $("#accountId").removeAttr("required");
+            }
+        },
+        cascade: function(e) {
+            var value = this.value();
+            if("EMAIL" == value){
+                $("#send").show();
+                $("#account").show();
+                $("#sendType").attr("required",true);
+                $("#accountId").attr("required",true);
+            }else if("SITE" == value){
+                $("#send").hide();
+                $("#account").hide();
+                $("#sendType").removeAttr("required");
+                $("#accountId").removeAttr("required");
+            }
+
+        }
+    });
+
+    $("#sendType").kendoComboBox({
+        valuePrimitive:true,
+        dataTextField: "meaning",
+        dataValueField: "value",
+        dataSource: sendTypeData,
+    });
+
+    window.viewModel = kendo.observable({
+        model    : {
+            isEnabled: <#if RequestParameters.id??> false <#else> true </#if>,
+        },
+        save :function(e){
+            var url = <#if RequestParameters.id??> '${base.contextPath}/sys/messageTemplate/update'<#else> '${base.contextPath}/sys/messageTemplate/add'</#if>;
+
+            var validator = $("#editForm").data("kendoValidator");
+            if (validator.validate()) {
+            	 Hap.submitForm({
+                     url           : url,
+                     formModel     : viewModel.model,
+                     asArray       : false,
+                     success       : function (data) {
+                         window.parent.viewModel.refresh();
+                         window.parent.$("#editWin").data("kendoWindow").close();
+                     }
+                 });
+            }
+        },
+        closeWin :function(e){
+        	window.parent.$("#editWin").data("kendoWindow").close()
+        }
+    });
+
+    var validator = $("#editForm").kendoValidator({
+        invalidMessageType : "tooltip"
+    });
+
+    kendo.bind($('#content-container'), viewModel);
+
+    $("#priorityLevel").kendoDropDownList({
+        valuePrimitive:true,
+        dataTextField: "meaning",
+        dataValueField: "value",
+        dataSource: priorityLevelData
+    });
+
+    <#if RequestParameters.id??>
+    $.ajax({
+        url : '${base.contextPath}/sys/messageTemplate/query',
+        type : "GET",
+        dataType : "json",
+        contentType : "application/json",
+        data : {templateId:${RequestParameters.id!0}},
+        success : function(args) {
+            var profile = args.rows[0]||{};
+            for(var i in profile){
+                viewModel.set("model."+i,profile[i]);
+            }
+        }
+    });
+    </#if>
+       $("#editor").kendoEditor({
+           tools: [
+               "fontName",
+               "fontSize",
+               "formatting",
+               "bold",
+               "italic",
+               "underline",
+               "strikethrough",
+               "justifyLeft",
+               "justifyCenter",
+               "justifyRight",
+               "justifyFull",
+               "insertUnorderedList",
+               "insertOrderedList",
+               "indent",
+               "outdent",
+               "insertImage",
+               "subscript",
+               "superscript",
+               "foreColor",
+               "backColor",
+           ],
+       });
+</script>
+</body>
+</html>

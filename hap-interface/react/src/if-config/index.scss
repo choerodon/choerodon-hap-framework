@@ -1,0 +1,16 @@
+.interface-config-modal {
+  .wrap {
+    display: flex;
+
+    .label {
+      width: 120px;
+      flex-shrink: 0;
+      text-align: right;
+      padding: 5px;
+    }
+
+    .table {
+      padding-left: 5px;
+    }
+  }
+}

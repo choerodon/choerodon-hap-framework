@@ -1,0 +1,86 @@
+<configuration scan="true" scanPeriod="3 seconds">
+    <!-- <turboFilter class="ch.qos.logback.classic.turbo.MDCFilter">
+        <MDCKey>userId</MDCKey>
+        <Value>1</Value>
+        <OnMatch>ACCEPT</OnMatch>
+        <OnMismatch>DENY</OnMismatch>
+    </turboFilter> -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{userId}] [%X{requestId}] %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--<appender name="TASK" class="ch.qos.logback.core.ConsoleAppender">-->
+    <!--<property resource="application.yml" />-->
+    <springProperty scope="context" name="hap.log.path" source="logging.path"/>
+    <springProperty scope="context" name="hap.log.file" source="logging.file"/>
+    <springProperty scope="context" name="hap.log.level" source="logging.level.root"/>
+    <springProperty scope="context" name="hap.log.total" source="logging.total"/>
+    <springProperty scope="context" name="hap.log.history" source="logging.history"/>
+
+    <appender name="PLATFORM-FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{accountId}] [%X{requestId}] %logger - %msg%n</pattern>
+        </encoder>
+        <file>${hap.log.path}/${hap.log.file}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${hap.log.path}/${hap.log.file}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${hap.log.history}</maxHistory>
+            <totalSizeCap>${hap.log.total}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <root level="${logging.level.root}">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </root>
+    <logger name="org.springframework.security.web.util.matcher.AntPathRequestMatcher" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.springframework.web.servlet.mvc.method.annotation" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.springframework.beans.factory.support.DefaultListableBeanFactory" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.springframework.amqp.rabbit.listener" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.activiti.engine.impl.persistence.entity.TimerJobEntityImpl" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.springframework.session.web.http.SessionRepositoryFilter" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.activiti.engine" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.activiti.spring.SpringTransactionInterceptor" level="${logging.level.root}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.apache.ibatis.transaction.managed.ManagedTransaction" level="${logging.level.root}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.quartz.core.QuartzSchedulerThread" level="${logging.level.root}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.springframework.scheduling.quartz.LocalDataSourceJobStore" level="${logging.level.root}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+    <logger name="org.quartz.impl.jdbcjobstore.StdRowLockSemaphore" level="${logging.level.root}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PLATFORM-FILE"/>
+    </logger>
+
+</configuration>

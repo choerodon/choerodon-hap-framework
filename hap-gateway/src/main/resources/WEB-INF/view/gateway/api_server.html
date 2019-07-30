@@ -1,0 +1,208 @@
+<#include "../include/header.html">
+    <script src="${base.contextPath}/common/code?serviceType=API.SERVICE_TYPE" type="text/javascript"></script>
+    <script type="text/javascript">
+        var viewModel = Hap.createGridViewModel("#grid",{
+            serviceType:serviceType,
+            enableFlag:[
+                {meaning:"Y",value:"Y"},
+                {meaning:"N",value:"N"}],
+        });
+        var importServer = {};
+    </script>
+    <body>
+    <div id="dialogImport" ></div>
+    <div id="dialogEdit" ></div>
+    <div id="page-content">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary" style="float:left;margin-right:5px;"  onclick="openEditWindow()"><@spring.message "hap.new"/></span>
+            <span class="btn btn-success " onclick="openImportWindow()" style="float:left;margin-right:5px;"><@spring.message "server.import"/></span>
+            <span  data-bind="click:remove" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+        </div>
+        <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+        <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+            <input type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "server.code"/>'
+                   data-bind="value:model.code" class="k-textbox">
+            <input type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "server.name"/>'
+                   data-bind="value:model.name" class="k-textbox">
+            <select data-role="combobox" data-value-primitive="true" data-text-field="meaning" data-value-field="value"
+                    data-bind="source: serviceType,value:model.serviceType" placeholder='<@spring.message "server.serviceType"/>'
+                    style="width: 150px;margin-right: 5px;"></select>
+            <select data-role="combobox" data-value-primitive="true" data-text-field="meaning" data-value-field="value"
+                    data-bind="source: enableFlag,value:model.enableFlag" placeholder='<@spring.message "hap.enableflag"/>'
+                    style="width: 150px;margin-right: 5px;"></select>
+            <span class="btn btn-primary" style="width:70px" data-bind="click:query" type="submit"><@spring.message "hap.query"/></span>
+            <div style="clear:both"></div>
+        </div>
+        <script>kendo.bind($('#query-form'), viewModel);</script>
+        <div style="clear:both">
+            <div id="grid"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        Hap.initEnterQuery('#query-form', viewModel.query);
+        var BaseUrl = _basePath;
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/sys/gateway/server/query",
+                    type: "POST",
+                    dataType: "json"
+                },
+                destroy: {
+                    url: BaseUrl + "/sys/gateway/server/remove",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "serverId",
+                    fields: {
+                        code: {type: "string"},
+                    }
+                }
+            }
+        });
+
+        $("#queryServicetype").kendoDropDownList({
+            dataTextField: "meaning",
+            dataValueField: "value",
+            valuePrimitive: true,
+            dataSource: serviceType,
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            selectable: 'multiple, rowbox',
+            editable: false,
+            dataBound: function () {
+                if (parent.autoResizeIframe) {
+                    parent.autoResizeIframe('${RequestParameters.functionCode!}');
+                }
+            },
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                /* 代码 */
+                {
+                    field: "code",
+                    title: '<@spring.message "server.code"/>',
+                    width: 60
+                },
+                /* 名称 */
+                {
+                    field: "name",
+                    title: '<@spring.message "server.name"/>',
+                    width: 120
+                },
+
+                /* 服务地址 */
+                {
+                    field: "domainUrl",
+                    title: '<@spring.message "server.domainurl"/>',
+                    width: 180
+                },
+
+                /* 服务类型 */
+                {
+                    field: "serviceType",
+                    title: '<@spring.message "server.servicetype"/>',
+                    attributes: {style: "text-align:center"},
+                    width: 40,
+
+                },
+
+                /* 是否启用 */
+                {
+                    field: "enableFlag",
+                    title: '<@spring.message "hap.enableflag"/>',
+                    headerAttributes: {
+                        style  : "text-align: center"
+                    },
+                    attributes: {style: "text-align:center"},
+                    width: 40
+                },
+                /* 操作 */
+                {
+                    title: '<@spring.message "hap.action"/>',
+                    width: 40,
+                    headerAttributes: {
+                        style  : "text-align: center"
+                    },
+                    attributes: {
+                        style: "text-align: center"
+                    },
+                    template: function (rowdata) {
+                        if (!!rowdata.serverId) {
+                            return Hap.createAnchor('<@spring.message "hap.edit"/>', openEditWindow, false, rowdata.mappingUrl, rowdata.serverId);
+                        }
+                        return '';
+                    }
+                }
+            ],
+        });
+
+        function openImportWindow() {
+            var url = 'api_server_import.html';
+            var importWin = Hap.createWindow('#dialogImport', {
+                width: '40%',
+                height: 200,
+                title: '<@spring.message "server.import"/>',
+                url: url
+            })
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}', 600, function () {
+                    importWin.center().open();
+                })
+            } else {
+                importWin.center().open();
+            }
+        }
+
+        function openEditWindow(importFlag, mappingUrl, serverId ) {
+            var url = 'api_server_edit.html';
+            url = url + "?importFlag="+importFlag;
+            if(serverId){
+                url = url + "&serverId="+serverId;
+            }
+            if(mappingUrl){
+                url = url + "&mappingUrl="+mappingUrl;
+            }
+            var editWin = Hap.createWindow('#dialogEdit', {
+                width: '90%',
+                height: 560,
+                title: '<@spring.message "hap.edit"/>',
+                url: url
+            })
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}',700, function () {
+                    editWin.center().open();
+                })
+            } else {
+                editWin.center().open();
+            }
+        }
+
+    </script>
+    </body>
+    </html>

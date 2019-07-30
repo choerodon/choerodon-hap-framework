@@ -1,0 +1,377 @@
+<#include "../include/header.html">
+    <body>
+    <script src="${base.contextPath}/common/code?requestStatusdata=SYS.IF.REQUEST_STATUS" type="text/javascript"></script>
+    <script src="${base.contextPath}/resources/js/wfl/wfl.js"></script>
+    <script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="${base.contextPath}/lib/assets/global/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <link href="${base.contextPath}/lib/assets/global/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
+    <style type="text/css">
+        html,body {
+            overflow:hidden;
+            color:#333;
+        }
+        .approve-block {
+            padding:0px 20px 20px 20px;
+        }
+        .approve-block h3 {
+            font-weight: normal;
+            color:#000;
+            font-size:16px;
+        }
+
+        .approve-block h4 {
+            font-weight: normal;
+            color:#000;
+            font-size:14px;
+        }
+
+        .approve-table td {
+            padding:8px;
+            font-size:12px;
+            border: #e7ecf1 solid 1px;
+        }
+
+        #historyTable thead td{
+            padding:8px;
+            font-weight:bold;
+            color:#333;
+            font-size:14px;
+        }
+        button:before {
+            margin-right: 2px;
+        }
+
+        span[class^='fa']:before {
+            margin-right: 3px;
+        }
+        .ui-tooltip table{
+            width: 90%;
+            border-collapse: collapse;
+            border:1px solid #c0c0c0;
+            font-size: 12px;
+        }
+
+        .ui-tooltip table th{
+            word-break: keep-all;
+            white-space:nowrap;
+            padding:5px;
+            border:1px solid #c0c0c0;
+        }
+        .ui-tooltip table td{
+            word-break: keep-all;
+            white-space:nowrap;
+            padding:5px;
+            border:1px solid #c0c0c0;
+        }
+
+        #tabs .nav {
+            margin:10px 0px 20px 0px;
+            padding:0;
+            display:table;
+            width:100%;
+            border-bottom: 1px solid #efefef;
+        }
+        #tabs .nav li {
+            float:left;
+            list-style-type:none;
+        }
+
+        #tabs .nav li a {
+            display: inline-block;
+            padding: 5px 15px;
+            text-decoration: none;
+            color: #8478B3;
+            border:none;
+        }
+
+        #tabs .nav li.active {
+            display: inline-block;
+            background: 0 0;
+            border-bottom: 2px solid #36c6d3 !important;
+        }
+
+
+        #tabs .nav li.active a{
+            border:none;
+            background:#fff;color: #655c89;outline:none;
+        }
+
+        #tabs .nav li:hover{
+            display: inline-block;
+            background: 0 0;
+            border-bottom: 2px solid #9fe4ea !important;
+        }
+
+        #tabs .nav li a:hover{
+            background:#fff;color: #655c89;outline:none;
+            border:none;
+        }
+
+        .invoke-div{
+            height: 50px;
+        }
+        .invoke-lable{
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        var viewModel = kendo.observable({
+            isEnabled: false,
+            model: {},
+        });
+    </script>
+    <div>
+        <div class="approve-block" id = "tabs">
+            <ul id="hisTab" class="nav nav-tabs">
+                <li class="active">
+                    <a href="#recordDiv" data-toggle="tab" >
+                        <h3><@spring.message "api.invokerecord.record"/></h3>
+                    </a>
+                </li>
+                <li><a href="#detailsDiv" data-toggle="tab">
+                    <h3><@spring.message "api.invokerecord.details"/></h3>
+                </a>
+                </li>
+                <li><a href="#stacktraceDiv" data-toggle="tab">
+                    <h3><@spring.message "api.invokerecord.stacktrace"/></h3>
+                </a>
+                </li>
+            </ul>
+            <div id="hisTabContent" class="tab-content ">
+                <div id="recordDiv" class="tab-pane fade in active" style="margin-top: 35px">
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"api.invokerecord.invokeid"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="invokeId"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"api.application.code"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="applicationCode"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.code"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="serverCode"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.name"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="serverName"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"hapinterfaceheader.clientid"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="clientId"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"hapinterfaceoutbound.requesttime"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="requestTime"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"hapinterfaceinbound.ip"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="ip"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"interface.requestmethod"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="requestMethod"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"api.invokerecord.apiresponsetime"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="apiResponseTime"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"api.invokerecord.responsetime"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="responseTime"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"interface.interfacetype"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="interfaceType"></label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"interface.invoke.requeststatus"/></label>
+                                <label class="col-xs-9 control-label invoke-lable" id="responseStatus"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-9 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-2 control-label"><@spring.message"interface.lind.interfaceurl"/></label>
+                                <label class="col-xs-10 control-label invoke-lable" id="apiUrl"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-9 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-2 control-label"><@spring.message"api.invokerecord.requesturl"/></label>
+                                <label class="col-xs-10 control-label invoke-lable" id="requestUrl"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-9 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-2 control-label"><@spring.message"interface.invoke.useragent"/></label>
+                                <label class="col-xs-10 control-label invoke-lable" id="userAgent"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-9 invoke-div">
+                            <div class="form-group">
+                                <label class="col-xs-2 control-label"><@spring.message"interface.invoke.userreferer"/></label>
+                                <label class="col-xs-10 control-label invoke-lable" id="referer"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="detailsDiv"  class="tab-pane fade" >
+                    <div id="leftDiv" style="width: 50%;float: left;height: 530px">
+                        <div class="col-xs-12" style="margin-top: 20px">
+                            <div class="form-group">
+                                <label class="col-xs-6 control-label"><@spring.message"api.invokerecord.apirequestbodyparameter"/></label>
+                                <div class="col-xs-12">
+                                            <textarea class="form-control" data-role="maskedtextbox"
+                                                      id="apiRequestBodyParameter" style="width: 100%;height: 100px;"
+                                                      data-bind="enabled:isEnabled,value: model.apiRequestBodyParameter"></textarea>
+                                    <script>kendo.bind($('#apiRequestBodyParameter'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12" style="margin-top: 30px">
+                            <div class="form-group">
+                                <label class="col-xs-6 control-label"><@spring.message"api.invokerecord.apiresponsecontent"/></label>
+                                <div class="col-xs-12">
+                                            <textarea class="form-control" data-role="maskedtextbox"
+                                                      id="apiResponseContent" style="width: 100%;height: 300px;"
+                                                      data-bind="enabled:isEnabled,value: model.apiResponseContent"></textarea>
+                                    <script>kendo.bind($('#apiResponseContent'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="rightDiv" style="width: 50%;float: right;">
+                        <div class="col-xs-12" style="margin-top: 20px">
+                            <div class="form-group">
+                                <label class="col-xs-6 control-label"><@spring.message"api.invokerecord.requestbodyparameter"/></label>
+                                <div class="col-xs-12">
+                                            <textarea class="form-control" data-role="maskedtextbox"
+                                                      id="requestBodyParameter" style="width: 100%;height: 100px;"
+                                                      data-bind="enabled:isEnabled,value: model.requestBodyParameter"></textarea>
+                                    <script>kendo.bind($('#requestBodyParameter'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12" style="margin-top: 30px">
+                            <div class="form-group">
+                                <label class="col-xs-6 control-label"><@spring.message"api.invokerecord.responsecontent"/></label>
+                                <div class="col-xs-12">
+                                            <textarea class="form-control" data-role="maskedtextbox"
+                                                      id="responseContent" style="width: 100%;height: 300px;"
+                                                      data-bind="enabled:isEnabled,value: model.responseContent"></textarea>
+                                    <script>kendo.bind($('#responseContent'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stacktraceDiv"  class="tab-pane fade" >
+                    <div class="row">
+                        <div class="col-xs-14">
+                            <div class="form-group">
+                                <div class="col-xs-30">
+                                    <textarea class="form-control" data-role="maskedtextbox" readonly
+                                              id="stacktrace" style="width: 100%;height: 515px;background-color:#000;color: #FFF;resize:none"
+                                              data-bind="value: model.stacktrace"></textarea>
+                                    <script>kendo.bind($('#stacktrace'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                var crudServiceBaseUrl = '${base.contextPath}/sys/logs/invokeRecord';
+                var recordId = '${RequestParameters.recordId!0}';
+                var dtoData = {
+                    recordId: recordId,
+                };
+                $.ajax({
+                    url: crudServiceBaseUrl + "/getById",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(dtoData),
+                    success: function (args) {
+                        var profile = args.rows[0] || {};
+                        var apiInvokeRecordDetails = profile['apiInvokeRecordDetails'];
+                        for (var i in profile) {
+                            if ( i != "apiInvokeRecordDetails" && profile[i] != null ) {
+                                if( i == "responseStatus" && profile[i] != null ){
+                                    $.each(requestStatusdata,function(j,n){
+                                        if( n.value == profile[i] ){
+                                            $("#"+i).html(n.meaning);
+                                        }
+                                    })
+                                }else if ( (i == "apiResponseTime" || i == "responseTime") && profile[i] != null ){
+                                    $("#"+i).html(profile[i] + " ms");
+                                }else {
+                                    $("#"+i).html(profile[i]);
+                                }
+                            }
+                        }
+                        for (var i in apiInvokeRecordDetails) {
+                            if (apiInvokeRecordDetails[i] != null) {
+                                viewModel.set("model." + i, apiInvokeRecordDetails[i]);
+                            }
+                        }
+
+                    }
+                });
+            });
+
+        </script>
+    </body>
+    </html>

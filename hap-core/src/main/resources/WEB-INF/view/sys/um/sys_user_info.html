@@ -1,0 +1,240 @@
+<#-- 
+* description: 新增用户信息的kendoui实现
+* version: 1.0
+* author:shuo.han@hand-china.com
+* author:yuliao.chen@hand-china.com
+-->
+<#include "../../include/header.html">
+<script src="${base.contextPath}/common/code?passwordComplexity=SYS.PASSWORD_COMPLEXITY"
+        type="text/javascript"></script>
+<body>
+<div id="page-content">
+    <div class="form-horizontal" id="userInformation">
+        <div >
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="control-label col-sm-3"><@spring.message "user.username"/></label>
+                    <div class="col-sm-4" >
+                        <input name="userName" readonly style="background-color:#DEDEDE;width: 100%" type="text" data-bind="value:model.userName" class="k-textbox">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-3"><@spring.message "user.email"/></label>
+                    <div class="col-sm-4" >
+                        <input type="email" name="email" required validationMessage="<@spring.message 'error.user.email'/>" style="width: 100%" data-bind="value:model.email" class="k-textbox">
+                    </div>
+                    <div class="col-sm-2" >
+                        <span class="k-invalid-msg" data-for="email"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-3"><@spring.message "user.phone"/></label>
+                    <div class="col-sm-4" >
+                        <input type="tel" name="phone" pattern="^1[3|4|5|8][0-9]\d{4,8}$" style="width: 100%" required validationMessage="<@spring.message "error.user.phone"/>" data-bind="value:model.phone" class="k-textbox">
+                    </div>
+                    <div class="col-sm-2" >
+                        <span class="k-invalid-msg" data-for="phone"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-3" >
+                        <button class="btn btn-primary" style="width:100px" data-bind="enabled:enabled,click:saveUserInfo"><@spring.message "hap.save"/></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var userInforValidator = $("#userInformation").kendoValidator().data("kendoValidator");
+        //定义一个viewModel
+        var userInforViewModel = kendo.observable({
+            enabled:true,
+            model:{
+                userId: "${user.userId!0}",
+                userName: "${user.userName}",
+                email:"${user.email!''}",
+                phone: "${user.phone!''}",
+                _token: "${user._token!''}"
+            },
+            saveUserInfo: function(){
+                var sf = this;
+                if(!userInforValidator.validate()){
+                    return;
+                }
+                sf.set('enabled', false);
+                userInforViewModel.model.__status = 'update';
+                $.ajax({
+                    type: "POST",
+                    url: "${base.contextPath}/sys/user/update",
+                    contentType: "application/json",
+                    data: kendo.stringify(userInforViewModel.toJSON().model),
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.success) {
+                            kendo.ui.showInfoDialog({
+                                message:'<@spring.message "hap.tip.success"/>'
+                            }).done(function(){
+                                location.reload()
+                            })
+                        }else{
+                            kendo.ui.showErrorDialog({
+                                message:result.message
+                            })
+                        }
+                    }
+                }).complete(function(){
+                    sf.set('enabled', true)
+                });
+            }
+        });
+        kendo.bind($('#userInformation'),userInforViewModel);
+    </script>
+    <div class="form-horizontal" id="updatePassword">
+        <div class="">
+            <div class="panel-heading">
+                <span class="panel-title"><@spring.message"user.updatepassword"/></span>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="control-label col-sm-3"><@spring.message"user.current_password"/></label>
+                    <div class="col-sm-4" >
+                        <input name="oldPwd" style="width:100%" required validationMessage="<@spring.message 'error.user.current_password_notempty'/>" type="text" data-bind="value:model.oldPwd" class="password-input k-textbox">
+                    </div>
+                    <div class="col-sm-3" >
+                        <span class="k-invalid-msg" data-for="oldPwd"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3"><@spring.message"user.new_password"/></label>
+                    <div class="col-sm-4" >
+                        <input name="newPwd" style="width:100%"  required  data-message="<@spring.message 'error.user.new_password_notempty'/>"  type="text" data-bind="value:model.newPwd" class="password-input k-textbox">
+                        <small class="help-block">
+                            <script>
+                                $.each(passwordComplexity,function(i,v){
+                                    if( "${complexity}" == v.value ){
+                                        document.write('<@spring.message "user.passwordlength.insufficient"/>${length} ');
+                                        if("${complexity}"!= "no_limit")
+                                        {
+                                            document.write(v.meaning);
+                                        }
+                                    }
+                                });
+                            </script>
+                        </small>
+                    </div>
+                    <div class="col-sm-3" >
+                        <span class="k-invalid-msg" data-for="newPwd"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3"><@spring.message"user.again_new_password"/></label>
+                    <div class="col-sm-4" >
+                        <input name="newPwdAgain" style="width:100%" required data-message='<@spring.message"error.user.new_password_again"/>' type="text" data-bind="value:model.newPwdAgain" class="password-input k-textbox">
+                    </div>
+                    <div class="col-sm-3" >
+                        <span class="k-invalid-msg" data-for="newPwdAgain"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-3" >
+                         <button class="btn btn-primary" style="width:100px" data-bind="enabled:enabled,click:savePassword"><@spring.message "hap.save"/></button>
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    $('.password-input').one('focus',function(){
+                        $(this).attr('type','password');
+                    })
+                </script>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        //弹出框密码验证结束
+        var passwordViewModel = kendo.observable({
+            enabled:true,
+            model:{
+                length: "${length}",
+                complexity:"${complexity}"
+            },
+            passwordComplexityData:passwordComplexity,
+            savePassword: function(){
+                if(validator.validate()){
+
+                    $.ajax({
+                        type : 'post',
+                        async : false,
+                        url :"${base.contextPath}/sys/user/password/update",
+                        data : passwordViewModel.toJSON().model,
+                        dataType : 'json',
+                        success: function(result){
+                            if (result.success) {
+                                kendo.ui.showInfoDialog({
+                                    message: '<@spring.message "hap.tip.success"/>'
+                                }).done(function(){
+                                    location.reload();
+                                })
+                            }else{
+                                kendo.ui.showErrorDialog({
+                                    message:result.message
+                                })
+                            }
+                        }
+                    });
+
+                }
+            }
+        });
+        kendo.bind($('#updatePassword'), passwordViewModel);
+
+
+        var newPasComplexity = passwordViewModel.model.passwordcomplexity;
+        var validator = $("#updatePassword").kendoValidator({
+            messages: {
+                required:function(input) {
+                    return input.data("message");
+                },
+                match :'<@spring.message "user.password.discord"/>'
+            },
+            rules: {
+                passwordlength:function(input){
+                    if (input.is("[name=newPwd]")) {
+                        if(input.val().length < "${length}"){
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                password: function(input) {
+                    var flag = input.is("[name=newPwd]");
+                    if (flag) {
+                        return Hap.passwordFormat(input.val(),"${complexity}");
+                    }
+                    return true;
+                },
+                match : function(input){
+                    if (input.is("[name=newPwdAgain]")) {
+                        var newPwd = passwordViewModel.model.newPwd;
+                        var newPwdAgain = input.val();
+                        if(newPwd!==null && newPwdAgain!== null && newPwd!=="" && newPwdAgain!== ""){
+                            if(newPwd == newPwdAgain){
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+        }).data("kendoValidator");
+
+        validator.options.messages.passwordlength = '<@spring.message "user.passwordlength.insufficient"/>${length}';
+        $.each(passwordComplexity,function(i,v){
+            if( "${complexity}" == v.value){
+                validator.options.messages.password = v.meaning;
+            }
+        });
+    </script>
+</div>
+</body>

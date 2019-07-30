@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:beans="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <beans:import resource="oauth2Security.xml"/>
+
+
+<!--    <bean class="io.choerodon.hap.cache.impl.RedisCache">
+        <property name="name" value="oauth_client"/>
+        <property name="type" value="Oauth2ClientDetails"/>
+        <property name="keyField" value="clientId"/>
+        <property name="loadOnStartUp" value="true"/>
+        <property name="sqlId"
+                  value="Oauth2ClientDetailsMapper.selectAllClient"/>
+    </bean>-->
+
+
+</beans>

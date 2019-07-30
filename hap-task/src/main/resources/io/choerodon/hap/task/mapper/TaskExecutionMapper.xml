@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.task.mapper.TaskExecutionMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.task.dto.TaskExecution">
+        <result column="EXECUTION_ID" property="executionId" jdbcType="DECIMAL" />
+        <result column="EXECUTION_NUMBER" property="executionNumber" jdbcType="VARCHAR" />
+        <result column="EXECUTION_DESCRIPTION" property="executionDescription" jdbcType="VARCHAR" />
+        <result column="TASK_ID" property="taskId" jdbcType="DECIMAL" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="USER_ID" property="userId" />
+        <result column="START_TIME" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="END_TIME" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="PARENT_ID" property="parentId" jdbcType="DECIMAL" />
+        <result column="EXECUTION_ORDER" property="executionOrder" jdbcType="DECIMAL" />
+        <result column="LAST_EXECUTE_DATE" property="lastExecuteDate" jdbcType="TIMESTAMP" />
+        <result column="EXECUTE_RESULT_PATH" property="executeResultPath" jdbcType="VARCHAR" />
+        <association property="taskDetail" javaType="io.choerodon.hap.task.dto.TaskDetail"
+                     resultMap="io.choerodon.hap.task.mapper.TaskDetailMapper.BaseResultMap">
+        </association>
+        <association property="taskExecutionDetail" javaType="io.choerodon.hap.task.dto.TaskExecutionDetail"
+                     resultMap="io.choerodon.hap.task.mapper.TaskExecutionDetailMapper.BaseResultMap">
+        </association>
+    </resultMap>
+
+    <sql id="executionSql">
+        TE.EXECUTION_ID,
+        TE.EXECUTION_NUMBER,
+        TE.EXECUTION_DESCRIPTION,
+        TE.TASK_ID,
+        TE.STATUS,
+        TE.USER_ID,
+        TE.START_TIME,
+        TE.END_TIME,
+        TE.PARENT_ID,
+        TE.EXECUTION_ORDER,
+        TE.LAST_EXECUTE_DATE,
+        TE.EXECUTE_RESULT_PATH
+    </sql>
+
+    <sql id="taskDetailSql">
+        TD.CODE,
+        TTL.NAME,
+        TD.TYPE,
+        TD.TASK_CLASS,
+        TTL.DESCRIPTION,
+        TD.IDS
+    </sql>
+
+    <sql id="detailSql">
+        TED.EXECUTION_DETAIL_ID,
+        TED.EXECUTION_ID,
+        TED.PARAMETER,
+        TED.STACKTRACE,
+        TED.EXECUTION_LOG
+    </sql>
+
+    <!-- select execution without subunit -->
+    <select id="queryExecutions" resultMap="BaseResultMap">
+        SELECT
+        <include refid="taskDetailSql" />,
+        <include refid="executionSql" />
+        FROM SYS_TASK_EXECUTION TE
+        LEFT JOIN SYS_TASK_DETAIL_B TD ON TD.TASK_ID=TE.TASK_ID
+        LEFT OUTER JOIN SYS_TASK_DETAIL_TL TTL
+        ON (TTL.TASK_ID = TE.TASK_ID AND  TTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            <if test="isAdmin != true">
+              TE.USER_ID = #{request.userId}
+            </if>
+            AND TE.EXECUTION_NUMBER IS NOT NULL
+            <if test="null != taskExecution.status">
+                AND TE.STATUS = #{taskExecution.status}
+            </if>
+            <if test="null != taskExecution.executionNumber">
+                AND TE.EXECUTION_NUMBER LIKE concat('%', concat(#{taskExecution.executionNumber,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="null != taskExecution.name">
+                AND TD.NAME LIKE concat('%', concat(#{taskExecution.name,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="null != taskExecution.type">
+                AND TD.TYPE = #{taskExecution.type}
+            </if>
+        </where>
+
+        <if test="taskExecution.sortname != null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(taskExecution.sortname)"/>
+            ORDER BY TE.${_colName} ${taskExecution.sortorder}
+        </if>
+        <if test="taskExecution.sortname == null">
+            ORDER BY TE.EXECUTION_ID DESC
+        </if>
+
+    </select>
+
+    <!-- select a group -->
+    <select id="queryExecutionGroup" parameterType="io.choerodon.hap.task.dto.TaskExecution" resultMap="BaseResultMap">
+        SELECT
+        <include refid="taskDetailSql" />,
+        <include refid="executionSql" />
+        FROM SYS_TASK_DETAIL_B TD
+        LEFT OUTER JOIN SYS_TASK_EXECUTION TE
+        ON TD.TASK_ID = TE.TASK_ID
+        LEFT OUTER JOIN SYS_TASK_DETAIL_TL TTL
+        ON ( TTL.TASK_ID = TE.TASK_ID AND  TTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            <if test="0 != executionId">
+                TE.EXECUTION_ID = #{executionId}
+                OR TE.PARENT_ID = #{executionId}
+            </if>
+        </where>
+        ORDER BY TE.EXECUTION_ORDER ASC
+    </select>
+
+    <select id="queryExecutionDetail" parameterType="io.choerodon.hap.task.dto.TaskExecution" resultMap="BaseResultMap">
+        SELECT
+        <include refid="executionSql" />,
+        <include refid="detailSql" />,
+        <include refid="taskDetailSql" />
+        FROM SYS_TASK_EXECUTION TE
+            LEFT OUTER JOIN SYS_TASK_EXECUTION_DETAIL TED
+                ON TE.EXECUTION_ID = TED.EXECUTION_ID
+            LEFT OUTER JOIN SYS_TASK_DETAIL_B TD
+                ON TD.TASK_ID = TE.TASK_ID
+            LEFT OUTER JOIN SYS_TASK_DETAIL_TL TTL
+            ON ( TTL.TASK_ID = TE.TASK_ID AND  TTL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            <if test="0 != executionId">
+                TE.EXECUTION_ID = #{executionId}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateStatus" >
+        UPDATE SYS_TASK_EXECUTION
+        SET STATUS = #{status}
+        <if test="'EXECUTING' == status" >
+            , START_TIME = current_timestamp
+        </if>
+        <if test="'SUCCESS' == status or 'FAILURE' == status" >
+            , END_TIME = current_timestamp
+        </if>
+        WHERE
+          EXECUTION_ID = #{executionId}
+    </update>
+
+    <update id="batchUpdateStatus">
+        UPDATE SYS_TASK_EXECUTION
+        SET STATUS = #{aftStatus}
+        WHERE
+        PARENT_ID = #{executionId} AND STATUS = #{befStatus}
+    </update>
+
+
+    <select id="selectByTaskId" resultMap="BaseResultMap">
+        SELECT
+        TE.EXECUTION_ID
+        FROM
+        SYS_TASK_EXECUTION TE
+        WHERE
+            TE.TASK_ID = #{taskId}
+    </select>
+
+    <select id="selectByExeId" resultMap="BaseResultMap">
+        SELECT
+        TE.EXECUTION_ID
+        FROM
+        SYS_TASK_EXECUTION TE
+        WHERE
+            TE.EXECUTION_ID = #{executionId}
+            OR  TE.PARENT_ID = #{executionId}
+    </select>
+
+    <select id="getLastExecuteDate" resultMap="BaseResultMap">
+      SELECT
+	    MAX(START_TIME) AS START_TIME
+      FROM
+        sys_task_execution
+      WHERE
+        EXECUTION_NUMBER IS NOT NULL
+      AND TASK_ID = #{taskId}
+    </select>
+
+</mapper>

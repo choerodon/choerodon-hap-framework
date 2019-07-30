@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.mail.mapper.MessageReceiverMapper" >
+  <resultMap id="BaseResultMap" type="io.choerodon.hap.mail.dto.MessageReceiver" extends="io.choerodon.mybatis.mapper.StdMapper.STD" >
+    <id column="RECEIVER_ID" property="receiverId" jdbcType="DECIMAL" />
+    <result column="MESSAGE_ID" property="messageId" jdbcType="DECIMAL" />
+    <result column="MESSAGE_TYPE" property="messageType" jdbcType="VARCHAR" />
+    <result column="MESSAGE_ADDRESS" property="messageAddress" jdbcType="VARCHAR" />
+  </resultMap>
+  <select id="selectByMessageId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    SELECT
+    *
+    FROM SYS_MESSAGE_RECEIVER
+    WHERE MESSAGE_ID = #{messageId,jdbcType=DECIMAL}
+    ORDER BY MESSAGE_TYPE ASC
+  </select>
+  <delete id="deleteByMessageId" parameterType="java.lang.Long" >
+    DELETE FROM SYS_MESSAGE_RECEIVER
+    WHERE MESSAGE_ID = #{messageId,jdbcType=DECIMAL}
+  </delete>
+
+  <select id="selectMessageAddressesByMessageId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    SELECT
+    SMR.RECEIVER_ID, SMR.MESSAGE_ID, SMR.MESSAGE_TYPE, SMR.MESSAGE_ADDRESS
+    FROM SYS_MESSAGE_RECEIVER SMR, SYS_MESSAGE SM
+    WHERE SMR.MESSAGE_ID = #{messageId,jdbcType=DECIMAL} AND SMR.MESSAGE_ID = SM.MESSAGE_ID
+  </select>
+  
+</mapper>

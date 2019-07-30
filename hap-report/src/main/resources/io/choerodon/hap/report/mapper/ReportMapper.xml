@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.report.mapper.ReportMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.report.dto.Report"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="REPORT_ID" property="reportId" jdbcType="DECIMAL"/>
+        <result column="REPORT_CODE" property="reportCode" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="FILE_ID" property="fileId" jdbcType="DECIMAL"/>
+        <result column="FILE_NAME" property="fileName" jdbcType="VARCHAR"/>
+        <result column="DEFAULT_QUERY" property="defaultQuery" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="selectByReportCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select sr.report_id,sr.report_code,sr.name,sr.description,sr.file_id,srf.name as file_name,sr.default_query
+        from sys_report sr left join sys_report_file srf on sr.file_id = srf.file_id
+        where sr.report_code = #{reportCode}
+    </select>
+</mapper>

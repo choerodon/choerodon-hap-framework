@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.mail.mapper.MessageEmailAccountMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.mail.dto.MessageEmailAccount"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="ACCOUNT_ID" property="accountId" jdbcType="DECIMAL"/>
+        <result column="ACCOUNT_CODE" property="accountCode" jdbcType="VARCHAR"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="PASSWORD" property="password" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="CONFIG_ID" property="configId" jdbcType="DECIMAL"/>
+    </resultMap>
+    <resultMap id="ConfigResultMap" type="io.choerodon.hap.mail.dto.MessageEmailConfig"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="CONFIG_ID" property="configId" jdbcType="DECIMAL"/>
+        <result column="CONFIG_CODE" property="configCode" jdbcType="VARCHAR"/>
+        <result column="HOST" property="host" jdbcType="VARCHAR"/>
+        <result column="PORT" property="port" jdbcType="VARCHAR"/>
+        <result column="TRY_TIMES" property="tryTimes" jdbcType="DECIMAL"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="PASSWORD" property="password" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="USE_WHITE_LIST" property="useWhiteList" jdbcType="VARCHAR"/>
+        <result column="ENABLE" property="enable" jdbcType="VARCHAR"/>
+        <result column="SERVER_ENABLE" property="serverEnable" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectByConfigId" resultMap="BaseResultMap">
+        SELECT *
+        FROM SYS_MESSAGE_EMAIL_ACCOUNT
+        <where>
+            <if test="value != null">
+                AND CONFIG_ID = #{value,jdbcType=DECIMAL}
+            </if>
+        </where>
+        ORDER BY ACCOUNT_ID
+    </select>
+
+    <select id="selectMessageEmailConfig" resultType="java.lang.String"
+            parameterType="io.choerodon.hap.mail.dto.MessageEmailAccount">
+        SELECT SMEC.ENABLE FROM SYS_MESSAGE_EMAIL_CONFIG SMEC
+        LEFT JOIN SYS_MESSAGE_EMAIL_ACCOUNT SMEA ON (SMEA.CONFIG_ID = SMEC.CONFIG_ID)
+        <where>
+            <if test="accountId != null">
+                AND SMEA.ACCOUNT_ID = #{accountId,jdbcType=DECIMAL}
+            </if>
+            <if test="accountCode != null">
+                AND SMEA.ACCOUNT_CODE = #{accountCode,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectMessageEmailAccount" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.mail.dto.MessageEmailAccount">
+        SELECT * FROM SYS_MESSAGE_EMAIL_ACCOUNT SMEA
+        <where>
+            (SELECT SMEC.ENABLE FROM SYS_MESSAGE_EMAIL_CONFIG SMEC WHERE SMEA.CONFIG_ID = SMEC.CONFIG_ID)='Y'
+            <if test="accountId != null">
+                AND SMEA.ACCOUNT_ID = #{accountId,jdbcType=DECIMAL}
+            </if>
+            <if test="configId != null">
+                AND SMEA.CONFIG_ID = #{configId,jdbcType=DECIMAL}
+            </if>
+            <if test="accountCode != null">
+                AND SMEA.ACCOUNT_CODE LIKE CONCAT('%',CONCAT(#{accountCode,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="description != null">
+                AND SMEA.DESCRIPTION LIKE CONCAT('%',CONCAT(#{description,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="userName != null">
+                AND SMEA.USER_NAME LIKE CONCAT('%',CONCAT(#{userName,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY SMEA.ACCOUNT_ID
+    </select>
+
+    <select id="selectMessageEmailAccounts" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.mail.dto.MessageEmailAccount">
+        SELECT
+        ACCOUNT.*
+        FROM SYS_MESSAGE_EMAIL_ACCOUNT ACCOUNT
+        <where>
+            <if test="accountId != null">
+                AND ACCOUNT.ACCOUNT_ID = #{accountId,jdbcType=DECIMAL}
+            </if>
+            <if test="configId != null">
+                AND ACCOUNT.CONFIG_ID = #{configId,jdbcType=DECIMAL}
+            </if>
+            <if test="accountCode != null">
+                AND ACCOUNT.ACCOUNT_CODE LIKE CONCAT('%',CONCAT(#{accountCode,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="description != null">
+                AND ACCOUNT.DESCRIPTION LIKE CONCAT('%',CONCAT(#{description,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY ACCOUNT.ACCOUNT_ID
+    </select>
+
+    <select id="selectMessageEmailAccountPassword" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.mail.dto.MessageEmailAccount">
+        SELECT
+        *
+        FROM SYS_MESSAGE_EMAIL_ACCOUNT
+        <where>
+            <if test="accountId != null">
+                ACCOUNT_ID = #{accountId,jdbcType=DECIMAL}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByAccountCode" resultMap="BaseResultMap">
+        SELECT *
+        FROM SYS_MESSAGE_EMAIL_ACCOUNT
+        <where>
+            <if test="accountCode != null">
+                ACCOUNT_CODE = #{accountCode,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteByConfigId" parameterType="java.lang.Long">
+        DELETE FROM SYS_MESSAGE_EMAIL_ACCOUNT
+        WHERE CONFIG_ID = #{configId,jdbcType=DECIMAL}
+  </delete>
+
+    <select id="getMsgEmailAccountByCode" resultMap="BaseResultMap">
+        SELECT
+        *
+        FROM SYS_MESSAGE_EMAIL_ACCOUNT ACC
+        <where>
+            <if test="accountCode != null">
+                ACC.ACCOUNT_CODE = #{accountCode,jdbcType=VARCHAR}
+            </if>
+            <if test="accountId != null">
+                AND ACC.ACCOUNT_ID != #{accountId, jdbcType=DECIMAL}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.hr.mapper.OrgUnitMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.hr.dto.HrOrgUnit" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="unit_id" property="unitId"/>
+        <result column="unit_code" property="unitCode"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="parent_name" property="parentName"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="manager_position" property="managerPosition"/>
+        <result column="position_name" property="positionName"/>
+        <result column="company_id" property="companyId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="enabled_flag" property="enabledFlag"/>
+        <result column="unit_category" property="unitCategory"/>
+        <result column="unit_type" property="unitType"/>
+    </resultMap>
+
+    <select id="selectUnit" resultMap="BaseResultMap" parameterType="io.choerodon.hap.hr.dto.HrOrgUnit">
+        SELECT
+        HOUB.UNIT_ID,
+        HOUB.UNIT_CODE,
+        HOUB.PARENT_ID,
+        HOUT.NAME,
+        HOUT.DESCRIPTION,
+        HOUB.MANAGER_POSITION,
+        HOUB.COMPANY_ID,
+        HOUB.ENABLED_FLAG,
+        (
+        SELECT SCVT.MEANING
+        FROM SYS_CODE_VALUE_B SCVB
+        INNER JOIN SYS_CODE_B SCB
+        ON (SCB.CODE_ID = SCVB.CODE_ID AND SCB.CODE='SYS.UNIT_CATEGORY')
+        LEFT OUTER JOIN SYS_CODE_VALUE_TL SCVT
+        ON (SCVB.CODE_VALUE_ID = SCVT.CODE_VALUE_ID AND SCVT.LANG =
+        #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        WHERE SCVB.VALUE = HOUB.UNIT_CATEGORY
+        ) UNIT_CATEGORY,
+        (
+        SELECT SCVT2.MEANING
+        FROM SYS_CODE_VALUE_B SCVB2
+        INNER JOIN SYS_CODE_B SCB2
+        ON (SCB2.CODE_ID = SCVB2.CODE_ID AND SCB2.CODE='SYS.UNIT_TYPE')
+        LEFT OUTER JOIN SYS_CODE_VALUE_TL SCVT2
+        ON (SCVB2.CODE_VALUE_ID = SCVT2.CODE_VALUE_ID AND SCVT2.LANG =
+        #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        WHERE SCVB2.VALUE = HOUB.UNIT_TYPE
+        ) UNIT_TYPE
+        FROM HR_ORG_UNIT_B HOUB
+        LEFT OUTER JOIN HR_ORG_UNIT_TL HOUT
+        ON (HOUB.UNIT_ID = HOUT.UNIT_ID AND HOUT.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            <if test="unitId !=null ">
+                AND HOUB.UNIT_ID = #{unitId}
+            </if>
+            <if test="unitCode !=null ">
+                AND HOUB.UNIT_CODE LIKE CONCAT('%', CONCAT(#{unitCode,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="name!=null">
+                AND HOUT.NAME LIKE CONCAT('%', CONCAT(#{name,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        ORDER BY HOUB.UNIT_ID ASC
+    </select>
+
+</mapper>

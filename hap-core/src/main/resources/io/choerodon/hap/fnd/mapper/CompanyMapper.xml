@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.fnd.mapper.CompanyMapper">
+
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.fnd.dto.Company" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="company_id" property="companyId"/>
+        <result column="company_code" property="companyCode"/>
+        <result column="company_type" property="companyType"/>
+        <result column="address" property="address"/>
+        <result column="company_level_id" property="companyLevelId"/>
+        <result column="parent_company_id" property="parentCompanyId"/>
+        <result column="chief_position_id" property="chiefPositionId"/>
+        <result column="start_date_active" property="startDateActive"/>
+        <result column="end_date_active" property="endDateActive"/>
+        <result column="company_short_name" property="companyShortName"/>
+        <result column="company_full_name" property="companyFullName"/>
+        <result column="zipcode" property="zipcode"/>
+        <result column="fax" property="fax"/>
+        <result column="phone" property="phone"/>
+        <result column="contact_person" property="contactPerson"/>
+        <result column="parent_company_name" property="parentCompanyName"/>
+        <result column="position_name" property="positionName"/>
+    </resultMap>
+
+    <!--<select id="selectAllCompany" parameterType="Company" resultMap="BaseResultMap">-->
+    <!--SELECT-->
+    <!--b.company_id,-->
+    <!--b.company_code,-->
+    <!--b.company_type,-->
+    <!--b.address,-->
+    <!--b.company_level_id,-->
+    <!--b.parent_company_id,-->
+    <!--b.chief_position_id,-->
+    <!--b.start_date_active,-->
+    <!--b.end_date_active,-->
+    <!--tl.company_short_name,-->
+    <!--tl.company_full_name,-->
+    <!--b.zipcode,-->
+    <!--b.fax,-->
+    <!--b.phone,-->
+    <!--b.contact_person,-->
+    <!--(-->
+    <!--select ptl.name from hr_org_position_b pb left join hr_org_position_tl ptl on (-->
+    <!--pb.position_id = ptl.position_id-->
+    <!--AND ptl.lang = #{request.locale,jdbcType=VARCHAR})-->
+    <!--where b.chief_position_id=pb.position_id-->
+    <!--) position_name,-->
+    <!--(-->
+    <!--SELECT-->
+    <!--b1.company_full_name-->
+    <!--FROM-->
+    <!--fnd_company_b b1-->
+    <!--LEFT JOIN fnd_company_tl tl1 ON (-->
+    <!--b1.company_id = tl1.company_id-->
+    <!--AND tl1.lang = #{request.locale,jdbcType=VARCHAR})-->
+    <!--WHERE-->
+    <!--b.parent_company_id = b1.company_id-->
+    <!--) parent_company_name-->
+    <!--FROM-->
+    <!--fnd_company_b b-->
+    <!--LEFT JOIN fnd_company_tl tl ON (-->
+    <!--b.company_id = tl.company_id-->
+    <!--AND tl.lang = #{request.locale,jdbcType=VARCHAR})-->
+    <!--<where>-->
+    <!--<if test="companyId!=null">-->
+    <!--and b.company_id =#{companyId}-->
+    <!--</if>-->
+    <!--<if test="companyCode!=null">-->
+    <!--and b.company_code LIKE concat('%', concat(#{companyCode,jdbcType=VARCHAR}, '%'))-->
+    <!--</if>-->
+    <!--<if test="companyType!=null">-->
+    <!--and b.company_type LIKE concat('%', concat(#{companyType,jdbcType=VARCHAR}, '%'))-->
+    <!--</if>-->
+    <!--<if test="parentCompanyId!=null">-->
+    <!--and b.parent_company_id=#{parentCompanyId}-->
+    <!--</if>-->
+    <!--<if test="companyFullName!=null">-->
+    <!--and b.company_full_name LIKE concat('%', concat(#{companyFullName,jdbcType=VARCHAR}, '%'))-->
+    <!--</if>-->
+    <!--</where>-->
+    <!--<if test="sortname !=null">-->
+    <!--<bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>-->
+    <!--order by b.${_colName} ${sortorder}-->
+    <!--</if>-->
+    <!--<if test="sortname ==null">-->
+    <!--order by b.company_id asc-->
+    <!--</if>-->
+    <!--</select>-->
+
+</mapper>

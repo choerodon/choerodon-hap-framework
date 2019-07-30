@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.security.permission.mapper.DatasetMapper">
+
+    <resultMap id="RuleDetailMap" type="io.choerodon.hap.security.permission.dto.DataPermissionRuleDetail">
+        <result column="rule_id" property="ruleId"/>
+        <result column="detail_id" property="detailId"/>
+        <result column="permission_field_value" property="permissionFieldValue"/>
+        <result column="permission_field_sql_value" property="permissionFieldSqlValue"/>
+        <result column="object_version_number" property="objectVersionNumber"/>
+    </resultMap>
+
+    <resultMap id="AssignResultMap" type="io.choerodon.hap.security.permission.dto.DataPermissionRuleAssign">
+        <result column="assign_id" property="assignId"/>
+        <result column="detail_id" property="detailId"/>
+        <result column="assign_field" property="assignField"/>
+        <result column="assign_field_value" property="assignFieldValue"/>
+        <result column="assign_field_name" property="assignFieldName"/>
+        <result column="object_version_number" property="objectVersionNumber"/>
+    </resultMap>
+
+    <resultMap id="TableRuleMap" type="io.choerodon.hap.security.permission.dto.DataPermissionTableRule">
+        <result column="table_rule_id" property="tableRuleId"/>
+        <result column="table_id" property="tableId"/>
+        <result column="table_field" property="tableField"/>
+        <result column="rule_id" property="ruleId"/>
+        <result column="rule_name" property="ruleName"/>
+        <result column="object_version_number" property="objectVersionNumber"/>
+    </resultMap>
+
+    <select id="selectRuleDetailUser" resultMap="RuleDetailMap" parameterType="map">
+        SELECT detail_id, rule_id, permission_field_sql_value, permission_field_value, user_name AS permissionFieldName,
+        sys_permission_rule_detail.object_version_number AS object_version_number
+        FROM sys_permission_rule_detail LEFT JOIN sys_user ON permission_field_value=user_id WHERE rule_id=#{ruleId}
+    </select>
+    <select id="selectRuleDetailRole" resultMap="RuleDetailMap" parameterType="map">
+        SELECT sprd.detail_id, sprd.rule_id, sprd.permission_field_sql_value, sprd.permission_field_value, ir.name AS permissionFieldName,sprd.object_version_number
+        FROM sys_permission_rule_detail sprd LEFT JOIN iam_role ir ON sprd.permission_field_value = ir.id
+        WHERE sprd.rule_id=#{ruleId}
+    </select>
+    <select id="selectRuleDetailAssign" resultMap="AssignResultMap" parameterType="map">
+        SELECT assign_id,detail_id,assign_field,assign_field_value, user_name AS assign_field_name,
+        sys_permission_rule_assign.object_version_number AS object_version_number
+        FROM sys_permission_rule_assign LEFT JOIN sys_user ON sys_permission_rule_assign.assign_field_value=sys_user.user_id
+        WHERE detail_id=#{detailId}
+    </select>
+    <select id="selectTableRule" resultMap="TableRuleMap" parameterType="map">
+        SELECT table_rule_id,table_id,table_field,sys_permission_table_rule.rule_id,
+        sys_permission_table_rule.object_version_number,rule_name
+        FROM sys_permission_table_rule LEFT JOIN sys_permission_rule
+        ON sys_permission_rule.rule_id=sys_permission_table_rule.rule_id
+        WHERE sys_permission_table_rule.table_id=#{tableId}
+    </select>
+</mapper>

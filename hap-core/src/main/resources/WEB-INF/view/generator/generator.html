@@ -1,0 +1,412 @@
+<#--
+        * description: 快速编码界面
+        *author:jialong.zuo@hand-china.com
+        * version: 1.0
+        *
+        -->
+<#include "../include/header.html">
+<body>
+<script>
+    viewModel = new kendo.observable({
+        projectPath: '',
+        parentPackagePath: '',
+        packagePath: '',
+        targetName: '',
+        controllerName: '',
+        mapperName: '',
+        mapperXmlName: '',
+        serviceName: '',
+        implName: '',
+        htmlName: '',
+        dtoName: '',
+        controllerStatus: 'Create',
+        mapperStatus: "Create",
+        mapperXmlStatus: "Create",
+        serviceStatus: "Create",
+        implStatus: "Create",
+        htmlStatus: "Create",
+        dtoStatus: "Create",
+        htmlModelName: "htmlemptymodel.ftl"
+    });
+</script>
+
+
+<div style="padding:15px 15px 0">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel">
+                <form class="form-horizontal" id="form-query" style="width:100%">
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"><@spring.message "generator.projectpath"/>:</label>
+                            <div class="col-sm-8">
+                                <input id="projectPath" type=text data-bind="value:projectPath" style="width:50%"
+                                       class="k-textbox" placeholder="D:/JetBrains/workspaces/hap-parent/hap" required
+                                       validationMessage="<@spring.message "hap.validation.notempty"/>"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"><@spring.message "generator.parentpackagepath"/>
+                                :</label>
+                            <div class="col-sm-4">
+                                <input id="parentPackagePath" type="text" data-bind="value:parentPackagePath"
+                                       style="width:50%" class="k-textbox" placeholder="com/hand/hap" required
+                                       validationMessage="<@spring.message "hap.validation.notempty"/>"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"><@spring.message "generator.packagepath"/>:</label>
+                            <div class="col-sm-4">
+                                <input id="packagePath" type="text" data-bind="value:packagePath" style="width:50%"
+                                       class="k-textbox" placeholder="newpackage" required
+                                       validationMessage="<@spring.message "hap.validation.notempty"/>"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"><@spring.message "generator.choosetable"/>:</label>
+                            <div class="col-sm-4">
+                                <input id="autoComplete" style="width:100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            <table class="table table-bordered" style="text-align:center">
+                                <thead>
+                                <tr>
+                                    <th style="text-align:center"><@spring.message "generator.filetype"/></th>
+                                    <th style="text-align:center"><@spring.message "generator.filename"/></th>
+                                    <th style="text-align:center"><@spring.message "generator.iscreate"/></th>
+                                    <th style="text-align:center"><@spring.message "generator.iscover"/></th>
+                                    <th style="text-align:center"><@spring.message "generator.htmlmodel"/></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Dto</td>
+                                    <td><input id="DtoName" onchange="dtochange()" type="text" data-bind="value:dtoName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="DtoCreateCheck" checked name="checkbox"/></td>
+                                    <td><input id="DtoCoverCheck" name="checkbox"/></td>
+                                    <td>...</td>
+                                </tr>
+                                <tr>
+                                    <td>Controller</td>
+                                    <td><input id="controllerName" type="text" data-bind="value:controllerName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="ControllerCreateCheck" checked name="checkbox"/></td>
+                                    <td><input id="ControllerCoverCheck" name="checkbox"/></td>
+                                    <td>...</td>
+                                </tr>
+                                <tr>
+                                    <td>Mapper</td>
+                                    <td><input id="mapperName" type="text" data-bind="value:mapperName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="MapperCreateCheck" name="checkbox" checked/></td>
+                                    <td><input id="MapperCoverCheck" name="checkbox"/></td>
+                                    <td>...</td>
+                                </tr>
+                                <tr>
+                                    <td>MapperXml</td>
+                                    <td><input id="mapperXmlName" type="text" data-bind="value:mapperXmlName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="XmlCreateCheck" checked name="checkbox"/></td>
+                                    <td><input id="XmlCoverCheck" name="checkbox"/></td>
+                                    <td>...</td>
+                                </tr>
+                                <tr>
+                                    <td>Service</td>
+                                    <td><input id="serviceName" type="text" data-bind="value:serviceName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="ServiceCreateCheck" checked name="checkbox"/></td>
+                                    <td><input id="ServiceCoverCheck" name="checkbox"/></td>
+                                    <td>...</td>
+                                </tr>
+                                <tr>
+                                    <td>Impl</td>
+                                    <td><input id="implName" type="text" data-bind="value:implName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="ImplCreateCheck" checked name="checkbox"/></td>
+                                    <td><input id="ImplCoverCheck" name="checkbox"/></td>
+                                    <td>...</td>
+                                </tr>
+                                <tr>
+                                    <td>Html</td>
+                                    <td><input id="htmlName" type="text" data-bind="value:htmlName"
+                                               style="width:100%" class="k-textbox"/></td>
+                                    <td><input id="HtmlCreateCheck" checked name="checkbox"/></td>
+                                    <td><input id="HtmlCoverCheck" name="checkbox"/></td>
+                                    <td><input id="htmlmodel" style="width:100%" class="k-textbox"/></td>
+                                </tr>
+                                </tbody>
+                                <script>
+                                    $("input[name='checkbox']").kendoCheckbox({
+                                        checkedValue: 'Y',
+                                        uncheckedValue: 'N'
+                                    });
+                                </script>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="panel-footer text-center" id="toolbar">
+                        <span class="btn btn-success"
+                              onclick="submitform()"><@spring.message "generator.submit"/></span>
+                    </div>
+                </form>
+                <script>kendo.bind($('#form-query'), viewModel);</script>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<script type="text/javascript">
+
+    if (window.localStorage) {
+        if (localStorage.projectPath) {
+            viewModel.set("projectPath", localStorage.projectPath);
+        }
+        if (localStorage.parentPackagePath) {
+            viewModel.set("parentPackagePath", localStorage.parentPackagePath);
+        }
+        if (localStorage.packagePath) {
+            viewModel.set("packagePath", localStorage.packagePath);
+        }
+    }
+
+    var dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: "${base.contextPath}/generator/alltables",
+                dataType: "json"
+            }
+        },
+        schema: {
+            model: {
+                expanded: true
+            },
+            parse: function (response) {
+                var products = [];
+                for (var i = 0; i < response.total; i++) {
+                    var le = response.rows[i];
+                    if (le.substring(le.length - 3, le.length) != "_TL" && le.substring(le.length - 3, le.length) != "_tl") {
+                        var product = {
+                            text: response.rows[i],
+                            value: response.rows[i],
+                        };
+                        products.push(product);
+                    }
+                }
+                return products;
+            }
+        }
+    });
+
+
+    $("#autoComplete").kendoAutoComplete({
+        dataSource: dataSource,
+        dataTextField: "text",
+        select: function (e) {
+            getTableName(e.item.text());
+        }
+    });
+
+    $("#htmlmodel").kendoDropDownList({
+        dataSource: [{text: "htmlemptymodel.ftl"}],
+        dataTextField: "text",
+        change: function (e) {
+            getHtmlModel(e.value().text);
+        },
+        animation: {
+            close: {
+                effects: "fadeOut zoom:out",
+                duration: 300
+            },
+            open: {
+                effects: "fadeIn zoom:in",
+                duration: 300
+            }
+        }
+    });
+
+
+    function getTableName(text) {
+        viewModel.set("targetName", text);
+        var name = text.substring(text.indexOf("_") + 1);
+        if (ifEnds(text, "_b") || ifEnds(text, "_B")) {
+            name = name.substring(0, name.length - 2)
+        }
+        name=name.toLowerCase();
+        var htmlName = name;
+        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        name = tocalme(name);
+        viewModel.set("dtoName", name + ".java");
+        viewModel.set("controllerName", name + "Controller.java");
+        viewModel.set("mapperName", name + "Mapper.java");
+        viewModel.set("mapperXmlName", name + "Mapper.xml");
+        viewModel.set("serviceName", "I" + name + "Service.java");
+        viewModel.set("implName", name + "ServiceImpl.java");
+        viewModel.set("htmlName", htmlName + ".html");
+    }
+    function getHtmlModel(value) {
+        viewModel.set("htmlModelName", value);
+    }
+
+    function tocalme(str) {
+        var re = /_(\w)/g;
+        return str.replace(re, function ($0, $1) {
+            return $1.toUpperCase();
+        });
+    }
+
+    function dtochange() {
+        kendo.ui.showConfirmDialog({
+            title: '提示',
+            message: '是否对其余文件名做相应修改?'
+        }).done(function (e) {
+            if (e.button == 'OK') {
+                var name = $('#DtoName').val();
+                if(ifEnds(name,".java")){
+                    name=name.substring(0,name.length-5);
+                }
+                var htmlName = name.replace(/([A-Z])/g, "_$1").toLowerCase();
+                if (htmlName.startsWith("_")) {
+                    htmlName = htmlName.substring(1);
+                }
+                viewModel.set("dtoName", name + ".java");
+                viewModel.set("controllerName", name + "Controller.java");
+                viewModel.set("mapperName", name + "Mapper.java");
+                viewModel.set("mapperXmlName", name + "Mapper.xml");
+                viewModel.set("serviceName", "I" + name + "Service.java");
+                viewModel.set("implName", name + "ServiceImpl.java");
+                viewModel.set("htmlName", htmlName + ".html");
+            }
+        })
+    }
+
+    function ifEnds(str, rule) {
+        if(str.endsWith(rule))
+            return true;
+        return false;
+    }
+    function submitform() {
+        if (viewModel.get("targetName") === '') {
+            kendo.ui.showInfoDialog({
+                message: "<@spring.message "generator.needchoosetable"/>"
+            })
+        } else {
+            if ($('#ControllerCreateCheck').val() === 'Y') {
+                if ($('#ControllerCoverCheck').val() === 'Y') {
+                    viewModel.set("controllerStatus", "Cover");
+                } else {
+                    viewModel.set("controllerStatus", "Create");
+                }
+            } else {
+                viewModel.set("controllerStatus", "NotOperation");
+            }
+            if ($('#MapperCreateCheck').val() === 'Y') {
+                if ($('#MapperCoverCheck').val() === 'Y') {
+                    viewModel.set("mapperStatus", "Cover");
+                } else {
+                    viewModel.set("mapperStatus", "Create");
+                }
+            } else {
+                viewModel.set("mapperStatus", "NotOperation");
+            }
+            if ($('#XmlCreateCheck').val() === 'Y') {
+                if ($('#XmlCoverCheck').val() === 'Y') {
+                    viewModel.set("mapperXmlStatus", "Cover");
+                } else {
+                    viewModel.set("mapperXmlStatus", "Create");
+                }
+            } else {
+                viewModel.set("mapperXmlStatus", "NotOperation");
+            }
+            if ($('#ServiceCreateCheck').val() === 'Y') {
+                if ($('#ServiceCoverCheck').val() === 'Y') {
+                    viewModel.set("serviceStatus", "Cover");
+                } else {
+                    viewModel.set("serviceStatus", "Create");
+                }
+            } else {
+                viewModel.set("serviceStatus", "NotOperation");
+            }
+            if ($('#ImplCreateCheck').val() === 'Y') {
+                if ($('#ImplCoverCheck').val() === 'Y') {
+                    viewModel.set("implStatus", "Cover");
+                } else {
+                    viewModel.set("implStatus", "Create");
+                }
+            } else {
+                viewModel.set("implStatus", "NotOperation");
+            }
+            if ($('#HtmlCreateCheck').val() === 'Y') {
+                if ($('#HtmlCoverCheck').val() === 'Y') {
+                    viewModel.set("htmlStatus", "Cover");
+                } else {
+                    viewModel.set("htmlStatus", "Create");
+                }
+            } else {
+                viewModel.set("htmlStatus", "NotOperation");
+            }
+            if ($('#DtoCreateCheck').val() === 'Y') {
+                if ($('#DtoCoverCheck').val() === 'Y') {
+                    viewModel.set("dtoStatus", "Cover");
+                } else {
+                    viewModel.set("dtoStatus", "Create");
+                }
+            } else {
+                viewModel.set("dtoStatus", "NotOperation");
+            }
+
+            if (window.localStorage) {
+                if (!localStorage.projectPath) {
+                    localStorage.projectPath = viewModel.get("projectPath");
+                }
+                if (!localStorage.parentPackagePath) {
+                    localStorage.parentPackagePath = viewModel.get("parentPackagePath");
+                }
+                if (!localStorage.packagePath) {
+                    localStorage.packagePath = viewModel.get("packagePath");
+                }
+            }
+
+            $.post("${base.contextPath}/generator/newtables", viewModel.toJSON(), function (data, status) {
+                if (status == "success") {
+                    var mess;
+                    if (data == 0) {
+                        mess = "文件创建成功";
+                    } else if (data == 1) {
+                        mess = "项目中已存在同名Dto";
+                    } else if (data == 2) {
+                        mess = "项目中已存在同名Service";
+                    } else if (data == 3) {
+                        mess = "项目中已存在同名Impl";
+                    } else if (data == 4) {
+                        mess = "项目中已存在同名Controller";
+                    } else if (data == 5) {
+                        mess = "项目中已存在同名Mapper";
+                    } else if (data == 6) {
+                        mess = "项目中已存在同名Xml";
+                    } else if (data == 7) {
+                        mess = "项目中已存在同名Html";
+                    } else if (data == -1) {
+                        mess = "文件创建失败";
+                    }
+                    kendo.ui.showInfoDialog({
+                        message: mess
+                    });
+
+                }
+            });
+        }
+    }
+
+    $("#projectPath").kendoValidator();
+    $("#parentPackagePath").kendoValidator();
+    $("#PackagePath").kendoValidator();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.intergration.mapper.HapInterfaceOutboundMapper">
+
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.intergration.dto.HapInterfaceOutbound" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="OUTBOUND_ID" property="outboundId" jdbcType="DECIMAL"/>
+        <result column="INTERFACE_NAME" property="interfaceName" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_URL" property="interfaceUrl" jdbcType="VARCHAR"/>
+        <result column="REQUEST_TIME" property="requestTime" javaType="DATE" />
+        <result column="REQUEST_PARAMETER" property="requestParameter" jdbcType="VARCHAR"/>
+        <result column="RESPONSE_CONTENT" property="responseContent" />
+        <result column="RESPONSE_CODE" property="responseCode" jdbcType="VARCHAR"/>
+        <result column="REQUEST_STATUS" property="requestStatus" jdbcType="VARCHAR"/>
+        <result column="RESPONSE_TIME" property="responseTime"  jdbcType="DECIMAL"/>
+        <result column="STACKTRACE" property="stackTrace" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        OUTBOUND_ID,INTERFACE_NAME,INTERFACE_URL,REQUEST_TIME,REQUEST_PARAMETER,REQUEST_STATUS,
+        RESPONSE_CONTENT,RESPONSE_TIME,STACKTRACE,RESPONSE_CODE
+    </sql>
+
+    <select id="select" resultMap="BaseResultMap" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceOutbound">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_IF_INVOKE_OUTBOUND
+        <where>
+            <if test="interfaceName!=null">
+                AND INTERFACE_NAME LIKE  concat('%', concat(#{interfaceName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="interfaceUrl!=null">
+                AND INTERFACE_URL LIKE concat('%', concat(#{interfaceUrl,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="requestStatus!=null">
+                AND REQUEST_STATUS = #{requestStatus}
+            </if>
+            <if test="startDate!=null">
+                AND REQUEST_TIME &gt;=  #{startDate}
+            </if>
+            <if test="endDate!=null">
+                AND REQUEST_TIME &lt;=  #{endDate}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            order by ${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            order by REQUEST_TIME  desc
+        </if>
+
+    </select>
+
+</mapper>

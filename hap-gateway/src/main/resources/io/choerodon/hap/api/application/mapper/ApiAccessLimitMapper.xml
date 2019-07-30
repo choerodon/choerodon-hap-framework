@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.api.application.mapper.ApiAccessLimitMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.api.application.dto.ApiAccessLimit">
+        <result column="ID" property="id" jdbcType="DECIMAL" />
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR" />
+        <result column="INTERFACE_CODE" property="interfaceCode" jdbcType="DECIMAL" />
+        <result column="SERVER_CODE" property="serverCode" jdbcType="VARCHAR" />
+        <result column="ACCESS_FLAG" property="accessFlag" jdbcType="VARCHAR" />
+        <result column="ACCESS_FREQUENCY" property="accessFrequency" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <!-- 删除application记录时 同步删除Limit记录 -->
+    <delete id="removeByClientIdAndServerCode" parameterType="io.choerodon.hap.api.application.dto.ApiAccessLimit">
+        DELETE FROM API_CLIENT_INTERFACE_LIMIT WHERE CLIENT_ID = #{clientId}
+         <!-- 解绑server时，需要此条件；删除application时 不需要此条件-->
+        <if test="null != serverCode">
+             AND SERVER_CODE = #{serverCode}
+         </if>
+    </delete>
+
+    <select id="selectByClientIdAndServerCode" parameterType="io.choerodon.hap.api.application.dto.ApiAccessLimit" resultMap="BaseResultMap">
+            SELECT
+                APIINTERFACE.CODE AS INTERFACE_CODE,
+                APISERVER.CODE AS SERVER_CODE,
+                #{clientId} AS CLIENT_ID,
+                'Y' AS ACCESS_FLAG
+            FROM
+                API_CONFIG_INTERFACE APIINTERFACE,
+                API_CONFIG_SERVER APISERVER
+            WHERE
+                APISERVER. CODE = #{serverCode}
+            AND APIINTERFACE.SERVER_ID = APISERVER.SERVER_ID
+    </select>
+
+
+    <resultMap id="baseAccessLimit" type="io.choerodon.hap.api.application.dto.ApiAccessLimit">
+        <result column="ID" property="id" jdbcType="DECIMAL" />
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR" />
+        <result column="INTERFACE_CODE" property="interfaceCode" jdbcType="DECIMAL" />
+        <result column="SERVER_CODE" property="serverCode" jdbcType="VARCHAR" />
+        <result column="ACCESS_FLAG" property="accessFlag" jdbcType="VARCHAR" />
+        <result column="ACCESS_FREQUENCY" property="accessFrequency" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <select id="selectList" parameterType="io.choerodon.hap.api.application.dto.ApiAccessLimit" resultMap="baseAccessLimit">
+        SELECT
+          A.ID,
+          A.CLIENT_ID,
+          A.INTERFACE_CODE,
+          A.SERVER_CODE,
+          A.ACCESS_FLAG,
+          A.ACCESS_FREQUENCY
+        FROM API_CLIENT_INTERFACE_LIMIT A
+        WHERE A.SERVER_CODE = #{serverCode}
+          AND A.CLIENT_ID = #{clientId}
+    </select>
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.job.mapper.SchedulerMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.job.dto.SchedulerDto">
+        <id column="SCHED_NAME" property="schedName" jdbcType="VARCHAR"/>
+        <id column="INSTANCE_NAME" property="instanceName" jdbcType="VARCHAR"/>
+        <result column="LAST_CHECKIN_TIME" property="lastCheckinTime" jdbcType="BIGINT"/>
+        <result column="CHECKIN_INTERVAL" property="checkinInterval" jdbcType="BIGINT"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        SCHED_NAME, INSTANCE_NAME, LAST_CHECKIN_TIME, CHECKIN_INTERVAL
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="io.choerodon.hap.job.dto.SchedulerDto">
+        select
+        <include refid="Base_Column_List"/>
+        from qrtz_scheduler_state
+        where SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+        and INSTANCE_NAME = #{instanceName,jdbcType=VARCHAR}
+        order by INSTANCE_NAME
+    </select>
+    <select id="selectSchedulers" resultMap="BaseResultMap" parameterType="io.choerodon.hap.job.dto.SchedulerDto">
+        select
+        <include refid="Base_Column_List"/>
+        from qrtz_scheduler_state
+        <where>
+            <if test="schedName != null">
+                SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+            </if>
+            <if test="instanceName != null">
+                and INSTANCE_NAME like #{instanceName,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by INSTANCE_NAME
+    </select>
+</mapper>

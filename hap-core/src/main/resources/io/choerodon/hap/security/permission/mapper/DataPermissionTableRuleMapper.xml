@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.security.permission.mapper.DataPermissionTableRuleMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.security.permission.dto.DataPermissionTableRule">
+        <result column="TABLE_RULE_ID" property="tableRuleId" jdbcType="DECIMAL" />
+        <result column="TABLE_ID" property="tableId" jdbcType="DECIMAL" />
+        <result column="TABLE_FIELD" property="tableField" jdbcType="VARCHAR" />
+        <result column="RULE_ID" property="ruleId" jdbcType="DECIMAL" />
+    </resultMap>
+
+
+</mapper>

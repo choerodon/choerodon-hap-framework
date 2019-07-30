@@ -1,0 +1,400 @@
+<#-- 
+ * description: 客户端编辑页面
+ * version: 3.0
+ * author:xiangyu.qi@hand-china.com
+ -->
+<#include "../include/header.html">
+    <style>
+        .listView{
+            display: inline-block;
+            border: 1px solid #66afe9;
+            padding: 5px;
+            margin-right:5px;
+            margin-bottom:5px;
+        }
+    </style>
+<body>
+<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+
+<#assign isedit = (RequestParameters.id!'0')/>
+
+<script type="text/javascript">
+
+    function isString(str){
+        return (typeof str=='string')&&str.constructor==String;
+    }
+
+    var viewModel = kendo.observable({
+		model: {
+            isEnabled: <#if RequestParameters.id??> false <#else> true </#if>,
+		},
+		save: function(e){
+			
+			var validator = $("#mainform").data("kendoValidator");
+			if (validator.validate()) {
+                if (viewModel.model.authorizedGrantTypes != null && !isString(viewModel.model.authorizedGrantTypes)) {
+                    var authorizedGrantTypes = viewModel.model.authorizedGrantTypes.join(",");
+                    viewModel.model.set("authorizedGrantTypes", authorizedGrantTypes);
+                }
+                var userRoles = "";
+                var roleData = dataSource.data();
+	            for(var i = 0 ;i<roleData.length;i++){
+			          if(i == 0){
+			             	userRoles = roleData[i].roleCode;
+			          }else{
+			             	userRoles = userRoles + ","+ roleData[i].roleCode;
+			           }
+                }
+                viewModel.model.set("authorities",userRoles);
+                var data= viewModel.model.toJSON();
+				$.ajax({
+                    type   : 'POST',
+                    url    : '${base.contextPath}/sys/client/details/submit',
+                    dataType : "json",
+                    contentType : "application/json",
+                    data   : kendo.stringify([data]),
+                    success: function (data) {
+                    	if(data.success==false){
+                    		kendo.ui.showErrorDialog({
+                                message:data.message
+                            });
+                    	}
+                    	else{
+                    		 window.parent.$('#Grid').data('kendoGrid').dataSource.page(1);
+	                        window.parent.$("#dialog").data("kendoWindow").close();
+                        }
+                    }
+                });
+			}
+		},
+		closeWin: function(e){
+        	window.parent.$("#dialog").data("kendoWindow").close(); 
+        } 
+	});
+
+	var id = '${RequestParameters.id!0}';
+	
+	if (id!=0) {
+
+        $.ajax({
+            url: '${base.contextPath}/sys/client/details/query?id=${RequestParameters.id!0}',
+            success: function (args) {
+                var a0 = args.rows[0] || {};
+                for (var k in a0) {
+                   if(k == "authorizedGrantTypes"){
+                   	  viewModel.model.set(k,a0[k].split(","));
+                   	  continue;
+                   }else if(k == "authorities"){
+                   	  var data = [];
+                   	  if(a0[k] && a0[k] != "") {
+		               	  var authorities = a0[k].split(",");
+		               	  for(var i = 0 ;i<authorities.length;i++){
+		               	  	var roleData = {};
+		               	  	roleData["roleCode"] = authorities[i];
+		               	  	data[i] = roleData;
+		               	  }
+	                    dataSource.data(data);
+
+	              }
+               }
+                   viewModel.model.set(k, a0[k]);
+                }
+            }
+        });
+    }
+
+    var roleViewModel = kendo.observable({
+        model: {},
+        queryResource: function () {
+            $('#chooseGrid').data('kendoGrid').dataSource.page(1);
+        }
+    });
+
+    var dataSource = new kendo.data.DataSource({
+    	    data: []});
+    
+</script>
+
+<div id="page-content"  style="margin-bottom: 45px">
+	<form id="mainform"  class="form-horizontal" method="post" enctype="application/json;charset=UTF-8">
+
+	<div class="row" style="margin-left: 5px;">
+	 	<div class="col-sm-12 form-group" style="float: left;margin-top: 5px;">
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.clientid"/>:</label>
+				<div class="col-sm-6">
+					<input type="text" required style="width:100%" name="clientId" data-label="<@spring.message 'oauth2clientdetails.clientid'/>" data-role="maskedtextbox" data-bind="enabled: model.isEnabled,value:model.clientId" class="k-textbox"  >
+				</div>
+			</div>
+			<#if isedit != '0'>
+			<div class="col-sm-12 form-group" >
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.clientsecret"/>:</label>
+				<div class="col-sm-6">
+					<input type="text" readonly="readonly" style="width:100%" name="clientSecret" data-role="maskedtextbox" data-bind="enabled:model.isEnabled,value:model.clientSecret" class="k-textbox">
+                </div>
+                 <div class="col-sm-2 form-group "   style="line-height: 30px"> <a title="<@spring.message 'oauth2clientdetails.updatepasswd'/>" href="javascript:updatePassword()"><i class="fa fa-refresh" aria-hidden="true"></i></a></div>
+            </div>
+           
+			</#if>
+
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.granttypes"/>:</label>
+				<div class="col-sm-10">
+					<!-- <input  type="text" style="width:100%" id="authorizedGrantTypes" name="authorizedGrantTypes" data-bind="value:model.authorizedGrantTypes"  class="k-textbox"> -->
+					<select   required style="width:100%" id="multiselect"  data-label="<@spring.message 'oauth2clientdetails.granttypes'/>" data-bind="value:model.authorizedGrantTypes"   ></select>
+					<script>
+					$("#multiselect").kendoMultiSelect({
+					  dataSource: {
+					    data: ["implicit", "client_credentials","password","authorization_code","refresh_token"]
+					  }
+					});
+					</script>
+				</div>
+			</div>
+			
+            <div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.accesstokenvalidity"/>:</label>
+				<div class="col-sm-4">
+					<input style="width:100%" id = "accessTokenValidity" name="accessTokenValidity" data-bind="value:model.accessTokenValidity" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="number" >
+					<script>
+                        $("#accessTokenValidity").kendoNumericTextBox({
+                            format: "0",
+                            min: 0,
+                            placeholder: "<@spring.message 'oauth2clientdetails.refreshvaliditydescribe'/>",
+                        });
+					</script>
+				</div>
+
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.refreshtokenvalidity"/>:</label>
+				<div class="col-sm-4">
+					<input style="width:100%" id="refreshTokenValidity" name="refreshTokenValidity" data-bind="value:model.refreshTokenValidity" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="number" >
+					<script>
+					   $("#refreshTokenValidity").kendoNumericTextBox({
+                             format: "0",
+                             min: 0,
+                             placeholder: "<@spring.message 'oauth2clientdetails.refreshvaliditydescribe'/>",
+                       });
+                     </script>
+				</div>
+			</div>
+
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.autoapprove"/>:</label>
+				<div class="col-sm-4">
+					<input style="width:100%" type="text" name="autoApprove" data-bind="value:model.autoApprove" class="k-textbox">
+				</div>
+
+				<label class="col-sm-2 control-label">scope:</label>
+				<div class="col-sm-4">
+					<input style="width:100%" type="text" name="scope" data-bind="value:model.scope" class="k-textbox">
+				</div>
+
+			</div>
+
+		    <div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.redirecturi"/>:</label>
+				<div class="col-sm-10">
+					<input style="width:100%" name="redirectUri" id="redirectUri" data-bind="value:model.redirectUri" type="text"  class="k-textbox">
+				</div>
+			</div>
+
+			
+
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.authorities"/>:</label>
+				<div class="col-sm-6"  style="line-height: 30px">
+				    <a href="javascript:addRole()"><@spring.message "oauth2clientdetails.addrole"/></a>
+				</div>
+			</div>
+			<div class="col-sm-12 form-group">
+			        <div  class="col-sm-2"></div>
+			        <div class="col-sm-10">
+                        <div id="authorities" style="border: none"></div>
+					<!-- <textarea  readonly="readonly"  style="width:100%" rows="3" name="authorities" data-bind="value:model.authorities" > </textarea> -->
+					</div>
+					 <script>
+						$("#authorities").kendoListView({
+						       dataSource: dataSource,
+						       template: '<div class="listView" >#:roleCode#  <a href="javascript:void(0)" onclick="removeRole(this)"><i class="fa fa-times" aria-hidden="true"></i></a> </div>',
+						   
+						});
+					</script>
+			</div>
+
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 control-label"><@spring.message "oauth2clientdetails.additionalinformation"/>:</label>
+				<div class="col-sm-6">
+					<textarea   style="width:100%" rows="3" name="additionalInformation" data-bind="value:model.additionalInformation" > </textarea>
+				</div>
+			</div>
+
+	</div>
+	</form>
+</div>
+
+    
+<div id="chooseRole">
+    <div class="pull-left" id="toolbar-btn2" style="padding-bottom:10px;">
+        <span onclick="saveRole()" class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+    </div>
+
+    <div class="pull-right" id="query-form-role" style="padding-bottom:10px;">
+        <input data-role="maskedtextbox" placeholder="<@spring.message "role.rolecode"/>" type="text" class="k-textbox"
+               type="text" style="float:left;width:150px;margin-right:5px;"
+               data-bind="value:model.roleCode"/>
+        <input data-role="maskedtextbox" placeholder="<@spring.message "role.rolename"/>" type="text" class="k-textbox"
+               type="text" style="float:left;width:150px;margin-right:5px;"
+               data-bind="value:model.roleName"/>
+        <span class="btn btn-primary" data-bind="click:queryResource"
+              type="submit"><@spring.message "hap.query"/></span>
+    </div>
+    <script>kendo.bind($('#query-form-role'), roleViewModel);</script>
+
+    <div style="clear:both;">
+        <div id="chooseGrid" style="clear: both"></div>
+    </div>
+</div>
+<div id="btn-footer" class="text-right" style="bottom: 0px;padding-bottom:15px;position: fixed;padding-top:15px;border-top:1px solid #ebebeb;width:100%; background: #fff;">
+        <span class="btn btn-primary" data-bind="click:save" type="submit" style="margin-right:5px"><@spring.message "hap.save"/></span>
+        <span class="btn btn-default" data-bind="click:closeWin" type="button" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+</div>
+<script type="text/javascript">
+
+	 kendo.bind($('#mainform'), viewModel);
+     kendo.bind($('#btn-footer'),viewModel);
+
+	//验证
+	$("#mainform").kendoValidator({
+    	messages: {
+            required: '<@spring.message "hap.validation.notempty"/>'
+    	},
+		invalidMessageType : "tooltip"
+    });
+
+    $("#chooseRole").kendoWindow({
+        actions: ["Close"],
+        title: $l('<@spring.message "user.allocationrole"/>'),
+        draggable: true,
+        width: 700,
+        height: 350,
+        resizable: false,
+        modal: true,
+        visible: false
+    });
+
+    var addRole = function(){
+    	var win = $("#chooseRole").data("kendoWindow");
+        win.center().open();
+    }
+
+    function saveRole() {
+        var selection = $('#chooseGrid').data('kendoGrid').selectedDataItems();
+        var data = [];
+        for(var i =0 ;i < selection.length; i++){
+        	  var roleData = {};
+	          roleData["roleCode"] = selection[i].roleCode;
+	          data[i] = roleData;
+        }
+        dataSource.data(data);
+        $("#chooseRole").data("kendoWindow").close();
+    }
+
+    var modalUrl = "${base.contextPath}/sys/role",
+    modalDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+
+                url: modalUrl + "/queryRoleNotUserRole",
+                type: "POST",
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type);
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(roleViewModel.model.toJSON(), options);
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "roleId"
+            }
+        }
+    });
+
+    $("#chooseGrid").kendoGrid({
+        dataSource: modalDataSource,
+        navigatable: false,
+        height: '250px',
+        resizable: true,
+        scrollable: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "roleCode",
+                title: '<@spring.message "role.rolecode"/>',
+                width: 80
+            },
+            {
+                field: "roleName",
+                title: '<@spring.message "role.rolename"/>',
+                width: 200,
+            },
+            {
+                field: "roleDescription",
+                title: '<@spring.message "role.roledescription"/>',
+                width: 200,
+            },
+
+        ],
+        editable: false,
+        dataBound: function () {
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+
+    }).data("kendoGrid");
+
+    var removeRole = function(e){
+        var listView = $("#authorities").data("kendoListView");
+        listView.remove($(e.parentNode));
+    }
+
+    var updatePassword = function(){
+        kendo.ui.showConfirmDialog({
+            title: '<@spring.message "hap.tip.info"/>',
+            message: '<@spring.message "oauth2clientdetails.resetpasswd"/>'
+        }).done(function (e) {
+            if(e.button == "OK") {
+                $.ajax({
+                    type: 'POST',
+                    url: "${base.contextPath}/common/generator/uuid",
+                    data: "id=" + id,
+                    success: function (data) {
+                        viewModel.model.set("clientSecret", data);
+                    }
+                });
+            }
+        });
+    	
+    };
+	
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.ResourceCustomizationMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.ResourceCustomization"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="RESOURCE_CUSTOMIZATION_ID" property="resourceCustomizationId" jdbcType="DECIMAL"/>
+        <result column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL"/>
+        <result column="URL" property="url" jdbcType="VARCHAR"/>
+        <result column="SEQUENCE" property="sequence" jdbcType="DECIMAL"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        RESOURCE_CUSTOMIZATION_ID,RESOURCE_ID,URL,SEQUENCE,DESCRIPTION,ENABLE_FLAG,OBJECT_VERSION_NUMBER
+    </sql>
+
+    <select id="selectResourceCustomizationsByResourceId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_RESOURCE_CUSTOMIZATION
+        WHERE RESOURCE_ID = #{resourceId}
+        ORDER BY SEQUENCE ASC
+    </select>
+
+    <select id="loadResourceCustomizationsByResourceId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_RESOURCE_CUSTOMIZATION
+        WHERE RESOURCE_ID = #{resourceId} AND ENABLE_FLAG = 'Y'
+        ORDER BY SEQUENCE ASC
+    </select>
+
+    <select id="selectAllResourceCustomizations" resultType="org.springframework.util.LinkedCaseInsensitiveMap">
+        SELECT RESOURCE_ID, URL
+        FROM SYS_RESOURCE_CUSTOMIZATION
+        WHERE ENABLE_FLAG = 'Y'
+        ORDER BY RESOURCE_ID, SEQUENCE ASC
+    </select>
+</mapper>

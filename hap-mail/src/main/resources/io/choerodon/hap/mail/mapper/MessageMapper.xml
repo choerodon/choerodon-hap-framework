@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.mail.mapper.MessageMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.mail.dto.Message" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="MESSAGE_ID" property="messageId" jdbcType="DECIMAL"/>
+        <result column="MESSAGE_TYPE" property="messageType" jdbcType="VARCHAR"/>
+        <result column="MESSAGE_HOST" property="messageHost" jdbcType="VARCHAR"/>
+        <result column="MESSAGE_FROM" property="messageFrom" jdbcType="VARCHAR"/>
+        <result column="SUBJECT" property="subject" jdbcType="VARCHAR"/>
+        <result column="PRIORITY_LEVEL" property="priorityLevel" jdbcType="VARCHAR"/>
+        <result column="SEND_FLAG" property="sendFlag" jdbcType="VARCHAR"/>
+        <result column="MESSAGE_SOURCE" property="messageSource" jdbcType="VARCHAR"/>
+        <result column="CONTENT" property="content" />
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectMessageContent" resultMap="BaseResultMap" parameterType="io.choerodon.hap.mail.dto.Message">
+        SELECT  SM.CONTENT
+        FROM SYS_MESSAGE SM
+        WHERE SM.MESSAGE_ID =#{messageId}
+    </select>
+
+    <select id="selectMessages" resultMap="BaseResultMap" parameterType="io.choerodon.hap.mail.dto.Message">
+        SELECT SM.MESSAGE_ID, SM.MESSAGE_TYPE, SM.MESSAGE_HOST, SM.MESSAGE_FROM, SM.SUBJECT, SM.PRIORITY_LEVEL,
+        SM.SEND_FLAG, SM.MESSAGE_SOURCE, SM.CREATION_DATE, SM.LAST_UPDATE_DATE
+        FROM SYS_MESSAGE SM
+        <where>
+            <if test="messageFrom != null">
+                AND SM.MESSAGE_FROM LIKE CONCAT('%',CONCAT(#{messageFrom,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="subject != null">
+                AND SM.SUBJECT LIKE CONCAT('%',CONCAT(#{subject,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="sendFlag != null">
+                AND SM.SEND_FLAG = #{sendFlag}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            ORDER BY SM.${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            ORDER BY SM.CREATION_DATE DESC
+        </if>
+
+    </select>
+
+    <!-- 通过job发送的邮件-->
+    <select id="selectEmailSendByJob" resultMap="BaseResultMap">
+        SELECT *  FROM SYS_MESSAGE MSG
+        WHERE MSG.MESSAGE_TYPE = 'EMAIL' AND MSG.SEND_FLAG = 'N'
+        ORDER BY MSG.MESSAGE_ID ASC
+    </select>
+    <!-- 发送邮件 -->
+    <select id="selectEmailToSend" resultMap="BaseResultMap">
+        SELECT
+        MSG.*
+        FROM SYS_MESSAGE MSG
+        WHERE MSG.MESSAGE_TYPE = 'EMAIL'
+        AND (MSG.PRIORITY_LEVEL IS NULL OR MSG.PRIORITY_LEVEL = 'NORMAL')
+        AND MSG.SEND_FLAG NOT IN ('Y','F','P')
+        ORDER BY MSG.MESSAGE_ID
+    </select>
+    <!-- 发送邮件,VIP队列 -->
+    <select id="selectVipEmailToSend" resultMap="BaseResultMap">
+        SELECT MSG.*
+        FROM SYS_MESSAGE MSG
+        WHERE MSG.MESSAGE_TYPE = 'EMAIL'
+        AND MSG.PRIORITY_LEVEL = 'VIP'
+        AND MSG.SEND_FLAG NOT IN ('Y','F','P')
+        ORDER BY MSG.MESSAGE_ID
+    </select>
+    <!-- 发送站内信 -->
+    <select id="selectSiteToSend" resultMap="BaseResultMap">
+        SELECT MSG.*
+        FROM SYS_MESSAGE MSG
+        WHERE MSG.MESSAGE_TYPE = 'SITE'
+        AND (MSG.PRIORITY_LEVEL IS NULL OR MSG.PRIORITY_LEVEL = 'NORMAL')
+        AND MSG.SEND_FLAG NOT IN ('Y','F','P')
+        ORDER BY MSG.MESSAGE_ID
+    </select>
+    <!-- 发送邮件,VIP队列 -->
+    <select id="selectVipSiteToSend" resultMap="BaseResultMap">
+        SELECT
+        MSG.*
+        FROM SYS_MESSAGE MSG
+        WHERE MSG.MESSAGE_TYPE = 'SITE'
+        AND MSG.PRIORITY_LEVEL = 'VIP'
+        AND MSG.SEND_FLAG NOT IN ('Y','F','P')
+        ORDER BY MSG.MESSAGE_ID
+    </select>
+
+    <select id="selectMessagesBySubject" resultMap="BaseResultMap" parameterType="io.choerodon.hap.mail.dto.Message">
+        SELECT SM.MESSAGE_ID,
+        SM.MESSAGE_TYPE,
+        SM.MESSAGE_HOST,
+        SM.MESSAGE_FROM,
+        SM.SUBJECT,
+        SM.CONTENT,
+        SM.PRIORITY_LEVEL,
+        SM.SEND_FLAG,
+        SM.CREATION_DATE,
+        SM.LAST_UPDATE_DATE
+        FROM SYS_MESSAGE SM
+        <where>
+            <if test="subject != null">
+                AND SM.SUBJECT LIKE CONCAT('%',CONCAT(#{subject,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="messageFrom != null">
+                AND SM.MESSAGE_FROM LIKE CONCAT('%',CONCAT(#{messageFrom,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="sendFlag != null">
+                AND SM.SEND_FLAG = #{sendFlag}
+            </if>
+        </where>
+        ORDER BY SM.CREATION_DATE DESC
+    </select>
+</mapper>

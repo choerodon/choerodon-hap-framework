@@ -1,0 +1,308 @@
+<#include "../include/header.html" />
+
+<body>
+<div id="taskUnbound"></div>
+<script type="text/javascript">
+    var taskId = '${RequestParameters.taskId!0}';
+    var BaseUrl = _basePath;
+    var viewModel = kendo.observable({
+        isEnabled: false,
+        model: {},
+        save: function (e) {
+            var orders = [];
+            var childrenData = [];
+            var data = childrenDataSource.data();
+            var orderRepeat = false;
+            $.each(data, function (i, v) {
+                if (orders.indexOf(v.order) > -1) {
+                    showError();
+                    orderRepeat = true;
+                    return;
+                }
+                orders.push(v.order);
+                var children = {};
+                children.taskId = v.taskId;
+                children.order = v.order;
+                childrenData.push(children);
+
+            });
+            if (orderRepeat) {
+                return;
+            }
+            var dtoData = {
+                taskId: taskId,
+                childrenTasks: childrenData
+            };
+            $.ajax({
+                url: BaseUrl + '/sys/task/detail/updateChildrenTasks',
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(dtoData),
+                success: function (args) {
+                    Hap.showToast({
+                        type: 'success',
+                        message: $l('hap.tip.success')
+                    });
+                    window.parent.$("#groupEdit").data("kendoWindow").close();
+                }
+            });
+        },
+        closeWin: function (e) {
+            window.parent.$("#groupEdit").data("kendoWindow").close();
+        }
+    });
+    function showError() {
+        kendo.ui.showErrorDialog({
+            message: '<@spring.message "taskdetail.order.repeat"/>'
+        });
+    }
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <form class="form-horizontal">
+            <div class="panel-body">
+                <div id="editForm">
+
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"taskdetail.code"/></label>
+                            <div class="col-xs-8">
+                                <input id="code" name="code" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.code'/>"
+                                       required data-bind="enabled:isEnabled,value: model.code"/>
+                                <script>kendo.bind($('#code'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"taskdetail.name"/></label>
+                            <div class="col-xs-8">
+                                <input id="name" name="name" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.name'/>"
+                                       required data-bind="enabled:isEnabled,value: model.name"/>
+                                <script>kendo.bind($('#name'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label"><@spring.message"taskdetail.description"/></label>
+                            <div class="col-xs-10">
+                                <input id="description" name="description" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.description'/>"
+                                       data-bind="enabled:isEnabled,value: model.description"/>
+                                <script>kendo.bind($('#description'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label"><@spring.message"task.group.subtask"/></label>
+                            <div class="col-xs-10">
+                                <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                                    <span class="btn btn-primary" onclick="selectUnboundTasks()"
+                                          style="float:left;margin-right:5px;"><@spring.message "hap.add"/></span>
+                                    <span class="btn btn-danger" onclick="removeTasks()" style="float:left;"><@spring.message "hap.delete"/></span>
+                                </div>
+                                <div style="clear: both;">
+                                    <div id="grid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="text-right k-window-toolbar">
+    <span class="btn btn-primary" id="save" data-bind="click:save" style="margin-right:5px"><@spring.message "hap.save"/></span>
+    <span class="btn btn-default" id="cancel" type="button" data-bind="click:closeWin" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+    <script>
+        kendo.bind($('#save'), viewModel);
+        kendo.bind($('#cancel'), viewModel);
+    </script>
+</div>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        if (taskId != 0) {
+            var dtoData = {
+                taskId: taskId,
+            };
+            $.ajax({
+                url: BaseUrl + '/sys/task/detail/getGroupById',
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(dtoData),
+                success: function (args) {
+                    var profile = args.rows[0] || {};
+                    for (var i in profile) {
+                        if (profile[i] != null) {
+                            viewModel.set("model." + i, profile[i]);
+                        }
+                    }
+                    var childrenTasks = profile['childrenTasks'];
+                    $.each(childrenTasks, function (i, data) {
+                        if (data.startDate != null) {
+                            data.startDate = data.startDate.substr(0, 10);
+                        }
+                        if (data.endDate != null) {
+                            data.endDate = data.endDate.substr(0, 10);
+                        }
+                        childrenDataSource.add(data);
+                    });
+                    grid.refresh();
+                }
+            });
+        }
+    });
+
+    var container = $("#editForm");
+    kendo.init(container);
+    container.kendoValidator({
+        messages: {
+            required: '<@spring.message "hap.validation.notempty"/>'
+        },
+        invalidMessageType: "tooltip"
+    });
+
+    childrenDataSource = new kendo.data.DataSource({
+        batch: true,
+        serverPaging: true,
+        schema: {
+            data: 'rows.childrenTasks',
+            total: 'total',
+            model: {
+                id: "taskId",
+                fields: {
+                    code: {editable: false},
+                    name: {editable: false},
+                    description: {editable: false},
+                    startDate: {editable: false, type: "date"},
+                    endDate: {editable: false, type: 'date'}
+                }
+            }
+        }
+    });
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: childrenDataSource,
+        height: '260px',
+        selectable: 'multiple, rowbox',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        autoBind: false,
+        editable: true,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}');
+            }
+        },
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "taskdetail.code"/>',
+                width: 60
+            },
+            {
+                field: "name",
+                title: '<@spring.message "taskdetail.name"/>',
+                width: 80
+            },
+            {
+                field: "description",
+                title: '<@spring.message "taskdetail.description"/>',
+                width: 120
+            },
+            {
+                field: "startDate",
+                attributes: {style: "text-align:center"},
+                title: '<@spring.message "user.startActiveDate"/>',
+                width: 80,
+                headerAttributes: {style: "text-align: center"},
+                format: "{0:yyyy-MM-dd}"
+            },
+            {
+                field: "endDate",
+                attributes: {style: "text-align:center"},
+                title: '<@spring.message "user.endActiveDate"/>',
+                width: 80,
+                headerAttributes: {style: "text-align: center"},
+                format: "{0:yyyy-MM-dd}"
+            },
+            {
+                field: "order",
+                title: '<@spring.message "taskdetail.executionorder"/>',
+                width: 80,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                editor: function (container, options) {
+                    $('<input name="' + options.field + '" />')
+                        .appendTo(container)
+                        .kendoNumericTextBox({
+                            format: "n0",
+                            factor: 100,
+                            min: 0,
+                            step: 1
+                        });
+                }
+            }
+        ]
+    }).data("kendoGrid");
+
+    function selectUnboundTasks() {
+        var ids = "";
+        var data = childrenDataSource.data();
+        if (data.length) {
+            $.each(data, function (i, v) {
+                ids = ids + v.taskId + ",";
+            });
+        }
+        var url = '${base.contextPath}/task/task_unbound.html';
+        if (ids) {
+            url = url + "?ids=" + ids;
+        }
+        var taskUnboundWin = Hap.createWindow('#taskUnbound', {
+            width: '80%',
+            height: 450,
+            title: '<@spring.message "hap.edit"/>',
+            url: url
+        });
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 500, function () {
+                taskUnboundWin.center().open();
+            })
+        } else {
+            taskUnboundWin.center().open();
+        }
+    }
+
+    function removeTasks() {
+        var selectedData = grid.selectedDataItems();
+        if (selectedData.length) {
+            $.each(selectedData, function (i, v) {
+                grid.dataSource.remove(v);
+            });
+        }
+        grid.refresh();
+    }
+
+</script>
+</body>
+</html>

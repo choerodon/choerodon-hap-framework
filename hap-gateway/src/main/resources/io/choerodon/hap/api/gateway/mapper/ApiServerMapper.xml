@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.api.gateway.mapper.ApiServerMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.api.gateway.dto.ApiServer">
+        <result column="SERVER_ID" property="serverId" jdbcType="BIGINT" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="SERVICE_TYPE" property="serviceType" jdbcType="VARCHAR" />
+        <result column="DOMAIN_URL" property="domainUrl" jdbcType="VARCHAR" />
+        <result column="MAPPING_URL" property="mappingUrl" jdbcType="VARCHAR" />
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR" />
+        <result column="NAMESPACE" property="namespace" jdbcType="VARCHAR" />
+        <result column="PUBLISH_TYPE" property="publishType" jdbcType="VARCHAR" />
+        <result column="AUTH_TYPE" property="authType" jdbcType="VARCHAR" />
+        <result column="GRANT_TYPE" property="grantType" jdbcType="VARCHAR" />
+        <result column="ACCESS_TOKEN_URL" property="accessTokenUrl" jdbcType="VARCHAR" />
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR" />
+        <result column="CLIENT_SECRET" property="clientSecret" jdbcType="VARCHAR" />
+        <result column="AUTH_USERNAME" property="authUsername" jdbcType="VARCHAR" />
+        <result column="AUTH_PASSWORD" property="authPassword" jdbcType="VARCHAR" />
+        <result column="SCOPE" property="scope" jdbcType="VARCHAR" />
+        <result column="ELEMENT_FORM_DEFAULT" property="elementFormDefault" jdbcType="VARCHAR" />
+        <result column="WSS_PASSWORD_TYPE" property="wssPasswordType" jdbcType="VARCHAR" />
+        <result column="USERNAME" property="username" jdbcType="VARCHAR" />
+        <result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="ServerAndInterfaceResultMap" extends="BaseResultMap" type="io.choerodon.hap.api.gateway.dto.ApiServer">
+
+        <collection property="interfaces" ofType="io.choerodon.hap.api.gateway.dto.ApiInterface">
+            <result column="IF_INTERFACE_ID" property="interfaceId" jdbcType="BIGINT" />
+            <result column="IF_SERVER_ID" property="serverId" jdbcType="BIGINT" />
+            <result column="IF_CODE" property="code" jdbcType="VARCHAR" />
+            <result column="IF_NAME" property="name" jdbcType="VARCHAR" />
+            <result column="IF_SOAP_VERSION" property="soapVersion" jdbcType="VARCHAR" />
+            <result column="IF_INTERFACE_URL" property="interfaceUrl" jdbcType="VARCHAR" />
+            <result column="IF_MAPPING_URL" property="mappingUrl" jdbcType="VARCHAR" />
+            <result column="IF_ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR" />
+            <result column="IF_MAPPING_CLASS" property="mappingClass" jdbcType="VARCHAR" />
+            <result column="IF_REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR" />
+            <result column="IF_REQUEST_HEAD" property="requestHead" jdbcType="VARCHAR" />
+            <result column="IF_DESCRIPTION" property="description" jdbcType="VARCHAR" />
+            <result column="IF_SOAP_ACTION" property="soapAction" jdbcType="VARCHAR" />
+            <result column="IF_INVOKE_RECORD_DETAILS" property="invokeRecordDetails" jdbcType="VARCHAR" />
+        </collection>
+
+    </resultMap>
+
+    <sql id="serverField">
+        S.SERVER_ID, S.CODE, S.NAME, S.SERVICE_TYPE, S.DOMAIN_URL, S.MAPPING_URL, S.ENABLE_FLAG, S.NAMESPACE,
+        S.PUBLISH_TYPE, S.AUTH_TYPE, S.GRANT_TYPE, S.ACCESS_TOKEN_URL, S.CLIENT_ID, S.CLIENT_SECRET, S.AUTH_USERNAME,
+        S.AUTH_PASSWORD, S.SCOPE, S.ELEMENT_FORM_DEFAULT, S.WSS_PASSWORD_TYPE, S.USERNAME, S.PASSWORD
+    </sql>
+
+    <select id="selectByCodes"  parameterType="java.util.List" resultMap="BaseResultMap">
+        SELECT S.SERVER_ID, S.CODE, S.NAME, S.SERVICE_TYPE, S.ENABLE_FLAG
+        FROM API_CONFIG_SERVER S
+        WHERE S.CODE IN
+        <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
+            #{item, jdbcType=VARCHAR}
+        </foreach>
+    </select>
+
+
+    <select id="getServerAndInterfaceByServerId"  resultMap="ServerAndInterfaceResultMap" parameterType="java.lang.Long">
+        SELECT
+          <include refid="serverField" /> ,
+          I.INTERFACE_ID AS IF_INTERFACE_ID,
+          I.SERVER_ID AS IF_SERVER_ID,
+          I.CODE AS IF_CODE,
+          I.NAME AS IF_NAME,
+          I.SOAP_VERSION AS IF_SOAP_VERSION,
+          I.INTERFACE_URL AS IF_INTERFACE_URL,
+          I.MAPPING_URL AS IF_MAPPING_URL,
+          I.ENABLE_FLAG AS IF_ENABLE_FLAG,
+          I.MAPPING_CLASS AS IF_MAPPING_CLASS,
+          I.REQUEST_METHOD AS IF_REQUEST_METHOD,
+          I.REQUEST_HEAD AS IF_REQUEST_HEAD,
+          I.DESCRIPTION AS IF_DESCRIPTION,
+          I.SOAP_ACTION AS IF_SOAP_ACTION,
+          I.INVOKE_RECORD_DETAILS AS IF_INVOKE_RECORD_DETAILS
+        FROM api_config_server S LEFT JOIN api_config_interface I ON S.SERVER_ID = I.SERVER_ID
+        <where>
+            <if test="serverId!=null">
+                S.SERVER_ID = #{serverId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectNotExistsServerByApp" resultMap="BaseResultMap" parameterType="java.util.Map">
+        SELECT <include refid="serverField" />
+        FROM API_CONFIG_SERVER S
+        WHERE S.ENABLE_FLAG = 'Y'
+        <if test="codeList != null">
+            AND S.CODE NOT IN
+            <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
+                #{item, jdbcType=VARCHAR}
+            </foreach>
+            <if test="server.code != null">
+                AND S.CODE like concat('%',concat(#{server.code,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="server.name != null">
+                AND S.NAME like concat('%',concat(#{server.name,jdbcType=VARCHAR},'%'))
+            </if>
+        </if>
+        order by S.CODE
+    </select>
+
+
+</mapper>

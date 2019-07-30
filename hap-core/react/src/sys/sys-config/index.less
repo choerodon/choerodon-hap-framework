@@ -1,0 +1,30 @@
+@sys-config-prefix: sys-config;
+
+.@{sys-config-prefix}-upload {
+  img {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    display: inline-block;
+  }
+
+  .flex-wrapper {
+    display: flex;
+
+    .preview {
+      margin-right: 30px;
+      min-width: 100px;
+    }
+
+    .upload-wrapper {
+      align-self: center;
+    }
+  }
+}
+
+.@{sys-config-prefix}-form {
+  margin-left: 1rem;
+  width: 8rem;
+
+  .@{sys-config-prefix}-short-input {
+    width: 2.35rem;
+  }
+}

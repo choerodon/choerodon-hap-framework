@@ -1,0 +1,7 @@
+logging:
+  file: hap
+  path: log
+  level:
+    root: debug
+  total:  30GB
+  history:  30

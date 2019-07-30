@@ -1,0 +1,457 @@
+<#include "../include/header.html">
+<body>
+<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script>
+    var whiteListViewDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: '${base.contextPath}/sys/messageEmailWhiteList/query?configId=${RequestParameters.configId!0}',
+                type: "POST",
+                dataType: "json"
+            },
+            destroy: {
+                url: "${base.contextPath}/sys/messageEmailWhiteList/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    return kendo.stringify(Hap.prepareSubmitParameter(options, type));
+                }
+            }
+        },
+        batch: true,
+        schema: {
+            data: 'rows',
+            model: {
+                id: "id",
+                fields: {
+                    address: {validation: {required: false}},
+                }
+            }
+        }
+    });
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <form id="mainform" class="form-horizontal">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.configCode"/></label>
+                        <div class="col-sm-8">
+                            <input required data-label="<@spring.message 'messageemailconfig.configCode'/>" type="text" style="width: 100%" name="configCode" data-bind="enabled: model.isEnabled, value:model.configCode" data-role="maskedtextbox">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.description"/></label>
+                        <div class="col-sm-8">
+                            <input type="text" style="width: 100%" name="description" data-bind="value:model.description" class="k-textbox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.host"/></label>
+                        <div class="col-sm-8">
+                            <input required data-label="<@spring.message 'messageemailconfig.host'/>" type="text" style="width: 100%" name="host" data-bind="value:model.host" class="k-textbox">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.port"/></label>
+                        <div class="col-sm-8">
+                            <input required data-label="<@spring.message 'messageemailconfig.port'/>" type="text" id="port" style="width: 100%" name="port"
+                                   data-bind="value:model.port">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--<div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.username"/></label>
+                        <div class="col-sm-8">
+                            <input id="userName" required data-label='<@spring.message "messageemailconfig.username"/>' type="text" style="width: 100%" name="userName" data-bind="value:model.userName" class="k-textbox">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.password"/></label>
+                        <div class="col-sm-8">
+                            <input required data-label='<@spring.message "messageemailconfig.password"/>' type="text" style="width: 100%" id="password-input" name="password" data-bind="value:model.password" class="k-textbox">
+                            <script type="text/javascript">
+                                $('#password-input').one('focus', function () {
+                                    $(this).attr('type', 'password');
+                                });
+                                <#if RequestParameters.configId??>
+                                $('#password-input').attr('type', 'password');
+                                </#if>
+                            </script>
+
+                        </div>
+                    </div>
+                </div>
+            </div>-->
+            <div class="row">
+                <!--   <div class="col-sm-6">
+                       <div class="form-group">
+                           <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.tryTimes"/></label>
+                           <div class="col-sm-8">
+                               <input required data-label="<@spring.message 'messageemailconfig.tryTimes'/>" type="text" id="tryTimes" style="width: 100%" name="tryTimes" data-bind="value:model.tryTimes">
+                           </div>
+                       </div>
+                   </div>-->
+               <!-- <div class="col-sm-6">
+                   <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message "messageemailconfig.serverenable"/></label>
+                        <div class="col-sm-8" style="text-align: left">
+                            <input id="serverCheckbox" checked="checked" name="serverCheckbox" type="checkbox" data-bind="value:model.serverEnable"/>
+                            <script>
+                                $("#serverCheckbox").kendoCheckbox({
+                                    type: 'boolean',
+                                    checkedValue:'Y',
+                                    uncheckedValue:'N',
+                                    change:function (e) {
+                                        var userName = $("#userName");
+                                        var password = $("#password-input");
+                                        var grid = $("#Grid").data("kendoGrid");
+                                        if (e.values == "N"){
+                                            var a =  $('span[data-for="userName"]');
+                                            var b =  $('span[data-for="password"]');
+                                            b.remove();
+                                            a.remove();
+                                            userName.attr("disabled",true);
+                                            userName.removeClass("k-valid-custom k-state-invalid k-invalid")
+                                            password.removeClass("k-valid-custom k-state-invalid k-invalid")
+                                            userName.addClass("k-state-disabled");
+                                            password.attr("disabled",true);
+                                            password.addClass("k-state-disabled");
+                                            userName.removeAttr("required");
+                                            password.removeAttr("required");
+                                            grid.showColumn("password")
+                                        }else {
+                                            userName.attr("disabled",false);
+                                            userName.removeClass("k-state-disabled");
+                                            password.attr("disabled",false);
+                                            password.removeClass("k-state-disabled");
+                                            userName.attr("required",true);
+                                            password.attr("required",true);
+                                            grid.hideColumn("password");
+                                        }
+                                    }
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>-->
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"><@spring.message
+                            "messageemailconfig.usewhitelist"/></label>
+                        <div class="col-sm-8" style="text-align: left">
+                            <input id="checkbox" type="checkbox" style="margin-top: 8px" name="useWhiteList" data-bind="checked:model.useWhiteList">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group" >
+                        <label class="col-sm-4 control-label" style="text-align: right"><@spring.message "hap.enableflag"/></label>
+                        <div class="col-sm-8">
+                            <input id="configCheckbox" checked="checked" name="configCheckbox" type="checkbox" data-bind="value:model.enable"/>
+                            <script>
+                                $("#configCheckbox").kendoCheckbox({
+                                    type: 'boolean',
+                                    checkedValue:'Y',
+                                    uncheckedValue:'N'
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <ul class="nav nav-tabs" id="mytab">
+                    <li class="active"><a href="#maintain" data-toggle="tab"><@spring.message "messageemailconfig.account"/></a></li>
+                    <li class=""><a href="#minortain" data-toggle="tab"><@spring.message "messageemailconfig.whitelist"/></a></li>
+                    <li class=""><a href="#serverProperty" data-toggle="tab"><@spring.message "messageemailconfig.serverproperty"/></a></li>
+                </ul>
+                <div id="tabContent" class="tab-content">
+                    <div class="tab-pane fade in active" style="margin-top: 10px;" id="maintain">
+                        <div class="pull-left" id="toolbar-account" style="padding-bottom:10px;">
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="createRow('#Grid')"><@spring.message "hap.new"/></span>
+                            <span  onclick="remove('#Grid')" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+                        </div>
+                        <div style="clear: both"><div id="Grid" class="table"></div></div>
+                    </div>
+                    <div id="minortain" class="tab-pane fade" style="margin-top: 10px;">
+                        <div class="pull-left" id="toolbar-whiteList" style="padding-bottom:10px;">
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="createRow('#secondGrid')"><@spring.message "hap.new"/></span>
+                            <span  onclick="remove('#secondGrid')" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+                        </div>
+                        <div style="clear: both"><div id="secondGrid" class="table"></div></div>
+                    </div>
+
+                    <div id="serverProperty" class="tab-pane fade" style="margin-top: 10px;">
+                        <div class="pull-left" id="toolbar-property" style="padding-bottom:10px;">
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="createRow('#propertyGrid')"><@spring.message "hap.new"/></span>
+                            <span  onclick="remove('#propertyGrid')" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+                        </div>
+                        <div style="clear: both"><div id="propertyGrid" class="table"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div style="clear: both"></div>
+    </div>
+    <div class="text-right" style="bottom: 15px;padding-top:15px;border-top:1px solid #ebebeb;width:100%; background: #fff;">
+        <span class="btn btn-primary" id="mySubmit" style="margin-right:10px;"><@spring.message "hap.save"/></span>
+        <span class="btn btn-default" id="closeWin" type="button" style="margin-right:25px;"><@spring.message "hap.cancel"/></span>
+    </div>
+</div>
+<script type="text/javascript">
+
+
+    function createRow(selector){
+        $(selector).data('kendoGrid').addRow();
+    }
+
+    function remove(selector){
+        Hap.deleteGridSelection({grid:$(selector)})
+    }
+
+
+    $(document).ready(function () {
+        $("#port").kendoNumericTextBox({
+            min: 0,
+            step: 1,
+            format: "0"
+        });
+        $("#tryTimes").kendoNumericTextBox({
+            min: 0,
+            step: 1,
+            format: "0"
+        });
+        var viewModel = kendo.observable({
+            model: {
+                isEnabled: <#if RequestParameters.configId??> false <#else> true </#if>,
+                useWhiteList: "N"
+            }
+        });
+
+        <#if RequestParameters.configId??>
+            $.ajax({
+                url: "${base.contextPath}/sys/messageEmailConfig/query?configId=${RequestParameters.configId!}",
+                success: function (args) {
+                    var data = args.rows[0] || {};
+                    for (var key in data) {
+                        //  chkbx  选中 判断
+                        viewModel.model.set(key,data[key]);
+                    }
+                }
+            });
+        </#if>
+
+
+        var validator = $("#mainform").kendoValidator({
+            invalidMessageType : "tooltip"
+        });
+        kendo.bind($('#page-content'), viewModel)
+
+        $("#checkbox").kendoCheckbox({
+            checkedValue: 'Y',
+            uncheckedValue: 'N'
+        });
+        kendo.bind($('#checkbox'), viewModel);
+
+
+        var BaseUrl = "${base.contextPath}/sys/messageEmailAccount/",
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "query?configId=${RequestParameters.configId!0}",
+                    type: "POST",
+                    dataType: "json"
+                },
+                destroy: {
+                    url: BaseUrl + "remove",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        return kendo.stringify(Hap.prepareSubmitParameter(options, type));
+                    }
+                }
+            },
+            batch: true,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "accountId",
+                    fields: {
+                        accountCode: {validation: {required: true}},
+                        userName: {validation: {required: true}},
+                        password: {validation: {required: true}},
+                    }
+                }
+            }
+        });
+
+        $("#Grid").kendoGrid({
+            dataSource: dataSource,
+            scrollable: true,
+            height: 270,
+            selectable: 'multiple, rowbox',
+            navigatable: true,
+            autoBind:<#if RequestParameters.configId??> true <#else> false </#if>,
+            columns: [
+                {
+                    field: "accountCode",
+                    title: '<@spring.message "messageemailconfig.accountcode"/>',
+                }, {
+                    field: "userName",
+                    title: '<@spring.message "messageemailaccount.username"/>',
+                }, {
+                    field: "password",
+                    title: '<@spring.message "messageemailaccount.password"/>',
+                    editor: function (container, options) {
+                        $('<input type="password" required style="width: 100%" class="k-input k-textbox k-valid" name="' + options.field + '"/>')
+                            .appendTo(container)
+                    },
+                    template:function (e){
+                       if(e.password!=null && e.password!=""){
+                           return "******";
+                       }else{
+                           return "";
+                       }
+                   }
+                }],
+            editable: true
+        });
+
+        //secondGrid  显示whiteLists
+
+
+        $("#secondGrid").kendoGrid({
+            dataSource: whiteListViewDataSource,
+            resizable: true,
+            scrollable: true,
+            height: 270,
+            navigatable: false,
+            selectable: 'multiple, rowbox',
+            autoBind:<#if RequestParameters.configId??> true <#else> false </#if>,
+            columns: [
+                {
+                    field: "address",
+                    title: '<@spring.message "messageemailconfig.address"/>',
+                }],
+            editable: true
+        });
+
+
+        var BaseUrls = _basePath,
+        propertyDataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrls + "/sys/message/email/property/query?configId=${RequestParameters.configId!0}",
+                    type: "POST",
+                    dataType: "json"
+                },
+                destroy: {
+                    url: BaseUrls + "/sys/message/email/property/remove",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "propertyId",
+                    fields: {}
+                }
+            }
+        });
+
+        $("#propertyGrid").kendoGrid({
+            dataSource: propertyDataSource,
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            height:270,
+            selectable: 'multiple, rowbox',
+            autoBind:<#if RequestParameters.configId??> true <#else> false </#if>,
+            columns: [
+                {
+                    field: "propertyName",
+                    title: '<@spring.message "messageemailproperty.propertyname"/>',
+                },
+                {
+                    field: "propertyCode",
+                    title: '<@spring.message "messageemailproperty.propertycode"/>',
+                }],
+            editable: true
+        });
+
+
+        $(".k-grid-title").each(function () {
+            $(this).attr("href", "javascript:void(0);")
+                    .removeClass("k-button k-button-icontext")
+                    .css("margin-right", "30px");
+        });
+        $("#closeWin").click(function(){
+            window.parent.$("#editWin").data("kendoWindow").close();
+        })
+        $("#mySubmit").click(function () {
+            var validator = $("#mainform").data("kendoValidator");
+            if (validator.validate()) {
+                viewModel.model.__status = <#if RequestParameters.configId??> 'update' <#else> 'add' </#if>;
+                viewModel.model.emailAccounts = $("#Grid").data("kendoGrid").dataSource.data();
+                viewModel.model.whiteLists = $("#secondGrid").data("kendoGrid").dataSource.data();
+                viewModel.model.propertyLists = $("#propertyGrid").data("kendoGrid").dataSource.data();
+                Hap.submitForm({
+                    url: '${base.contextPath}/sys/messageEmailConfig/submit',
+                    formModel: viewModel.model,
+                    asArray: false,
+                   /* grid: {
+                        "emailAccounts": $("#Grid"),
+                        "whiteLists": $('#secondGrid'),
+                        "propertyLists":$('#propertyGrid'),
+                    },*/
+                    success: function () {
+                        window.parent.viewModel.refresh();
+                        window.parent.$("#editWin").data("kendoWindow").close();
+                    }
+                });
+            }
+        });
+        $("#myClose").click(function () {
+            window.parent.$("#editWin").data("kendoWindow").close();;
+        });
+
+    });
+
+</script>
+
+</body>
+</html>

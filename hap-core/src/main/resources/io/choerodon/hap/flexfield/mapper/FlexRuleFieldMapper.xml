@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.flexfield.mapper.FlexRuleFieldMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.flexfield.dto.FlexRuleField">
+        <result column="FIELD_ID" property="fieldId" jdbcType="DECIMAL"/>
+        <result column="RULE_ID" property="ruleId" jdbcType="DECIMAL"/>
+        <result column="MODEL_COLUMN_ID" property="modelColumnId" jdbcType="DECIMAL"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="FIELD_TYPE" property="fieldType" jdbcType="VARCHAR"/>
+        <result column="FIELD_SEQUENCE" property="fieldSequence" jdbcType="DECIMAL"/>
+        <result column="FIELD_COLUMN_NUMBER" property="fieldColumnNumber" jdbcType="DECIMAL"/>
+        <result column="FIELD_COLUMN_WIDTH" property="fieldColumnWidth" jdbcType="DECIMAL"/>
+        <result column="READABLE_FLAG" property="readableFlag" jdbcType="VARCHAR"/>
+        <result column="REQUIRED_FLAG" property="requiredFlag" jdbcType="VARCHAR"/>
+        <result property="columnName" column="COLUMN_NAME" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryFlexField" resultMap="BaseResultMap">
+        select
+        f.FIELD_COLUMN_WIDTH,f.FIELD_ID,f.RULE_ID,f.MODEL_COLUMN_ID,f.DESCRIPTION,f.READABLE_FLAG,f.FIELD_SEQUENCE,f.FIELD_TYPE,f.FIELD_COLUMN_NUMBER,f.REQUIRED_FLAG,c.COLUMN_NAME
+        FROM FND_FLEX_RULE_FIELD f,FND_FLEX_MODEL_COLUMN c WHERE f.MODEL_COLUMN_ID=c.MODEL_COLUMN_ID AND
+        f.rule_id=#{ruleId} ORDER BY FIELD_COLUMN_NUMBER ,FIELD_SEQUENCE
+</select>
+</mapper>

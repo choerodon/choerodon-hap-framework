@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.code.rule.mapper.CodeRulesLineMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.code.rule.dto.CodeRulesLine">
+        <result column="LINE_ID" property="lineId" jdbcType="DECIMAL" />
+        <result column="HEADER_ID" property="headerId" jdbcType="DECIMAL" />
+        <result column="FILED_TYPE" property="filedType" jdbcType="VARCHAR" />
+        <result column="FILED_VALUE" property="filedValue" jdbcType="VARCHAR" />
+        <result column="FIELD_SEQUENCE" property="fieldSequence" jdbcType="DECIMAL" />
+        <result column="DATE_MASK" property="dateMask" jdbcType="VARCHAR" />
+        <result column="SEQ_LENGTH" property="seqLength" jdbcType="DECIMAL" />
+        <result column="START_VALUE" property="startValue" jdbcType="DECIMAL" />
+        <result column="CURRENT_VALUE" property="currentValue" jdbcType="DECIMAL" />
+        <result column="REST_FREQUENCY" property="resetFrequency" jdbcType="VARCHAR" />
+        <result column="REST_DATE" property="resetDate" jdbcType="DATE" />
+    </resultMap>
+
+    <delete id="deleteByHeaderId" parameterType="io.choerodon.hap.code.rule.dto.CodeRulesLine">
+        delete from
+        SYS_CODE_RULES_LINE
+        where HEADER_ID = #{headerId,jdbcType=DECIMAL}
+    </delete>
+
+</mapper>

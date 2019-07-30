@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Access Denied</title>
+<style type="text/css">
+body {
+    margin: 0px;
+    padding: 0px;
+    font-family: "微软雅黑", Arial, "Trebuchet MS", Verdana, Georgia,
+        Baskerville, Palatino, Times;
+    font-size: 16px;
+}
+
+div {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+a {
+    text-decoration: none;
+    color: #1064A0;
+}
+
+a:hover {
+    color: #0078D2;
+}
+
+img {
+    border: none;
+}
+
+h1, h2, h3, h4 {
+    /*  display:block;*/
+    margin: 0;
+    font-weight: normal;
+    font-family: "微软雅黑", Arial, "Trebuchet MS", Helvetica, Verdana;
+}
+
+h1 {
+    font-size: 44px;
+    color: #0188DE;
+    padding: 20px 0px 10px 0px;
+}
+
+h2 {
+    color: #0188DE;
+    font-size: 16px;
+    padding: 10px 0px 40px 0px;
+}
+
+#page {
+    width: 910px;
+    padding: 20px 20px 40px 20px;
+    margin-top: 80px;
+}
+
+.btn {
+    cursor: pointer;
+    padding: 3px 15px;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    font-size: 13px;
+    line-height: 1.7;
+    vertical-align: middle;
+    transition: all .25s;
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+}
+
+.btn-primary{
+    background-color: #1D92AF;
+    border-color: #198099;
+    color:#fff;
+}
+.btn-default{
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+.btn-default:hover {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+.btn.focus, .btn:focus, .btn:hover {
+    text-decoration: none;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+     color: #fff;
+    background-color: #198099;
+    border-color: #204d74;
+}
+
+#confirmationForm{
+  display:inline-block;
+  margin-right:5px;
+}
+
+#denialForm{
+ display:inline-block;
+}
+</style>
+
+</head>
+<body>
+    <div id="page"
+        style="border-style: dashed; border-color: #e4e4e4; line-height: 30px;">
+        <h1><@spring.message "oauth2clientdetails.authorizationstandard"/></h1>
+        <h2><@spring.message 'oauth2clientdetails.accessresources'/></h2>
+    
+        <form id="confirmationForm" name="confirmationForm" action="${base.contextPath}/oauth/authorize" method="post">
+            <input name="user_oauth_approval" value="true" type="hidden"><label>
+            <input class="btn btn-primary" name="authorize" value="<@spring.message 'oauth2clientdetails.approve'/>" type="submit"></label></form>
+        <form id="denialForm" name="denialForm" action="${base.contextPath}/oauth/authorize" method="post">
+            <input name="user_oauth_approval" value="false" type="hidden"><label>
+            <input class="btn btn-default" name="deny" value="<@spring.message 'oauth2clientdetails.reject'/>" type="submit"></label>
+        </form>
+        <br />
+    </div>
+</html>

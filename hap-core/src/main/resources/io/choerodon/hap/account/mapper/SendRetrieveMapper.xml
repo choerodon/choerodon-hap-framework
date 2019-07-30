@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.account.mapper.SendRetrieveMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.account.dto.SendRetrieve">
+        <result column="USER_ID" jdbcType="DECIMAL" property="userId"/>
+        <result column="RETRIEVE_TYPE" jdbcType="VARCHAR" property="retrieveType"/>
+        <result column="RETRIEVE_DATE" jdbcType="TIMESTAMP" property="retrieveDate"/>
+        <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber"/>
+        <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId"/>
+        <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId"/>
+        <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate"/>
+        <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy"/>
+        <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy"/>
+        <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate"/>
+
+        <result column="EMAIL" jdbcType="VARCHAR" property="email"/>
+        <result column="PHONE_NO" jdbcType="VARCHAR" property="phoneNo"/>
+    </resultMap>
+    <insert id="insertRecord" parameterType="io.choerodon.hap.account.dto.SendRetrieve">
+        INSERT INTO SYS_ACCOUNT_RETRIEVE (
+            USER_ID,
+            RETRIEVE_TYPE,
+            RETRIEVE_DATE,
+            OBJECT_VERSION_NUMBER,
+            REQUEST_ID,
+            PROGRAM_ID,
+            CREATION_DATE,
+            CREATED_BY,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        ) VALUES (
+            #{userId,jdbcType=DECIMAL},
+            'NAME',
+            #{retrieveDate,jdbcType=TIMESTAMP},
+            1,
+            #{requestId,jdbcType=DECIMAL},
+            #{programId,jdbcType=DECIMAL},
+            CURRENT_TIMESTAMP,
+            #{createdBy,jdbcType=DECIMAL},
+            #{lastUpdatedBy,jdbcType=DECIMAL},
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <select id="query" resultType="java.lang.Integer" parameterType="io.choerodon.hap.account.dto.SendRetrieve">
+        SELECT COUNT(1)
+        FROM SYS_USER SU,
+        SYS_ACCOUNT_RETRIEVE SAT
+        WHERE SU.USER_ID = SAT.USER_ID
+        AND SAT.RETRIEVE_DATE = #{retrieveDate,jdbcType=TIMESTAMP}
+        <if test="email != null">
+            AND SU.EMAIL = #{email,jdbcType=VARCHAR}
+        </if>
+        <if test="phoneNo != null">
+            AND SU.PHONE_NO = #{phoneNo,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+</mapper>

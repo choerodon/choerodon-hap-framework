@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.account.mapper.UserRoleMapper" >
+
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.account.dto.UserRole" extends="io.choerodon.mybatis.mapper.StdMapper.STD" >
+        <id column="SUR_ID" property="surId" jdbcType="DECIMAL" />
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL" />
+        <result column="ROLE_ID" property="roleId" jdbcType="DECIMAL" />
+        <result column="DEFAULT_FLAG" property="defaultFlag" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="BaseResultMapExt" type="io.choerodon.hap.account.dto.RoleExt" extends="BaseResultMap">
+        <result column="ROLE_CODE" property="roleCode" jdbcType="VARCHAR"/>
+        <result column="ROLE_NAME" property="roleName" jdbcType="VARCHAR"/>
+        <result column="ROLE_DESCRIPTION" property="roleDescription" jdbcType="VARCHAR"/>
+        <result column="END_ACTIVE_DATE" property="endActiveDate"/>
+        <result column="START_ACTIVE_DATE" property="startActiveDate"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+    </resultMap>
+  
+    <sql id="Base_Column_List" >
+        SUR_ID, USER_ID, ROLE_ID, DEFAULT_FLAG
+    </sql>
+    
+    <delete id="deleteByUserId" parameterType="java.lang.Long" >
+        DELETE FROM SYS_USER_ROLE
+        WHERE USER_ID = #{userId,jdbcType=DECIMAL}
+    </delete>
+    
+    <delete id="deleteByRecord" parameterType="io.choerodon.hap.account.dto.UserRole">
+        DELETE FROM SYS_UESR_ROLE
+        WHERE USER_ID = #{userId,jdbcType=DECIMAL}
+            AND ROLE_ID = #{roleId,jdbcType=DECIMAL}
+    </delete>
+
+    <delete id="deleteByRoleId" parameterType="java.lang.Long">
+      DELETE FROM SYS_USER_ROLE
+      WHERE ROLE_ID = #{roleId,jdbcType=DECIMAL}
+    </delete>
+
+
+    <select id="selectUserRoles" parameterType="io.choerodon.hap.account.dto.UserRole" resultMap="BaseResultMapExt">
+        SELECT
+            UR.SUR_ID,
+            UR.USER_ID,
+            R.ROLE_ID,
+            R.ROLE_CODE,
+            TL.ROLE_NAME,
+            TL.ROLE_DESCRIPTION,
+            R.ENABLE_FLAG,
+            R.END_ACTIVE_DATE,
+            R.START_ACTIVE_DATE
+        FROM
+            SYS_USER_ROLE UR,
+            SYS_ROLE_B R
+                LEFT OUTER JOIN SYS_ROLE_TL TL
+                ON (
+                    R.ROLE_ID = TL.ROLE_ID
+                    AND TL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String}
+                )
+        WHERE
+        UR.ROLE_ID = R.ROLE_ID
+        <if test="roleId != null">
+            AND UR.ROLE_ID = #{roleId}
+        </if>
+        <if test="userId">
+            AND UR.USER_ID = #{userId}
+        </if>
+        ORDER BY R.ROLE_CODE ASC
+    </select>
+</mapper>

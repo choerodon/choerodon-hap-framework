@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.task.mapper.TaskAssignMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.task.dto.TaskAssign">
+        <result column="TASK_ASSIGN_ID" property="taskAssignId" jdbcType="DECIMAL"/>
+        <result column="TASK_ID" property="taskId" jdbcType="DECIMAL"/>
+        <result column="ASSIGN_ID" property="assignId" jdbcType="DECIMAL"/>
+        <result column="ASSIGN_TYPE" property="assignType" jdbcType="VARCHAR"/>
+        <result column="START_DATE" property="startDate" jdbcType="DATE"/>
+        <result column="END_DATE" property="endDate" jdbcType="DATE"/>
+
+        <association property="role" javaType="io.choerodon.hap.iam.infra.dto.RoleDTO"
+                     resultMap="io.choerodon.hap.iam.infra.mapper.ChoerodonRoleMapper.RoleDTO"/>
+
+    </resultMap>
+
+    <select id="query" parameterType="io.choerodon.hap.task.dto.TaskAssign" resultMap="BaseResultMap">
+        <bind name="__current_lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        SELECT
+        A.TASK_ASSIGN_ID,
+        A.TASK_ID,
+        A.ASSIGN_ID,
+        A.ASSIGN_TYPE,
+        A.START_DATE,
+        A.END_DATE,
+        IR.ID,
+        IR.CODE,
+        IRT.NAME,
+        IR.DESCRIPTION,
+        IR.IS_ENABLED
+        FROM SYS_TASK_ASSIGN A
+        LEFT JOIN IAM_ROLE IR ON (A.ASSIGN_ID = IR.ID AND A.ASSIGN_TYPE = 'ROLE')
+        LEFT JOIN IAM_ROLE_TL IRT ON (IR.ID = IRT.ID AND IRT.LANG = #{__current_lang})
+        WHERE IR.IS_ENABLED = 1 AND A.TASK_ID = #{taskId}
+        ORDER BY IR.ID ASC
+    </select>
+
+
+    <select id="queryUnbound" parameterType="java.util.List" resultMap="io.choerodon.hap.iam.infra.mapper.ChoerodonRoleMapper.RoleDTO">
+        <bind name="__current_lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        SELECT
+        IR.ID,
+        IR.CODE,
+        IRT.NAME,
+        IR.DESCRIPTION,
+        IR.IS_ENABLED
+        FROM IAM_ROLE IR
+        LEFT JOIN IAM_ROLE_TL IRT ON (IR.ID = IRT.ID AND IRT.LANG = #{__current_lang})
+        WHERE IR.IS_ENABLED = 1
+        <if test="idList != null and idList.size > 0">
+            AND IR.ID NOT IN
+            <foreach collection="idList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY IR.ID ASC
+    </select>
+
+    <!-- 查询该用户下权限下的任务Id -->
+    <select id="queryTaskId" resultType="java.lang.Long">
+        SELECT DISTINCT ASSIGN.TASK_ID
+        FROM SYS_TASK_ASSIGN ASSIGN
+        <if test="isAdmin != true ">
+            WHERE (
+            (ASSIGN.START_DATE IS NULL OR #{currentDate} >= ASSIGN.START_DATE)
+            AND (ASSIGN.END_DATE IS NULL OR ASSIGN.END_DATE >= #{currentDate})
+            )
+            AND ASSIGN.ASSIGN_ID IN
+            <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <delete id="deleteByTaskId">
+        DELETE FROM SYS_TASK_ASSIGN
+        WHERE  TASK_ID = #{taskId}
+    </delete>
+
+</mapper>

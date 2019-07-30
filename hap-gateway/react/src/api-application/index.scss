@@ -1,0 +1,16 @@
+.gateway-wrap {
+  display: flex;
+  width: 8rem;
+
+  .gateway-label {
+    width: 150px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: .1rem .05rem;
+    text-align: right;
+  }
+
+  .gateway-table {
+    margin-top: .05rem;
+  }
+}

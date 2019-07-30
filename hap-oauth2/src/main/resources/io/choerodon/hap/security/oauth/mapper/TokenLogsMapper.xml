@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.security.oauth.mapper.TokenLogsMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.security.oauth.dto.TokenLogs">
+        <result column="ID" property="id" jdbcType="BIGINT" />
+        <result column="USER_ID" property="userId" jdbcType="BIGINT" />
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR" />
+        <result column="TOKEN" property="token" jdbcType="VARCHAR" />
+        <result column="TOKEN_ACCESS_TIME" property="tokenAccessTime" javaType="DATE" />
+        <result column="TOKEN_EXPIRES_TIME" property="tokenExpiresTime" javaType="DATE" />
+        <result column="TOKEN_ACCESS_TYPE" property="tokenAccessType" jdbcType="VARCHAR" />
+        <result column="REVOKE_FLAG" property="revokeFlag" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="findLastAccessTime" resultType="java.util.Date">
+       SELECT MAX(token_access_time) AS token_access_time FROM sys_token_logs WHERE user_id=#{userId} AND client_id GROUP BY client_id,user_id
+    </select>
+
+    <update id="revokeToken" parameterType="java.lang.String">
+        UPDATE sys_token_logs
+        SET REVOKE_FLAG = 'N'
+        WHERE TOKEN= #{tokenValue,jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectInvalid" resultMap="BaseResultMap" parameterType="io.choerodon.hap.security.oauth.dto.TokenLogs">
+       SELECT * FROM sys_token_logs
+        <where>
+            (REVOKE_FLAG = 'N' OR TOKEN_EXPIRES_TIME &lt;= current_timestamp)
+            <if test="userId!=null">
+                and user_id=#{userId}
+            </if>
+            <if test="clientId!=null">
+                and client_id = #{clientId}
+            </if>
+            <if test="token!=null">
+                and token=#{token}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,323 @@
+<#--
+* description: 新增Cron Job的kendoui实现
+* version: 3.0
+* author:shuo.han@hand-china.com
+        hailin.xu@hand-china.com
+-->
+<#include "../include/header.html">
+    <script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<body style="padding: 10px">
+
+<div id="messageWindows"></div>
+
+<div id="main-content" style="margin-bottom: 45px">
+    <ul class="nav nav-tabs" id="mytab">
+        <li class="active"><a href="#main-info" data-toggle="tab"><@spring.message "job.infodetail.jobinfo"/></a></li>
+        <li class=""><a href="#notify-info" data-toggle="tab"><@spring.message "job.infodetail.notification"/></a></li>
+    </ul>
+    <div id="tabContent" class="tab-content">
+        <div class="tab-pane fade in active" style="margin-top: 20px;" id="main-info">
+            <div class="panel-body form-horizontal" id = "addjobtitle">
+                <div class="form-group required-input">
+
+                    <label class="col-sm-2 control-label">
+                    <@spring.message "jobdetaildto.jobname"/>
+                    </label>
+                    <div class="col-sm-4">
+                        <input name="jobName" data-label='<@spring.message "jobdetaildto.jobname"/>' id="jobName" style="width:100%" required type="text" data-bind="value:model.jobName" class="k-textbox">
+                    </div>
+                    <label class="col-sm-2 control-label">
+                    <@spring.message "jobdetaildto.jobgroup"/>
+                    </label>
+                    <div class="col-sm-4">
+                        <input name="jobGroup"  data-label='<@spring.message "jobdetaildto.jobgroup"/>' id="jobGroup" style="width:100%" required type="text" data-bind="value:model.jobGroup" class="k-textbox">
+                    </div>
+                </div>
+                <div class="form-group required-input">
+                    <label class="col-sm-2 control-label">
+                    <@spring.message "jobdetaildto.description"/>
+                    </label>
+                    <div class="col-sm-10">
+                        <input id="description" style="width:100%" class="k-textbox" data-bind="value:model.description">
+                    </div>
+                </div>
+                <div class="form-group required-input">
+                    <label class="col-xs-2 col-sm-2 col-md-2 control-label">
+                    <@spring.message "jobdetaildto.jobclassname"/>
+                    </label>
+                    <div class="col-xs-10 col-sm-10 col-md-10">
+                        <input style="width:100%" id="jobClassName" data-label='<@spring.message "jobdetaildto.jobclassname"/>' name="jobClassName" required type="text" data-bind="value:model.jobClassName" class="k-textbox"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 col-sm-2 control-label">
+                    <@spring.message "triggerdto.starttime"/>
+                    </label>
+                    <div class="col-xs-4 col-sm-4">
+                        <input style="width:100%" id="startTime" data-bind="value:model.start">
+                    </div>
+                    <label class="col-xs-2 col-sm-2 control-label">
+                    <@spring.message "triggerdto.endtime"/>
+                    </label>
+                    <div class="col-xs-4 col-sm-4">
+                        <input style="width:100%" id="endTime" data-bind="value:model.end">
+                    </div>
+                </div>
+                <div class="form-group required-input">
+                    <label class="col-xs-2 col-sm-2 col-md-2 control-label">
+                        <@spring.message "crontriggerdto.cronexpression"/>
+                    </label>
+                    <div class="col-xs-4 col-sm-4 col-md-4">
+                        <input style="width:100%" id="cronExpression" data-label='<@spring.message "crontriggerdto.cronexpression"/>' name="cronExpression" required class="k-textbox" data-bind="value:model.cronExpression">
+                    </div>
+                    <label class="ol-xs-2 col-sm-2 col-md-2 control-label">
+                        <@spring.message "jobcreatedto.priority"/>
+                    </label>
+                    <div class="col-xs-4 col-sm-4 col-md-4">
+                        <input name="priority" id="priority" onkeyup='this.value=this.value.replace(/\D/gi,"")' data-label='<@spring.message "jobcreatedto.priority"/>' style="width:100%" data-bind="value:model.priority">
+                    </div>
+                </div>
+                <div id="userAttribute" style="clear: both"></div>
+            </div>
+        </div>
+        <div class="tab-pane fade" style="margin-top: 20px;" id="notify-info">
+            <div class="panel-body form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        <@spring.message "job.infodetail.enable_notification"/>
+                    </label>
+                    <div class="col-sm-10" style="line-height:27px;">
+                        <input id="job_internal_notification" type="checkbox" data-field="job_internal_notification" data-bind="checked:model.job_internal_notification"/>
+                    </div>
+                </div>
+              <!--  <div class="form-group">
+                    <label class="col-sm-2 control-label"><@spring.message "messageemailconfig.accountcode"/>
+                    </label>
+                    <div class="col-sm-10">
+                        <input id="job_internal_email_account" name="accountCode" type=text
+                               data-bind="value:model.job_internal_email_account"
+                               style="width:50%"
+                        />
+                    </div>
+                    <script>
+                        $("#job_internal_email_account").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MESSAGE_ACCOUNT")}, {}))
+                    </script>
+                </div>-->
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        <@spring.message "job.infodetail.email_address"/>
+                    </label>
+                    <div class="col-sm-10">
+                        <input id="job_internal_emailAddress" type="text" data-bind="value:model.job_internal_emailAddress" class="k-textbox" style="width: 50%">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"><@spring.message "messagetemplate.templatecode"/>
+                    </label>
+                    <div class="col-sm-10">
+                        <input id="job_internal_email_template" name="templateCode" type=text
+                               data-bind="value:model.job_internal_email_template"
+                               style="width:50%"
+                        />
+                    </div>
+                    <script>
+                        $("#job_internal_email_template").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MESSAGE_TEMPLATE")}, {}))
+                    </script>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                    </label>
+                    <div class="col-sm-10">
+                        <small class="help-block"><@spring.message "sys.job.emailtemplate.desciption"/>
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="text-align:center;margin-top: 5px">
+
+</div>
+
+<div class="text-right" style="bottom: 0px;padding-bottom:15px;position: fixed;  float: left;padding-top:15px;border-top:1px solid #ebebeb;width:100%; background: #fff;">
+    <span id="save_data" class="btn btn-primary" style="margin-right:5px"><@spring.message "hap.save"/></span>
+    <span class="btn btn-default" id="close_win" type="button" style="margin-right:25px;"><@spring.message "hap.cancel"/></span>
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        var tempWindowsStatus = 0;
+
+        viewModel = kendo.observable({
+            model: {
+                triggerType: 'CRON',
+                cronExpression: '0 * * * * ?',
+                jobGroup: 'DEFAULT',
+                priority: 5
+            }
+        });
+        kendo.bind($('#main-content'), viewModel);
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {},
+                parameterMap: function (options, type) {
+                    if (type !== 'read') {
+                        var datas = options.models;
+                        datas = options.models.map(function (data) {
+                            data['__status'] = 'add';
+                            return data;
+                        });
+                        return kendo.stringify(datas);
+                    }
+                }
+            },
+            batch: true,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {}
+            }
+        });
+        //第一个远程数据源配置结束
+
+        //定义一个script，为页面添加kendoui按钮
+        $("#userAttribute").kendoGrid({
+            dataSource: dataSource,
+            height: 256,
+            navigatable: true,
+            resizable: true,
+            scrollable: true,
+            toolbar: [
+                {
+                    name: "create",
+                    template: '<span class="btn btn-primary k-grid-add"><@spring.message "hap.new"/></span>'
+                },
+                {
+                    name: "cancel",
+                    template: '<span class="btn btn-default k-grid-cancel-changes"><@spring.message "hap.cancel"/></span>'
+                }
+            ],
+            columns: [
+                {
+                    field: "name",
+                    title: '<@spring.message "job.attributename"/>',
+                    width: 230
+                },
+                {
+                    field: "value",
+                    title: '<@spring.message "job.attributevalue"/>',
+                    width: 230
+                },
+                {
+                    title: '<@spring.message "hap.action"/>',
+                    command: [{
+                        name: 'remove',
+                        template: '<a class="btn btn-danger k-grid-remove"><@spring.message "hap.delete"/></span>',
+                        click: function (e) {
+                            e.preventDefault();
+                            var source = $("#userAttribute").data('kendoGrid').dataSource, data = this.dataItem($(e.target).closest("tr"));
+                            source.remove(data);
+                            source.sync()
+                        }
+                    }],
+                    width: 100
+                }
+            ],
+            editable: true
+        });
+
+        $("#startTime").kendoDateTimePicker({
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+                var startTime = $("#startTime").val();
+                var endFinal = $("#endTime").data("kendoDateTimePicker");
+                endFinal.min(startTime);
+            }
+        });
+
+        $("#endTime").kendoDateTimePicker({
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+                var endTime = $("#endTime").val();
+                var startFinal = $("#startTime").data("kendoDateTimePicker");
+                startFinal.max(endTime);
+            }
+        });
+
+        $("#priority").kendoNumericTextBox({
+            format: "0",
+        });
+
+
+        var validator = $("#addjobtitle").kendoValidator({
+            messages: {
+                required: '<@spring.message "hap.validation.notempty"/>'
+            },
+            invalidMessageType : "tooltip"
+        }).data("kendoValidator");
+
+
+        $("#messageWindows").kendoWindow({
+            width: 400,
+            height: 150,
+            //modal:true,
+            title: '<@spring.message "hap.tip.info"/>',
+            visible: false,
+            close: function (e) {
+                $("#messageWindows").empty();
+                tempWindowsStatus = 0;
+            }
+        }).data("kendoWindow");
+        $("#close_win").click(function(){
+             window.parent.$("#dialog").data("kendoWindow").close();
+        });
+
+        $("#save_data").click(function () {
+            if (validator.validate()) {
+                var informations = viewModel.model.toJSON();
+
+                var start = viewModel.model.start, end = viewModel.model.end;
+                informations.startTime = start ? start.getTime() : null;
+                informations.endTime = end ? end.getTime() : null;
+                var jobDatas = [{
+                    name: 'job_internal_notification',
+                    value: $("#job_internal_notification").is(':checked')
+                }, {
+                    name: 'job_internal_emailAddress',
+                    value: $("#job_internal_emailAddress").val()
+                },{
+                    name: 'job_internal_email_account',
+                    value: $("#job_internal_email_account").val()
+                },{
+                    name: 'job_internal_email_template',
+                    value: $("#job_internal_email_template").val()
+                }];
+                var tableDatas = dataSource.data();
+                for (var i = 0; i < tableDatas.length; i++) {
+                    jobDatas.push({
+                        name: tableDatas[i].name,
+                        value: tableDatas[i].value,
+                        __status: 'add'
+                    });
+                }
+                informations.jobDatas = jobDatas;
+                Hap.request({
+                    url:'${base.contextPath}/job/create',
+                    type:'POST',
+                    data: kendo.stringify(informations),
+                    success: function (json) {
+                        window.parent.viewModel.refresh();
+                        window.parent.$("#dialog").data("kendoWindow").close();
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.flexfield.mapper.FlexRuleSetMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.flexfield.dto.FlexRuleSet">
+        <result column="RULE_SET_ID" property="ruleSetId" jdbcType="DECIMAL"/>
+        <result column="RULE_SET_CODE" property="ruleSetCode" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="MODEL_ID" property="modelId" jdbcType="DECIMAL"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+        <result column="MODEL_NAME" property="modelName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryFlexRuleSet" resultMap="BaseResultMap">
+        select m.RULE_SET_ID,m.RULE_SET_CODE,m.DESCRIPTION,m.MODEL_ID,m.ENABLE_FLAG,s.MODEL_NAME from FND_FLEX_MODEL s,FND_FLEX_RULE_SET m
+        <where>
+            s.model_id=m.model_id
+            <if test="ruleSetCode !=null">
+                and m.RULE_SET_CODE LIKE concat('%', concat(#{ruleSetCode,jdbcType=VARCHAR}, '%'))
+            </if>
+        </where>
+        order by m.RULE_SET_CODE asc
+    </select>
+</mapper>

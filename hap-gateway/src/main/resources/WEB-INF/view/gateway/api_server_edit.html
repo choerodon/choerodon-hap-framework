@@ -1,0 +1,567 @@
+<#include "../include/header.html">
+
+    <body>
+    <script src="${base.contextPath}/common/code?authFlag=SYS.YES_NO" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?serviceType=API.SERVICE_TYPE" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?authType=API.AUTH_TYPE" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?grantType=API.GRANT_TYPE" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?elementFormDefault=API.ELEMENT_FORM_DEFAULT" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?wssPasswordType=API.WSS_PASSWORD_TYPE" type="text/javascript"></script>
+    <script type="text/javascript">
+        var crudServiceBaseUrl = '${base.contextPath}/sys/gateway/server';
+        var serverId = '${RequestParameters.serverId!0}';
+        var serverMappingUrl = '${RequestParameters.mappingUrl!}';
+        var importFlag = ${RequestParameters.importFlag!false};
+        var baseMappingUrl = "/api/rest";
+        var viewModel = kendo.observable({
+                isEnabled: <#if RequestParameters.serverId??>false<#else>true</#if>,
+        model: {
+            authFlag: 'N',
+                enableFlag: 'Y',
+                serviceType: 'REST',
+                authType: 'NONE',
+                wssPasswordType: 'None',
+                elementFormDefault:'unqualified',
+                authType: 'NONE',
+                grantType: 'CLIENT'
+        },
+        save: function (e) {
+            var validator = $("#editForm").kendoValidator({
+                rules: {
+                    mappingUrlRuleCheck: function(input) {
+                        if (input.is("[id=mappingUrl]")) {
+                            if (viewModel.model.mappingUrl.indexOf("/")!=-1){
+                                return false;
+                            }
+                        }
+                        return true;
+                    },
+                },
+                messages: {
+                    mappingUrlRuleCheck: "<@spring.message'server.mappingurl.error'/>",
+                },
+                invalidMessageType : "tooltip"
+            }).data("kendoValidator");
+            if (validator.validate()) {
+                var url = crudServiceBaseUrl + '/submit';
+                viewModel.model.__status = "<#if RequestParameters.serverId??>update<#else>add</#if>" ;
+                Hap.submitForm({
+                    url: url,
+                    formModel: viewModel.model,
+                    grid: {
+                        interfaces:$('#grid'),
+                    },
+                    success: function (result) {
+                        window.parent.viewModel.refresh();
+                        window.parent.$("#dialogEdit").data("kendoWindow").close();
+                    }
+                });
+            }
+        },
+
+        closeWin: function (e) {
+            window.parent.$("#dialogEdit").data("kendoWindow").close();
+        }
+        });
+        var viewModel2 = Hap.createGridViewModel("#grid");
+
+    </script>
+    <div id="dialogInterfaceEdit" ></div>
+    <div id="dialogAuthConfigEdit" ></div>
+    <div id="content-container">
+        <div id="page-content">
+            <form class="form-horizontal">
+                <div class="panel-body">
+                    <div id="editForm">
+                        <!-- server 代码 -->
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.code"/></label>
+                                <div class="col-xs-9">
+                                    <input id="code" name="code" data-role="maskedtextbox" type="text"
+                                           style="width: 100%" class="k-textbox"
+                                           data-label="<@spring.message'server.code'/>"
+                                           required data-bind="enabled:isEnabled, value: model.code"/>
+                                    <script>kendo.bind($('#code'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--server 名称-->
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.name"/></label>
+                                <div class="col-xs-9">
+                                    <input id="name" name="name" data-role="maskedtextbox" type="text"
+                                           style="width: 100%"  class="k-textbox"
+                                           data-label="<@spring.message'server.name'/>"
+                                           required data-bind="value:model.name"/>
+                                    <script>kendo.bind($('#name'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--server 服务类型-->
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message "server.servicetype"/></label>
+                                <div class="col-xs-9">
+                                    <input id="serviceType" name="serviceType" type="text" style="width: 100%"
+                                           required data-bind="enabled:isEnabled,value: model.serviceType"/>
+                                    <script>kendo.bind($('#serviceType'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                        <!--server 服务地址-->
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message "server.domainurl"/></label>
+                                <div class="col-xs-9">
+                                    <input id="domainUrl" name="domainUrl" required data-role="maskedtextbox"
+                                           data-label="<@spring.message'server.domainUrl'/>"
+                                           style="width: 100%" class="k-textbox" data-bind="value: model.domainUrl"/>
+                                    <script>kendo.bind($('#domainUrl'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--server 发布地址-->
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message "server.mappingurl"/></label>
+                                <div class="col-xs-9" >
+                                    <div style="width: 30%;float: left">
+                                        <input id="bMappingUrl" name="bMappingUrl" disabled
+                                           style="width:100%;background-color: #ededed !important;" class="k-textbox" />
+                                    </div>
+                                    <div style="width: 69%;float: right;">
+                                        <input id="mappingUrl" name="mappingUrl" required oninput="changeMappingUrl(this.value)"
+                                               data-label="<@spring.message'server.mappingUrl'/>" style="width:100%;"
+                                               class="k-textbox" data-bind="value: model.mappingUrl"/>
+                                        <script>kendo.bind($('#mappingUrl'), viewModel);</script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--server 是否启用-->
+                        <div class="col-xs-4" style="height: 45px;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label" for="enableFlag"><@spring.message
+                                    "hap.enableflag"/></label>
+                                <div class="col-xs-9" style="text-align: left;">
+                                    <input id="enableFlag" style="margin-top:8px" type="checkbox" data-bind="value: model.enableFlag"/>
+                                    <script>
+                                        $("#enableFlag").kendoCheckbox({
+                                            checkedValue: 'Y',
+                                            uncheckedValue: 'N'
+                                        });
+                                        kendo.bind($('#enableFlag'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--SOAP namespace-->
+                        <div class="col-xs-4" id="namespaceDiv" style="display: none;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"interface.namespace"/></label>
+                                <div class="col-xs-9">
+                                    <input id="namespace" name="namespace"
+                                           data-label="<@spring.message'interface.namespace'/>"
+                                           style="width: 100%" class="k-textbox" data-bind="value: model.namespace"/>
+                                    <script>kendo.bind($('#namespace'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 非全局的元素前缀标志 elementformdefault -->
+                        <div class="col-xs-4" id="elementFormDefaultDiv" style="display: none;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.elementformdefault"/></label>
+                                <div class="col-xs-9" style="text-align: left;">
+                                    <input id="elementFormDefault" style="margin-top:8px" type="checkbox" data-bind="value: model.elementFormDefault"/>
+                                    <script>
+                                        $("#elementFormDefault").kendoCheckbox({
+                                            checkedValue: 'qualified',
+                                            uncheckedValue: 'unqualified'
+                                        });
+                                        kendo.bind($('#elementFormDefault'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--SOAP 加密类型-->
+                        <div class="col-xs-4" id="wssPasswordTypeDiv" style="display: none;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.wsspasswordtype"/></label>
+                                <div class="col-xs-9">
+                                    <input id="wssPasswordType" name="wssPasswordType" type="text"
+                                           style="width: 100%" data-bind="value:model.wssPasswordType"/>
+                                    <script>kendo.bind($('#wssPasswordType'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                        <!--SOAP 认证用户名-->
+                        <div class="col-xs-4" id="usernameDiv" style="display: none;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"interface.checkusername"/></label>
+                                <div class="col-xs-9">
+                                    <input id="username" name="username" data-role="maskedtextbox" type="text"
+                                           style="width: 100%"  class="k-textbox"
+                                           data-label="<@spring.message'interface.username'/>"
+                                           data-bind="value:model.username"/>
+                                    <script>kendo.bind($('#username'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                        <!--SOAP 认证密码-->
+                        <div class="col-xs-4" id="passwordDiv" style="display: none;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"interface.checkpassword"/></label>
+                                <div class="col-xs-9">
+                                    <input id="password" name="password" data-role="maskedtextbox" type="text"
+                                           style="width: 100%"  class="k-textbox"
+                                           data-label="<@spring.message'interface.password'/>"
+                                           data-bind="value:model.password"/>
+                                    <script>kendo.bind($('#password'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--认证配置-->
+                        <div id="authFlagDiv" class="col-xs-4" style="height: 45px;">
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label"><@spring.message"server.auth"/></label>
+                                <div class="col-xs-9 ">
+                                    <span class="btn btn-success btn-sm" id="authConfig" onclick="authConfig()" style="float:left;">
+                                        <i class="fa fa-cog" style="margin-right:5px;"> <@spring.message
+                                            "server.auth.config"/></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="col-xs-1 control-label"><@spring.message"interface.list"/></label>
+                                <div class="col-xs-11">
+                                    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                                        <span class="btn btn-primary" onclick="openEditInterfaceWindow()" style="float:left;margin-right:5px;"><@spring.message "hap.new"/></span>
+                                        <span data-bind="click:remove" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+                                    </div>
+                                    <script>kendo.bind($('#toolbar-btn'), viewModel2);</script>
+                                    <div style="clear: both;">
+                                        <div id="grid"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="text-right k-window-toolbar">
+        <span class="btn btn-primary" id="save" data-bind="click:save" style="margin-right:5px"><@spring.message "hap.save"/></span>
+        <span class="btn btn-default" id="cancel" type="button" data-bind="click:closeWin" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+        <script>
+            kendo.bind($('#save'), viewModel);
+            kendo.bind($('#cancel'), viewModel);
+        </script>
+    </div>
+    <script type="text/javascript">
+
+
+        $(document).ready(function() {
+            $("#bMappingUrl").val(baseMappingUrl +"/");
+            if (importFlag == true){
+                var profile = window.parent.importServer;
+                for (var i in profile) {
+                    if (profile[i] != null && i != "interfaces") {
+                        viewModel.set("model." + i, profile[i]);
+                    }
+                }
+                var interfaces = profile['interfaces'];
+                $.each(interfaces, function (i, data) {
+                    interfaceDataSource.add(data);
+                    interfaceDataSource.data()[i].id = i+1 ;
+                    interfaceDataSource.data()[i].dirty = true ;
+                });
+                loadFunc();
+            }else if (serverId != 0) {
+                var dtoData = {
+                    serverId: serverId ,
+                };
+                $.ajax({
+                    url: crudServiceBaseUrl + "/getById",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(dtoData),
+                    success: function (args) {
+                        var profile = args.rows[0] || {};
+                        for (var i in profile) {
+                            if (profile[i] != null) {
+                                viewModel.set("model." + i, profile[i]);
+                            }
+                        }
+                        loadFunc();
+                    }
+                });
+            }else {
+                loadFunc();
+            }
+        });
+
+        if (serverId == 0 ){
+            $("#serviceType").kendoDropDownList({
+                dataTextField: "meaning",
+                dataValueField: "value",
+                valuePrimitive: true,
+                dataSource: serviceType,
+                change: function(e) {
+                    var value = this.value();
+                    if (value == "SOAP") {
+                        $("#namespaceDiv").show();
+                        $("#elementFormDefaultDiv").show();
+                        $("#wssPasswordTypeDiv").show();
+                        if (viewModel.model.wssPasswordType != 'None'){
+                            $("#usernameDiv").show();
+                            $("#passwordDiv").show();
+                        }else {
+                            $("#usernameDiv").hide();
+                            $("#passwordDiv").hide();
+                        }
+                    }else {
+                        $("#namespaceDiv").hide();
+                        $("#elementFormDefaultDiv").hide();
+                        $("#wssPasswordTypeDiv").hide();
+                        $("#usernameDiv").hide();
+                        $("#passwordDiv").hide();
+                    }
+                }
+            });
+        }else {
+            $("#serviceType").attr("data-role","maskedtextbox");
+        }
+
+        var container = $("#editForm");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: '<@spring.message "hap.validation.notempty"/>'
+            },
+            invalidMessageType : "tooltip"
+        });
+
+        $("#wssPasswordType").kendoDropDownList({
+            dataTextField: "meaning",
+            dataValueField: "value",
+            valuePrimitive: true,
+            dataSource: wssPasswordType,
+            change:function(e) {
+                var value = this.value();
+                if (value == "None") {
+                    $("#usernameDiv").hide();
+                    $("#passwordDiv").hide();
+                }else{
+                    $("#usernameDiv").show();
+                    $("#passwordDiv").show();
+                }
+            }
+        });
+
+        var loadFunc = function() {
+            if (viewModel.model.serviceType == "SOAP") {
+                $("#namespaceDiv").show();
+                $("#elementFormDefaultDiv").show();
+                $("#wssPasswordTypeDiv").show();
+                if (viewModel.model.wssPasswordType != 'None'){
+                    $("#usernameDiv").show();
+                    $("#passwordDiv").show();
+                }else {
+                    $("#usernameDiv").hide();
+                    $("#passwordDiv").hide();
+                }
+            }else {
+                $("#namespaceDiv").hide();
+                $("#elementFormDefaultDiv").hide();
+                $("#wssPasswordTypeDiv").hide();
+                $("#usernameDiv").hide();
+                $("#passwordDiv").hide();
+            }
+        };
+
+
+        function changeMappingUrl(mappingUrl) {
+            serverMappingUrl = mappingUrl;
+            grid.refresh();
+        }
+
+        /**
+         * 认证配置
+         * @type {string}
+         */
+
+        function authConfig() {
+            var url = 'api_server_auth_config.html';
+            var authConfigWin = Hap.createWindow('#dialogAuthConfigEdit', {
+                width: '80%',
+                height: 350,
+                title: '<@spring.message "server.auth.config"/>',
+                url: url
+            })
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}', 400, function () {
+                    authConfigWin.center().open();
+                })
+            } else {
+                authConfigWin.center().open();
+            }
+        }
+
+        /**
+         * 接口编辑
+         * @type {string}
+         */
+
+        function openEditInterfaceWindow( uid ) {
+            var serviceType = $("#serviceType").val();
+            var bMappingUrl = "";
+            if (serverMappingUrl){
+                bMappingUrl = baseMappingUrl + "/" + serverMappingUrl + "/";
+            }else {
+                bMappingUrl = baseMappingUrl + "/";
+            }
+            var url = 'api_interface_edit.html';
+            url = url + "?serviceType="+serviceType;
+            if(uid){
+                url = url + "&uid="+uid;
+            }
+            if(serverId){
+                url = url + "&serverId="+serverId;
+            }
+            url = url + "&bMappingUrl="+bMappingUrl;
+            var interfaceEditWin = Hap.createWindow('#dialogInterfaceEdit', {
+                width: '80%',
+                height: 400,
+                title: '<@spring.message "hap.edit"/>',
+                url: url
+            })
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}', 400, function () {
+                    interfaceEditWin.center().open();
+                })
+            } else {
+                interfaceEditWin.center().open();
+            }
+        }
+
+        var crudInterfaceBaseUrl = '${base.contextPath}/sys/gateway/interface';
+        var interfaceDataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: crudInterfaceBaseUrl + "/getInterfacesByServerId",
+                    type: "POST",
+                    dataType: "json"
+                },
+                destroy : {
+                    url : crudInterfaceBaseUrl + "/remove",
+                    contentType: "application/json",
+                    type : "POST"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type);
+                        for(var i in datas){
+                            datas[i].serverId = serverId;
+                        }
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        var p = Hap.prepareQueryParameter(viewModel2.model.toJSON(), options);
+                        p.serverId = serverId;
+                        return p;
+                    }
+                },
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "interfaceId",
+                    fields: {
+                    }
+                }
+            }
+        });
+
+        var grid = $("#grid").kendoGrid({
+                dataSource: interfaceDataSource,
+                height:'210px',
+                selectable : 'multiple, rowbox',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                editable: false,
+                autoBind:<#if RequestParameters.serverId??> true <#else> false </#if> ,
+        columns: [
+            //接口代码
+            {
+                field: "code",
+                title: '<@spring.message "interface.line.interfacecode"/>',
+                attributes: {style: "text-align:left"},
+                width: 80,
+            },
+            //地址
+            {
+                field: "interfaceUrl",
+                title: '<@spring.message "interface.interfaceurl"/>',
+                width: 80,
+
+            },
+            //映射地址
+            {
+                field: "mappingUrl",
+                title: '<@spring.message "server.mappingurl"/>',
+                width: 120,
+                template: function (rowdata) {
+                    if (serverMappingUrl){
+                        return baseMappingUrl + "/" + serverMappingUrl + "/" +rowdata.mappingUrl;
+                    }
+                    return baseMappingUrl + "/" + rowdata.mappingUrl;
+                }
+            },
+            //是否启用
+            {
+                field: "enableFlag",
+                title: '<@spring.message "hap.enableflag"/>',
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                width: 50,
+            },
+            // 操作
+            {
+                title: '<@spring.message "hap.action"/>',
+                width: 50,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                template: function (rowdata) {
+                    if (!!rowdata.uid) {
+                        return Hap.createAnchor('<@spring.message "hap.edit"/>', openEditInterfaceWindow, rowdata.uid );
+                    }
+                    return '';
+                }
+            }
+        ],
+        }).data("kendoGrid");
+    </script>
+    </body>
+    </html>

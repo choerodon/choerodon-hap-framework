@@ -1,0 +1,193 @@
+<#--
+* description: 附件分类管理页面
+* version: 1.0
+* author:yuliao.chen@hand-china.com
+*
+*
+-->
+<#include "../include/header.html">
+<style>
+    .breadcrumb>li+li:before {
+        content: "/ " !important;
+    }
+    #category_Breadcrumb a{
+        font-size: 15px;
+        color: #337ab7;
+        text-decoration: none;
+    }
+    #category_Breadcrumb a:hover{
+        text-decoration: underline;
+    }
+    #category_Breadcrumb .active {
+        color: #777;
+        font-size: 15px;
+    }
+</style>
+<body >
+
+<div id="content-container">
+    <div id="page-content">
+        <div>
+            <ul id="category_Breadcrumb" class="breadcrumb">
+                <li><a href="sys_attach_category_manage.html?functionCode=${RequestParameters.functionCode!}">Home</a></li>
+                <#if breadCrumb??>
+                    <#list breadCrumb as c>
+                        <li >
+                            <#if c_has_next>
+                                <a   href="${base.contextPath}/attach/sys_attach_category_manage.html?functionCode=${RequestParameters.functionCode!}&parentCategoryId=${c.categoryId}">${c.categoryName}
+                                </a>
+                                <#else>
+                                    <span class="active">${c.categoryName}</span>
+                            </#if>
+                        </li>
+                    </#list>
+                </#if>
+
+            </ul>
+        </div>
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" ><i class="fa fa-plus-square" style="margin-right:3px;"></i><@spring.message "hap.new"/></span>
+            <span class="btn btn-default k-grid-reload" style="float:left;margin-right:5px;"><i class="fa fa-refresh" style="margin-right:3px;"></i><@spring.message "hap.refresh"/></span>
+
+        </div>
+        <div id="grid-contrain">
+            <div id="grid" style="clear:both" class="table"></div>
+        </div>
+
+    </div>
+</div>
+<!-- 自定义的 编辑/新建 弹框 使用该 window  -->
+<div id="editWin"></div>
+<script>
+    var dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: "${base.contextPath}/sys/attachment/category/query?parentCategoryId=${RequestParameters.parentCategoryId!}",
+                type: "POST",
+                dataType: "json"
+            }
+        },
+        batch: true,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "categoryId"
+            }
+        }
+    });
+
+    //新建时调用的界面
+    window.editData = function (parentCategoryId, categoryId) {
+
+        var url = 'sys_attach_category_edit.html?parentCategoryId=' + (parentCategoryId || -1);
+        if (categoryId) {
+            url = url + '&categoryId=' + categoryId;
+        }
+
+        var editWin = $("#editWin").kendoWindow({
+            resizable: false,
+            width: 900,
+            height: 600,
+            title: false,
+            content: url,
+            iframe: true,
+            visible: false,
+            modal: true,
+            close: function () {
+                $('#grid').data('kendoGrid').dataSource.page(1);
+            }
+        }).data("kendoWindow");
+
+        if(parent.autoResizeIframe){
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 700, function(){
+                editWin.center().open();
+            })
+        }
+    };
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: dataSource,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        navigatable: false,
+        resizable: true,
+        scrollable: true,
+        columns: [
+            {
+                field: "categoryName",
+                title: '<@spring.message "attachcategory.categoryname"/>',
+                width: 120,
+                template: function (item) {
+                    var encodeCategoryName = Hap.escapeHtml(item.categoryName)
+                    if (!item.categoryPath) {
+                        return '<a style="text-decoration: underline;" href="${base.contextPath}/attach/sys_attach_category_manage.html?functionCode=${RequestParameters.functionCode!}&parentCategoryId=' + item.categoryId + '">' + encodeCategoryName + '</a>';
+                    }
+                    return encodeCategoryName;
+                }
+            }, {
+                field: "description",
+                title: '<@spring.message "attachcategory.description"/>',
+                width: 120
+            }, {
+                field: "categoryPath",
+                title: '<@spring.message "attachcategory.categorypath"/>',
+                width: 150
+            }, {
+                field: "allowedFileType",
+                title: '<@spring.message "attachcategory.allowedfiletype"/>',
+                width: 120
+            }, {
+                field: "allowedFileSizeDesc",
+                title: '<@spring.message "attachcategory.allowedfilesize"/>',
+                width: 90
+            }, {
+                field: "sourceType",
+                title: '<@spring.message "attachcategory.sourcetype"/>',
+                width: 120
+            }, {
+                field: "isUnique",
+                title: '<@spring.message "attachcategory.isunique"/>',
+                width: 60,
+                headerAttributes: {style: "text-align:center"},
+                attributes: {style: "text-align:center"}
+            }, {
+                headerAttributes: {style: "text-align:center"},
+                attributes: {style: "text-align:center"},
+                title: '<@spring.message "hap.edit"/>',
+                command: [{
+                    name: 'edit',
+                    template: '<a href="javascript:void(0)" class="k-grid-edit" ><@spring.message "hap.edit"/></a>',
+                    click: function (e) {
+                        var data = this.dataItem($(e.target).closest("tr"));
+                        editData("${RequestParameters.parentCategoryId!}", data.categoryId);
+                    }
+                }],
+                width: 80
+            }
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    $(".k-grid-add").click(function (e) {
+        e.preventDefault();
+        editData("${RequestParameters.parentCategoryId!}");
+    });
+
+    $(".k-grid-reload").click(function (e) {
+        refreshGrid();
+    });
+
+    function refreshGrid(){
+        grid.dataSource.read();
+    }
+
+    function closeEditWindow(){
+        $("#editWin").data("kendoWindow").close();
+    }
+</script>
+</body>
+</html>

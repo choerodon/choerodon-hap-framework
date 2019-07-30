@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.system.mapper.SysConfigMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.system.dto.SysConfig" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="CONFIG_ID" property="configId" jdbcType="DECIMAL"/>
+        <result column="CONFIG_CODE" property="configCode" jdbcType="VARCHAR"/>
+        <result column="CONFIG_VALUE" property="configValue" jdbcType="VARCHAR"/>
+        <result column="CATEGORY" property="category" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    CONFIG_ID, CONFIG_CODE, CONFIG_VALUE, CATEGORY,OBJECT_VERSION_NUMBER
+   </sql>
+
+    <select id="selectByCode" resultMap="BaseResultMap" parameterType="string">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_config
+        WHERE CONFIG_CODE = #{configCode,jdbcType=VARCHAR}
+    </select>
+</mapper>

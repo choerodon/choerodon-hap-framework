@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.util.mapper.CodeValueMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.util.dto.CodeValue" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="CODE_VALUE_ID" property="codeValueId" jdbcType="DECIMAL"/>
+        <result column="CODE_ID" property="codeId" jdbcType="DECIMAL"/>
+        <result column="VALUE" property="value" jdbcType="VARCHAR"/>
+        <result column="MEANING" property="meaning" jdbcType="VARCHAR"/>
+        <result column="ORDER_SEQ" property="orderSeq" jdbcType="DECIMAL"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="TAG" property="tag" jdbcType="VARCHAR"/>
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR"/>
+        <result column="PARENT_CODE_VALUE_ID" property="parentCodeValueId" jdbcType="DECIMAL"/>
+        <result column="PARENT_CODE_VALUE" property="parentCodeValue" jdbcType="VARCHAR"/>
+        <result column="PARENT_CODE_VALUE_MEANING" property="parentCodeValueMeaning" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectCodeValuesByCodeName" resultMap="BaseResultMap" parameterType="string">
+        SELECT SCVB.CODE_ID, SCVB.VALUE, SCVT.MEANING
+        FROM SYS_CODE_VALUE_B SCVB
+        LEFT OUTER JOIN SYS_CODE_VALUE_TL SCVT
+        ON (SCVB.CODE_VALUE_ID = SCVT.CODE_VALUE_ID AND SCVT.LANG = #{request.locale,jdbcType=VARCHAR})
+        INNER JOIN SYS_CODE_B SCB
+        ON (SCB.CODE_ID = SCVB.CODE_ID)
+        WHERE SCB.CODE = #{codeName}
+        ORDER BY SCVB.ORDER_SEQ ASC
+    </select>
+
+    <select id="selectCodeValuesByParentId" resultMap="BaseResultMap">
+        SELECT SCVB.CODE_ID, SCVB.VALUE, SCVT.MEANING
+        FROM SYS_CODE_VALUE_B SCVB
+        LEFT OUTER JOIN SYS_CODE_VALUE_TL SCVT
+        ON (SCVB.CODE_VALUE_ID = SCVT.CODE_VALUE_ID AND SCVT.LANG = #{request.locale,jdbcType=VARCHAR})
+        WHERE SCVB.PARENT_CODE_VALUE_ID = #{parentId,jdbcType=DECIMAL}
+        ORDER BY SCVB.ORDER_SEQ ASC
+    </select>
+
+    <select id="selectCodeValuesByCodeId" resultMap="BaseResultMap">
+        SELECT
+        SCVB.CODE_VALUE_ID,
+        SCVB.CODE_ID,
+        SCVB.VALUE,
+        SCVT.MEANING,
+        SCVT.DESCRIPTION,
+        SCVB.TAG,
+        SCVB.ORDER_SEQ,
+        SCVB.ENABLED_FLAG,
+        SCVB.PARENT_CODE_VALUE_ID,
+        SCVB.PARENT_CODE_VALUE,
+        SCVB.OBJECT_VERSION_NUMBER,
+        SCVT2.MEANING PARENT_CODE_VALUE_MEANING,
+        SCVB.ATTRIBUTE_CATEGORY, SCVB.ATTRIBUTE1, SCVB.ATTRIBUTE2, SCVB.ATTRIBUTE3, SCVB.ATTRIBUTE4, SCVB.ATTRIBUTE5, SCVB.ATTRIBUTE6,
+        SCVB.ATTRIBUTE7, SCVB.ATTRIBUTE8, SCVB.ATTRIBUTE9, SCVB.ATTRIBUTE10, SCVB.ATTRIBUTE11, SCVB.ATTRIBUTE12, SCVB.ATTRIBUTE13,
+        SCVB.ATTRIBUTE14, SCVB.ATTRIBUTE15
+        FROM
+        SYS_CODE_VALUE_B SCVB
+        LEFT JOIN SYS_CODE_VALUE_TL SCVT ON (
+        SCVB.CODE_VALUE_ID = SCVT.CODE_VALUE_ID
+        AND SCVT.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        LEFT JOIN SYS_CODE_VALUE_TL SCVT2 ON (
+        SCVB.PARENT_CODE_VALUE_ID = SCVT2.CODE_VALUE_ID
+        AND SCVT2.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        <where>
+            <if test="codeId!=null">
+                AND SCVB.CODE_ID = #{codeId}
+            </if>
+        </where>
+        ORDER BY SCVB.ORDER_SEQ ASC
+    </select>
+
+    <delete id="deleteByCodeId" parameterType="io.choerodon.hap.util.dto.CodeValue">
+        DELETE FROM
+        SYS_CODE_VALUE_B
+        WHERE CODE_ID = #{codeId,jdbcType=DECIMAL}
+    </delete>
+    <delete id="deleteTlByCodeId" parameterType="io.choerodon.hap.util.dto.CodeValue">
+        DELETE FROM
+        SYS_CODE_VALUE_TL
+        WHERE CODE_VALUE_ID IN (
+        SELECT CODE_VALUE_ID
+        FROM SYS_CODE_VALUE_B SCVB
+        WHERE SCVB.CODE_ID = #{codeId,jdbcType=DECIMAL})
+    </delete>
+
+    <select id="getCodeValueById" parameterType="io.choerodon.hap.util.dto.CodeValue" resultMap="BaseResultMap">
+        SELECT SCVB.CODE_VALUE_ID, SCVB.VALUE, SCVB.MEANING
+          FROM SYS_CODE_VALUE_B SCVB
+        WHERE SCVB.CODE_VALUE_ID = #{codeValueId,jdbcType=DECIMAL}
+    </select>
+
+
+    <select id="selectCodeValueByCode" parameterType="io.choerodon.hap.util.dto.Code" resultMap="BaseResultMap">
+        SELECT
+        SCVB.CODE_VALUE_ID,
+        SCVB.CODE_ID,
+        SCVB.VALUE,
+        SCVT.MEANING,
+        SCVT.DESCRIPTION,
+        SCVB.TAG,
+        SCVB.ORDER_SEQ,
+        SCVB.ENABLED_FLAG,
+        SCVB.PARENT_CODE_VALUE_ID,
+        SCVB.PARENT_CODE_VALUE,
+        SCVT2.MEANING PARENT_CODE_VALUE_MEANING,
+        SCVB.OBJECT_VERSION_NUMBER, SCVB.REQUEST_ID,SCVB.PROGRAM_ID,
+        SCVB.CREATION_DATE, SCVB.CREATED_BY, SCVB.LAST_UPDATED_BY, SCVB.LAST_UPDATE_DATE,
+        SCVB.ATTRIBUTE_CATEGORY, SCVB.ATTRIBUTE1, SCVB.ATTRIBUTE2, SCVB.ATTRIBUTE3, SCVB.ATTRIBUTE4, SCVB.ATTRIBUTE5, SCVB.ATTRIBUTE6,
+        SCVB.ATTRIBUTE7, SCVB.ATTRIBUTE8, SCVB.ATTRIBUTE9, SCVB.ATTRIBUTE10, SCVB.ATTRIBUTE11, SCVB.ATTRIBUTE12, SCVB.ATTRIBUTE13,
+        SCVB.ATTRIBUTE14, SCVB.ATTRIBUTE15
+        FROM
+        SYS_CODE_VALUE_B SCVB
+        LEFT JOIN SYS_CODE_VALUE_TL SCVT ON (
+        SCVB.CODE_VALUE_ID = SCVT.CODE_VALUE_ID
+        AND SCVT.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        LEFT JOIN SYS_CODE_VALUE_TL SCVT2 ON (
+        SCVB.PARENT_CODE_VALUE_ID = SCVT2.CODE_VALUE_ID
+        AND SCVT2.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        LEFT JOIN SYS_CODE_B SCB ON (
+        SCVB.CODE_ID = SCB.CODE_ID
+        )
+        <where>
+            <if test="codeId!=null">
+                AND SCB.CODE_ID = #{codeId}
+            </if>
+            <if test="code!=null">
+                AND SCB.CODE = #{code}
+            </if>
+        </where>
+        ORDER BY SCVB.ORDER_SEQ ASC
+    </select>
+
+</mapper>

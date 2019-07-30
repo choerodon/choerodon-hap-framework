@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.iam.infra.mapper.MenuMapper">
+
+    <resultMap id="Menu" type="io.choerodon.hap.iam.infra.dto.MenuDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_default" property="isDefault" jdbcType="BOOLEAN"/>
+        <collection property="permissions" ofType="io.choerodon.hap.iam.infra.dto.PermissionDTO">
+            <id column="permission_id" property="id"/>
+            <result column="permission_code" property="code" jdbcType="VARCHAR"/>
+            <result column="permission_description" property="description" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectMenusAfterCheckPermission" resultMap="Menu">
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        select
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip2.path as route,
+        ip2.permission_type as page_permission_type
+        from iam_menu_b imb
+        inner join iam_menu_permission imp
+        on imb.code = imp.menu_code
+        inner join (
+        select distinct t2.code from (
+        select ip.* from iam_permission ip
+        inner join iam_role_permission irp
+        on ip.id = irp.permission_id
+        inner join (
+        select distinct imr.role_id
+        from iam_member_role imr
+        inner join iam_role ir
+        on imr.role_id = ir.id
+        and ir.is_enabled = 1
+        where imr.member_id = #{memberId}
+        and imr.role_id in
+        <foreach collection="memberRoleIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="memberType != null">
+            and imr.member_type = #{memberType}
+        </if>
+        ) t1
+        on t1.role_id = irp.role_id
+        union
+        select ip1.* from iam_permission ip1
+        where ip1.is_login_access = 1
+        or ip1.is_public_access = 1
+        ) t2
+        ) t3
+        on (imp.permission_code = t3.code and imb.page_permission_code = t3.code)
+        left join iam_menu_tl imt
+        on imb.id = imt.id
+        and imt.lang = #{lang}
+        left join iam_permission ip2
+        on imb.page_permission_code = ip2.code
+    </select>
+
+    <select id="selectMenusWithPermission" resultMap="Menu">
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        select
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip2.path as route,
+        ip.id permission_id,
+        ip.code permission_code,
+        ip.description as permission_description
+        from iam_menu_b imb
+        left join iam_menu_tl imt
+        on imb.id = imt.id
+        and imt.lang = #{lang}
+        left join iam_menu_permission imp
+        left join iam_permission ip
+        on imp.permission_code = ip.code
+        on imb.code = imp.menu_code
+        left join iam_permission ip2
+        on imb.page_permission_code = ip2.code
+        where imb.type != 'top'
+        and imb.resource_level = #{level}
+    </select>
+
+</mapper>

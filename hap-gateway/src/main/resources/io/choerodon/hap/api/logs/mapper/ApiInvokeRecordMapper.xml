@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.api.logs.mapper.ApiInvokeRecordMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.api.logs.dto.ApiInvokeRecord">
+        <result column="RECORD_ID" property="recordId" jdbcType="DECIMAL" />
+        <result column="INVOKE_ID" property="invokeId" jdbcType="VARCHAR" />
+        <result column="APPLICATION_CODE" property="applicationCode" jdbcType="VARCHAR" />
+        <result column="SERVER_CODE" property="serverCode" jdbcType="VARCHAR" />
+        <result column="SERVER_NAME" property="serverName" jdbcType="VARCHAR" />
+        <result column="API_URL" property="apiUrl" jdbcType="VARCHAR" />
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR" />
+        <result column="REQUEST_TIME" property="requestTime" jdbcType="TIMESTAMP" />
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR" />
+        <result column="IP" property="ip" jdbcType="VARCHAR" />
+        <result column="API_RESPONSE_TIME" property="apiResponseTime" jdbcType="DECIMAL" />
+        <result column="REQUEST_URL" property="requestUrl" jdbcType="VARCHAR" />
+        <result column="REFERER" property="referer" jdbcType="VARCHAR" />
+        <result column="USER_AGENT" property="userAgent" jdbcType="VARCHAR" />
+        <result column="RESPONSE_TIME" property="responseTime" jdbcType="DECIMAL" />
+        <result column="INTERFACE_TYPE" property="interfaceType" jdbcType="VARCHAR" />
+        <result column="RESPONSE_CODE" property="responseCode" jdbcType="VARCHAR" />
+        <result column="RESPONSE_STATUS" property="responseStatus" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="RecordMap" extends="BaseResultMap" type="io.choerodon.hap.api.logs.dto.ApiInvokeRecord">
+
+        <collection property="apiInvokeRecordDetails" ofType="io.choerodon.hap.api.logs.dto.ApiInvokeRecordDetails">
+            <result column="D_ECORD_DETAILS_ID" property="recordDetailsId" jdbcType="DECIMAL" />
+            <result column="D_RECORD_ID" property="recordId" jdbcType="DECIMAL" />
+            <result column="D_API_REQUEST_BODY_PARAMETER" property="apiRequestBodyParameter" jdbcType="VARCHAR" />
+            <result column="D_API_RESPONSE_CONTENT" property="apiResponseContent" jdbcType="VARCHAR" />
+            <result column="D_REQUEST_HEADER_PARAMETER" property="requestHeaderParameter" jdbcType="VARCHAR" />
+            <result column="D_REQUEST_BODY_PARAMETER" property="requestBodyParameter" jdbcType="VARCHAR" />
+            <result column="D_RESPONSE_CONTENT" property="responseContent" jdbcType="VARCHAR" />
+            <result column="D_STACKTRACE" property="stacktrace" jdbcType="VARCHAR" />
+        </collection>
+
+    </resultMap>
+
+    <sql id="recordField">
+        R.RECORD_ID, R.INVOKE_ID, R.APPLICATION_CODE, R.SERVER_CODE, R.SERVER_NAME, R.API_URL, R.CLIENT_ID,
+        R.REQUEST_TIME, R.REQUEST_METHOD, R.IP, R.API_RESPONSE_TIME, R.REQUEST_URL, R.REFERER, R.USER_AGENT,
+        R.RESPONSE_TIME, INTERFACE_TYPE, R.RESPONSE_CODE, R.RESPONSE_STATUS
+    </sql>
+
+    <select id="selectById"  resultMap="RecordMap" parameterType="java.lang.Long">
+        SELECT
+          <include refid="recordField" /> ,
+          D.RECORD_DETAILS_ID AS D_ECORD_DETAILS_ID,
+          D.RECORD_ID AS D_RECORD_ID,
+          D.API_REQUEST_BODY_PARAMETER AS D_API_REQUEST_BODY_PARAMETER,
+          D.API_RESPONSE_CONTENT AS D_API_RESPONSE_CONTENT,
+          D.REQUEST_HEADER_PARAMETER AS D_REQUEST_HEADER_PARAMETER,
+          D.REQUEST_BODY_PARAMETER AS D_REQUEST_BODY_PARAMETER,
+          D.RESPONSE_CONTENT AS D_RESPONSE_CONTENT,
+          D.STACKTRACE AS D_STACKTRACE
+        FROM API_INVOKE_RECORD R , API_INVOKE_RECORD_DETAILS D
+        WHERE R.RECORD_ID = #{recordId} AND D.RECORD_ID = #{recordId}
+    </select>
+
+
+    <select id="selectList" resultMap="RecordMap" parameterType="io.choerodon.hap.api.logs.dto.ApiInvokeRecord">
+        SELECT
+          <include refid="recordField" />
+        FROM API_INVOKE_RECORD R
+        <where>
+            <if test="serverName!=null">
+                AND SERVER_NAME LIKE  concat('%', concat(#{serverName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="applicationCode!=null">
+                AND APPLICATION_CODE = #{applicationCode}
+            </if>
+            <if test="serverCode!=null">
+                AND SERVER_CODE = #{serverCode}
+            </if>
+            <if test="responseStatus!=null">
+                AND RESPONSE_STATUS = #{responseStatus}
+            </if>
+            <if test="startDate!=null">
+                AND REQUEST_TIME &gt;=  #{startDate}
+            </if>
+            <if test="endDate!=null">
+                AND REQUEST_TIME &lt;=  #{endDate}
+            </if>
+            <if test="invokeId!=null">
+                AND INVOKE_ID =  #{invokeId}
+            </if>
+            <if test="clientId!=null">
+                AND CLIENT_ID =  #{clientId}
+            </if>
+
+        </where>
+            ORDER BY REQUEST_TIME  DESC
+
+    </select>
+
+</mapper>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.account.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.account.dto.User"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="USER_ID" property="userId" jdbcType="DECIMAL"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="USER_TYPE" property="userType" jdbcType="VARCHAR"/>
+        <result column="PASSWORD_ENCRYPTED" property="passwordEncrypted" jdbcType="VARCHAR"/>
+        <result column="EMAIL" property="email" jdbcType="VARCHAR"/>
+        <result column="PHONE" property="phone" jdbcType="VARCHAR"/>
+        <result column="START_ACTIVE_DATE" property="startActiveDate" javaType="DATE"/>
+        <result column="END_ACTIVE_DATE" property="endActiveDate" javaType="DATE"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="LAST_PASSWORD_UPDATE_DATE" property="lastPasswordUpdateDate" javaType="DATE"/>
+        <result column="LAST_LOGIN_DATE" property="lastLoginDate" javaType="DATE"/>
+        <result column="FIRST_LOGIN" property="firstLogin" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="EMPLOYEE_ID" property="employeeId" jdbcType="DECIMAL"/>
+        <result column="EMPLOYEE_CODE" property="employeeCode" jdbcType="VARCHAR"/>
+        <result column="EMPLOYEE_NAME" property="employeeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="UserResultMap" type="io.choerodon.hap.account.dto.User" extends="BaseResultMap">
+        <collection column="ROLE_CODE" property="roleCode" ofType="java.lang.String">
+            <id property="roleCode" column="ROLE_CODE" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        SU.USER_ID, SU.USER_NAME, SU.USER_TYPE, SU.PASSWORD_ENCRYPTED, SU.EMAIL, SU.PHONE, SU.START_ACTIVE_DATE,
+        SU.END_ACTIVE_DATE, SU.STATUS, SU.LAST_PASSWORD_UPDATE_DATE, SU.LAST_LOGIN_DATE, SU.FIRST_LOGIN, SU.DESCRIPTION
+    </sql>
+
+    <sql id="Attribute_Column_List">
+         SU.OBJECT_VERSION_NUMBER,SU.ATTRIBUTE_CATEGORY,  SU.ATTRIBUTE1,  SU.ATTRIBUTE2,  SU.ATTRIBUTE3,  SU.ATTRIBUTE4,  SU.ATTRIBUTE5,  SU.ATTRIBUTE6,
+         SU.ATTRIBUTE7,  SU.ATTRIBUTE8,  SU.ATTRIBUTE9,  SU.ATTRIBUTE10,  SU.ATTRIBUTE11,  SU.ATTRIBUTE12,  SU.ATTRIBUTE13,SU.ATTRIBUTE14,  SU.ATTRIBUTE15
+    </sql>
+
+    <update id="updateBasic" parameterType="io.choerodon.hap.account.dto.User">
+        UPDATE SYS_USER
+        <set>
+            <if test="userName!=null">
+                USER_NAME = #{userName},
+            </if>
+            <if test="userType!=null">
+                USER_TYPE = #{userType},
+            </if>
+            <if test="email!=null">
+                EMAIL = #{email},
+            </if>
+            <if test="phone!=null">
+                PHONE = #{phone},
+            </if>
+            <if test="status!=null">
+                STATUS = #{status},
+            </if>
+            <if test="employeeId!=null">
+                EMPLOYEE_ID = #{employeeId},
+            </if>
+            <if test="description!=null">
+                DESCRIPTION = #{description},
+            </if>
+            START_ACTIVE_DATE = #{startActiveDate},
+            END_ACTIVE_DATE = #{endActiveDate},
+            OBJECT_VERSION_NUMBER = OBJECT_VERSION_NUMBER+1,
+            LAST_UPDATED_BY = #{request.userId},
+            LAST_UPDATE_DATE = current_timestamp
+        </set>
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE SYS_USER
+        SET PASSWORD_ENCRYPTED = #{password,jdbcType=VARCHAR},
+            LAST_PASSWORD_UPDATE_DATE = current_timestamp
+        WHERE USER_ID = #{userId,jdbcType=DECIMAL}
+    </update>
+
+    <update id="updateFirstLogin">
+        UPDATE SYS_USER
+        SET FIRST_LOGIN = #{status,jdbcType=VARCHAR}
+        WHERE USER_ID = #{userId,jdbcType=DECIMAL}
+    </update>
+
+    <select id="selectByUserName" resultMap="UserResultMap" parameterType="java.lang.String">
+        SELECT<include refid="Base_Column_List"/>,
+        SU.EMPLOYEE_ID,
+        IR.CODE as ROLE_CODE,
+        HE.EMPLOYEE_CODE AS EMPLOYEE_CODE,
+        HE.NAME AS EMPLOYEE_NAME
+        FROM SYS_USER SU
+        LEFT OUTER JOIN IAM_MEMBER_ROLE IMR ON SU.USER_ID = IMR.MEMBER_ID AND IMR.MEMBER_TYPE='user'
+        LEFT OUTER JOIN IAM_ROLE IR ON IR.ID = IMR.ROLE_ID AND IR.IS_ENABLED = 1
+        LEFT OUTER JOIN HR_EMPLOYEE HE ON SU.EMPLOYEE_ID = HE.EMPLOYEE_ID
+        WHERE USER_NAME = #{userName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectUserNameByEmployeeCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT SU.USER_NAME,
+               SU.USER_ID
+          FROM HR_EMPLOYEE HE
+    INNER JOIN SYS_USER SU
+            ON SU.EMPLOYEE_ID = HE.EMPLOYEE_ID
+         WHERE HE.EMPLOYEE_CODE = #{employeeCode}
+    </select>
+
+    <select id="selectByIdList" resultMap="BaseResultMap">
+        SELECT USER_ID,
+        EMAIL,
+        USER_NAME
+        FROM SYS_USER
+        WHERE USER_ID IN
+        <foreach collection="list" open="(" separator="," close=")" item="userId" index="index">
+            #{userId,jdbcType=DECIMAL}
+        </foreach>
+    </select>
+
+    <select id="selectUsers" resultMap="BaseResultMap" parameterType="io.choerodon.hap.account.dto.User">
+        SELECT
+        <include refid="Base_Column_List"/>,
+        <include refid="io.choerodon.mybatis.mapper.StdMapper.Base_Column_List"/>,
+        SU.EMPLOYEE_ID,
+        HE.EMPLOYEE_CODE EMPLOYEE_CODE,
+        HE.NAME EMPLOYEE_NAME
+        FROM SYS_USER SU
+        LEFT OUTER JOIN HR_EMPLOYEE HE
+        ON SU.EMPLOYEE_ID = HE.EMPLOYEE_ID
+        <where>
+            <if test="userId!=null">
+                AND SU.USER_ID=#{userId}
+            </if>
+            <if test="userName!=null">
+                AND SU.USER_NAME LIKE concat('%', concat(#{userName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="userType!=null">
+                AND SU.USER_TYPE=#{userType}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            ORDER BY SU.${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            ORDER BY SU.USER_ID ASC
+        </if>
+    </select>
+
+    <select id="selectUsersOption" resultMap="BaseResultMap" parameterType="io.choerodon.hap.account.dto.User">
+        SELECT SU.USER_ID, SU.USER_NAME, SU.EMPLOYEE_ID, HE.NAME EMPLOYEE_NAME, HE.EMPLOYEE_CODE EMPLOYEE_CODE,SU.EMAIL,
+        SU.PHONE, SU.STATUS,SU.START_ACTIVE_DATE,SU.END_ACTIVE_DATE, SU.DESCRIPTION,SU.USER_TYPE,
+        <include refid="Attribute_Column_List"/>
+        FROM SYS_USER SU
+        LEFT OUTER JOIN HR_EMPLOYEE HE
+        ON SU.EMPLOYEE_ID = HE.EMPLOYEE_ID
+        <if test="roleId!=null">
+            LEFT JOIN IAM_MEMBER_ROLE IMR ON SU.USER_ID = IMR.MEMBER_ID AND IMR.MEMBER_TYPE='user'
+        </if>
+        <where>
+            <if test="userId!=null">
+                AND SU.USER_ID=#{userId}
+            </if>
+            <if test="userName!=null">
+                AND SU.USER_NAME LIKE concat('%', concat(#{userName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="userType!=null">
+                AND SU.USER_TYPE=#{userType}
+            </if>
+            <if test="employeeCode!=null">
+                AND HE.EMPLOYEE_CODE LIKE concat('%', concat(#{employeeCode,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="employeeName!=null">
+                AND HE.NAME LIKE concat('%', concat(#{employeeName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="roleId!=null">
+                AND IMR.ROLE_ID=#{roleId}
+            </if>
+            <if test="status!=null">
+                AND SU.STATUS=#{status}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            ORDER BY SU.${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            ORDER BY SU.USER_NAME ASC
+        </if>
+    </select>
+
+    <select id="fuzzyQueryUsersByRoleAssignmentSearchDTO" resultMap="BaseResultMap">
+        <bind name="__current_lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        SELECT DISTINCT su.user_id,su.user_name
+        FROM sys_user su
+        LEFT JOIN iam_member_role imr ON ( imr.member_id = su.user_id and imr.member_type = 'user')
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN iam_role_tl irt ON (ir.id = irt.id and irt.lang = #{__current_lang})
+        <where>
+            <if test="param != null">
+                AND (
+                su.user_name LIKE concat(concat('%',#{param}),'%')
+                OR irt.name LIKE concat(concat('%',#{param}),'%')
+                )
+            </if>
+            <if test="roleAssignmentSearchDTO != null">
+                <if test="roleAssignmentSearchDTO.userName != null">
+                    AND su.user_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.userName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.roleName != null">
+                    AND irt.name LIKE concat(concat('%',#{roleAssignmentSearchDTO.roleName}),'%')
+                </if>
+            </if>
+        </where>
+        order by su.user_id desc
+    </select>
+</mapper>

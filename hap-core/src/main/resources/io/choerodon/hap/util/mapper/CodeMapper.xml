@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.util.mapper.CodeMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.util.dto.Code" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="CODE_ID" property="codeId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR"/>
+        <result column="PARENT_CODE_ID" property="parentCodeId" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="selectCodes" resultMap="BaseResultMap">
+        SELECT
+        SCB.CODE_ID,
+        SCB. CODE,
+        SCT.DESCRIPTION,
+        SCB.TYPE,
+        SCB.ENABLED_FLAG,
+        SCB.PARENT_CODE_ID,
+        SCB.OBJECT_VERSION_NUMBER,
+        SCT2.DESCRIPTION PARENTCODEDESCRIPTION
+        FROM
+        SYS_CODE_B SCB
+        LEFT OUTER JOIN SYS_CODE_TL SCT ON (
+        SCB.CODE_ID = SCT.CODE_ID
+        AND SCT.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        LEFT OUTER JOIN SYS_CODE_TL SCT2 ON (
+        SCB.PARENT_CODE_ID = SCT2.CODE_ID
+        AND SCT2.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        <where>
+            <if test="codeId != null">
+                SCB.CODE_ID = #{codeId,jdbcType=DECIMAL}
+            </if>
+            <if test="code != null">
+                AND SCB.CODE LIKE CONCAT('%',CONCAT(#{code,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="description != null">
+                AND SCT.DESCRIPTION LIKE CONCAT('%',CONCAT(#{description,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY SCB.CODE_ID DESC
+    </select>
+
+    <select id="getByCodeName" resultMap="BaseResultMap">
+        SELECT
+        SCB.CODE_ID,
+        SCB.CODE,
+        SCT.DESCRIPTION,
+        SCB.TYPE,
+        SCB.ENABLED_FLAG,
+        SCB.PARENT_CODE_ID,
+        SCB.OBJECT_VERSION_NUMBER
+        FROM
+        SYS_CODE_B SCB
+        LEFT JOIN SYS_CODE_TL SCT ON (
+        SCB.CODE_ID = SCT.CODE_ID
+        AND SCT.LANG = #{request.locale,jdbcType=VARCHAR}
+        )
+        WHERE
+          SCB.CODE = #{codeName}
+    </select>
+
+</mapper>

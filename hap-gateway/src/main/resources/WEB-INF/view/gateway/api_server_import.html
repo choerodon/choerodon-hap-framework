@@ -1,0 +1,109 @@
+<#include "../include/header.html">
+
+    <body>
+    <script src="${base.contextPath}/common/code?serviceType=API.SERVICE_TYPE" type="text/javascript"></script>
+    <script type="text/javascript">
+        var apiServiceBaseUrl = '${base.contextPath}/sys/gateway/server/';
+        var viewModel = kendo.observable({
+            model: {
+                serviceType: 'SOAP',
+            },
+            import: function (e) {
+                var url = apiServiceBaseUrl + 'import';
+                var validator = $("#importForm").data("kendoValidator");
+                var dtoData = {
+                    "importUrl": $("#importUrl").val(),
+                };
+                if (validator.validate()) {
+                    Hap.blockUI();
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: JSON.stringify(dtoData),
+                        success: function (result) {
+                            if (result.rows.length > 0){
+                                var importServer = result.rows[0] || {};
+                                window.parent.importServer = importServer;
+                                window.parent.openEditWindow(true, importServer.mappingUrl);
+                                window.parent.$("#dialogImport").data("kendoWindow").close();
+                            }else{
+                                kendo.ui.showInfoDialog({
+                                    message: '导入失败!'
+                                }).done(function (e) {
+                                })
+                            }
+                        },
+                        complete:function () {
+                            Hap.unblockUI();
+                        }
+                    });
+                }
+            },
+            cancel: function (e) {
+                window.parent.$("#dialogImport").data("kendoWindow").close();
+            },
+        });
+    </script>
+    <style>
+        .input-import-url {
+            -webkit-box-shadow: 0 0 0 1000px white inset !important;
+            width: 100%;
+            border-left:0px;
+            border-top:0px;
+            border-right:0px;
+            border-bottom: solid 1px #a0a9b4;
+        }
+    </style>
+    <div id="content-container">
+        <div id="page-content" style="line-height: 70px;">
+            <form class="form-horizontal">
+                <div class="panel-body">
+                    <div id="importForm">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <input name="importUrl" id="importUrl" data-role="maskedtextbox" type="text" class="input-import-url"
+                                           placeholder="<@spring.message'server.importurl.description'/>" required data-label="<@spring.message'server.importurl'/>" />
+                                    <script>kendo.bind($('#importUrl'), viewModel);</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="text-right k-window-toolbar">
+        <span class="btn btn-primary" id="import" data-bind="click:import" style="margin-right:5px"><@spring.message "server.import"/></span>
+        <span class="btn btn-default" id="cancel" type="button" data-bind="click:cancel" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+        <script>
+            kendo.bind($('#import'), viewModel);
+            kendo.bind($('#cancel'), viewModel);
+        </script>
+    </div>
+
+    <script type="text/javascript">
+        $("#importForm").kendoValidator({
+            messages: {
+                required: '<@spring.message "hap.validation.notempty"/>'
+            },
+            invalidMessageType : "tooltip"
+        });
+
+        $("#serviceType").kendoDropDownList({
+            dataTextField: "meaning",
+            dataValueField: "value",
+            valuePrimitive: true,
+            dataSource: serviceType,
+            change:function(e) {
+                var value = this.value();
+            }
+        });
+
+    </script>
+
+
+    </body>
+    </html>

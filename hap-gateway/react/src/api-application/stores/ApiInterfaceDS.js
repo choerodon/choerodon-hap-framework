@@ -1,0 +1,31 @@
+import { $l } from '@choerodon/boot';
+
+export default {
+  primaryKey: 'interfaceId',
+  selection: false,
+  paging: false,
+  fields: [
+    { name: 'interfaceId', type: 'number', label: 'interface ID' },
+    { name: 'serverId', type: 'number', label: 'server ID' },
+    { name: 'code', type: 'string', label: $l('interface.line.interfacecode') },
+    { name: 'name', type: 'string', label: $l('interface.line.interfacename') },
+    { name: 'interfaceUrl', type: 'string', label: $l('interface.lind.interfaceurl') },
+    { name: 'mappingUrl', type: 'string', label: $l('api.server.mappingurl') },
+    { name: 'enableFlag', type: 'string', label: $l('hap.enableflag') },
+    { name: 'soapVersion', type: 'string', label: $l('server.soapversion') },
+    { name: 'mappingClass', type: 'string', label: $l('interface.mapperclass') },
+    { name: 'requestMethod', type: 'string', label: $l('interface.requestmethod') },
+    { name: 'requestHead', type: 'string', label: $l('api.server.requesthead') },
+    { name: 'description', type: 'string', label: $l('api.server.description') },
+    { name: 'soapAction', type: 'string', label: 'soapAction' },
+    { name: 'invokeRecordDetails', type: 'string', label: $l('api.server.details') },
+    { name: 'apiAccessLimit', type: 'object', label: 'api access limit' },
+    { name: 'id', type: 'number', label: 'id', bind: 'apiAccessLimit.id' },
+    { name: 'accessFrequency', type: 'number', label: $l('api.accesslimit.accessfrequency'), bind: 'apiAccessLimit.accessFrequency' },
+    { name: 'accessFlag', type: 'boolean', label: $l('api.accesslimit.flag'), bind: 'apiAccessLimit.accessFlag', trueValue: 'Y', falseValue: 'N' },
+    { name: 'clientId', type: 'string', label: 'clientId', bind: 'apiAccessLimit.clientId' },
+    { name: 'interfaceCode', type: 'string', bind: 'apiAccessLimit.interfaceCode' },
+    { name: 'objectVersionNumber', type: 'number', bind: 'apiAccessLimit.objectVersionNumber' },
+    { name: 'serverCode', type: 'string', bind: 'apiAccessLimit.serverCode' },
+  ],
+};

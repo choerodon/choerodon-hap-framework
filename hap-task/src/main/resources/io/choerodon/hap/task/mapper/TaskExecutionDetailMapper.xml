@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.task.mapper.TaskExecutionDetailMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.task.dto.TaskExecutionDetail" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="EXECUTION_DETAIL_ID" property="executionDetailId" jdbcType="DECIMAL"/>
+        <result column="EXECUTION_ID" property="executionId" jdbcType="DECIMAL"/>
+        <result column="PARAMETER" property="parameter" jdbcType="VARCHAR"/>
+        <result column="STACKTRACE" property="stacktrace" jdbcType="VARCHAR"/>
+        <result column="EXECUTION_LOG" property="executionLog" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <update id="updateStacktrace" parameterType="io.choerodon.hap.task.dto.TaskExecutionDetail">
+        UPDATE SYS_TASK_EXECUTION_DETAIL
+        SET STACKTRACE = #{stacktrace}
+        WHERE EXECUTION_ID = #{executionId}
+    </update>
+
+    <update id="updateExecuteLog" parameterType="io.choerodon.hap.task.dto.TaskExecutionDetail">
+        UPDATE SYS_TASK_EXECUTION_DETAIL
+        SET EXECUTION_LOG = #{executionLog}
+        WHERE EXECUTION_ID = #{executionId}
+    </update>
+
+    <select id="getExecutionLog" parameterType="io.choerodon.hap.task.dto.TaskExecutionDetail" resultMap="BaseResultMap">
+        SELECT EXECUTION_LOG
+        FROM SYS_TASK_EXECUTION_DETAIL
+        WHERE EXECUTION_ID = #{executionId}
+    </select>
+
+    <delete id="deleteByExecutionId">
+        DELETE
+        FROM SYS_TASK_EXECUTION_DETAIL
+        WHERE EXECUTION_ID = #{executionId}
+    </delete>
+
+    <select id="selectByExecutionId" resultMap="BaseResultMap">
+        SELECT *
+        FROM SYS_TASK_EXECUTION_DETAIL
+        WHERE EXECUTION_ID = #{executionId}
+    </select>
+</mapper>

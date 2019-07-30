@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.choerodon.hap.intergration.mapper.HapInterfaceLineMapper">
+
+    <resultMap id="lineResultMap" type="io.choerodon.hap.intergration.dto.HapInterfaceLine" >
+        <id column="LINE_ID" property="lineId" jdbcType="VARCHAR"/>
+        <result column="HEADER_ID" property="headerId" jdbcType="VARCHAR"/>
+        <result column="LINE_CODE" property="lineCode" jdbcType="VARCHAR"/>
+        <result column="IFT_URL" property="iftUrl" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+
+        <result column="LANG" property="lang" jdbcType="VARCHAR"/>
+        <result column="LINE_NAME" property="lineName" jdbcType="VARCHAR"/>
+        <result column="LINE_DESCRIPTION" property="lineDescription" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="headerLineByLineIdResultMap" type="io.choerodon.hap.intergration.dto.HapInterfaceHeader">
+        <result column="INTERFACE_CODE" property="interfaceCode" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_TYPE" property="interfaceType" jdbcType="VARCHAR"/>
+        <result column="BODY_HEADER" property="bodyHeader" jdbcType="VARCHAR"/>
+        <result column="BODY_TAIL" property="bodyTail" jdbcType="VARCHAR"/>
+        <result column="NAMESPACE" property="namespace" jdbcType="VARCHAR"/>
+        <result column="DOMAIN_URL" property="domainUrl" jdbcType="VARCHAR"/>
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="REQUEST_FORMAT" property="requestFormat" jdbcType="VARCHAR"/>
+        <result column="REQUEST_CONTENTTYPE" property="requestContentType" jdbcType="VARCHAR"/>
+        <result column="REQUEST_ACCEPT" property="requestAccept" jdbcType="VARCHAR"/>
+        <result column="AUTH_FLAG" property="authFlag" jdbcType="VARCHAR"/>
+        <result column="AUTH_USERNAME" property="authUsername" jdbcType="VARCHAR"/>
+        <result column="AUTH_PASSWORD" property="authPassword" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_TYPE" property="systemType" jdbcType="VARCHAR"/>
+        <result column="MAPPER_CLASS" property="mapperClass" jdbcType="VARCHAR"/>
+        <result column="AUTH_TYPE" property="authType" jdbcType="VARCHAR"/>
+        <result column="AUTH_URL" property="authUrl" jdbcType="VARCHAR"/>
+        <result column="ACCESS_TOKEN_URL" property="accessTokenUrl" jdbcType="VARCHAR"/>
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR"/>
+        <result column="CLIENT_SECRET" property="clientSecret" jdbcType="VARCHAR"/>
+        <result column="GRANT_TYPE" property="grantType" jdbcType="VARCHAR"/>
+        <result column="SCOPE" property="scope" jdbcType="VARCHAR" />
+        <result column="SOAP_ACTION" property="soapAction" jdbcType="VARCHAR"/>
+        <!--ItfInterfaceLine-->
+        <!--<id property="lineId" column="LINE_ID" jdbcType="DECIMAL"/>
+        <result property="headerId" column="HEADER_ID" jdbcType="DECIMAL"/>-->
+        <result property="lineCode" column="LINE_CODE" jdbcType="VARCHAR"/>
+        <result property="iftUrl" column="IFT_URL" jdbcType="VARCHAR"/>
+        <result property="enableFlag" column="ENABLE_FLAG" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <select id="getLineAndLineTl" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceLine" resultMap="lineResultMap">
+        SELECT
+             line.LINE_ID , line.HEADER_ID , line.LINE_CODE , line.IFT_URL , line.ENABLE_FLAG,
+
+             lineTl.LANG , lineTl.LINE_NAME , lineTl.LINE_DESCRIPTION
+        FROM
+            SYS_IF_CONFIG_LINE_B line ,
+            SYS_IF_CONFIG_LINE_TL lineTl
+        WHERE
+            line.LINE_ID = lineTl.LINE_ID
+        and
+            line.LINE_ID = #{lineId}
+        and
+            lineTl.LANG = #{request.locale,jdbcType=VARCHAR}
+
+    </select>
+
+    <select id="getHeaderLineByLineId" resultMap="headerLineByLineIdResultMap" parameterType="java.lang.String">
+        SELECT
+            header.HEADER_ID,header.INTERFACE_CODE,header.INTERFACE_TYPE,header.BODY_HEADER,
+            header.SOAP_ACTION,
+            header.BODY_TAIL,header.NAMESPACE,header.DOMAIN_URL,header.REQUEST_METHOD,
+            header.REQUEST_FORMAT,header.REQUEST_CONTENTTYPE,header.REQUEST_ACCEPT,
+            header.AUTH_FLAG,header.AUTH_USERNAME,header.AUTH_PASSWORD, header.ENABLE_FLAG,header.MAPPER_CLASS,header.SYSTEM_TYPE,
+            header.AUTH_TYPE,header.AUTH_URL,header.ACCESS_TOKEN_URL,header.CLIENT_ID,
+            header.CLIENT_SECRET,header.GRANT_TYPE,header.SCOPE,
+
+            line.LINE_CODE ,line.IFT_URL , line.ENABLE_FLAG
+        FROM
+            SYS_IF_CONFIG_HEADER_B header,
+            SYS_IF_CONFIG_LINE_B line
+        WHERE
+        header.HEADER_ID = line.HEADER_ID
+        and  line.LINE_ID = #{lineId}
+        and header.ENABLE_FLAG = 'Y'
+        and line.ENABLE_FLAG = 'Y'
+
+    </select>
+
+    <select id="getLinesByHeaderId" resultMap="lineResultMap"  parameterType="java.lang.Object">
+        SELECT
+             line.LINE_ID , line.HEADER_ID , line.LINE_CODE , line.IFT_URL , line.ENABLE_FLAG,line.OBJECT_VERSION_NUMBER,
+
+             lineTl.LANG , lineTl.LINE_NAME , lineTl.LINE_DESCRIPTION
+        FROM
+            SYS_IF_CONFIG_LINE_B line ,
+            SYS_IF_CONFIG_LINE_TL lineTl
+        WHERE
+            line.HEADER_ID = #{headerId}
+        AND
+            line.LINE_ID = lineTl.LINE_ID
+        <if test="lineCode != null">
+            AND line.LINE_CODE LIKE concat('%', concat(#{lineCode,jdbcType=VARCHAR}, '%'))
+        </if>
+        <if test="lineName !=null">
+            AND lineTl.LINE_NAME LIKE concat('%', concat(#{lineName,jdbcType=VARCHAR}, '%'))
+        </if>
+        and
+            lineTl.LANG = #{request.locale,jdbcType=VARCHAR}
+        ORDER BY line.LINE_CODE
+    </select>
+    
+    <delete id="deleteByHeaderId" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceLine">
+        DELETE  FROM
+        SYS_IF_CONFIG_LINE_B
+        WHERE HEADER_ID = #{headerId,jdbcType=VARCHAR}
+    </delete>
+
+    <delete id="deleteTlByHeaderId" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceLine">
+        DELETE  FROM
+        SYS_IF_CONFIG_LINE_TL
+        WHERE LINE_ID in (
+                  select LINE_ID
+                  from SYS_IF_CONFIG_LINE_B clb
+                  where clb.HEADER_ID = #{headerId,jdbcType=VARCHAR})
+    </delete>
+
+
+</mapper>

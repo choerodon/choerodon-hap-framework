@@ -1,0 +1,70 @@
+		<!--[if lt IE 9]>
+		<script src="${base.contextPath}/resources/css/attach/html5shiv.js"></script>
+		<script src="${base.contextPath}/resources/css/attach/respond.min.js"></script>
+		    <![endif]-->
+		<!--引入CSS-->
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/webuploader.css">
+   		 <!-- 引入uploader所需js -->
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/global.js"></script>
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/webuploader.js"></script>
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/common.js"></script>
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/jquery-webuploader.js"></script>
+		<input type="hidden" id="contextPath" name="contextPath" value="${base.contextPath}">
+		<!-- 上传容器 -->
+	<div id="uploader">
+		<!-- 上传按钮 -->
+		<div class="btns">
+			<div id="picker"><@spring.message "sys.config.select_file"/></div>
+		</div>
+</div>
+<!-- 进度条 -->
+<script type="text/javascript">
+	jQuery(function() {
+		//设置文件上传参数
+		var opts = {
+			contextPath : "${base.contextPath}",//项目上下文 默认
+			uploadPath : '/sys/attach/upload',//上传路径 默认
+			accepts : [ {//可接受的文件
+				title : 'Images',
+				extensions : 'gif,jpg,jpeg,bmp,png',
+				mimeTypes : 'image/*'
+			} ],
+			fileNumlimit : 1,// 队列中文件个数
+			picker : 'picker',//上传按钮,默认就是这个，可以不加
+			uploadSuccess : function(file, response) {//上传完成，情况：可能会错误，可能会成功
+				var isDelete = false;
+				if (file.getStatus() == 'complete') {//上传完成
+					if (response.message == 'UPLOAD_SUCCESS') {//上传成功
+						file.setStatus('success');
+						isDelete = uploadComplete(response.message, file,
+								response);
+					} else {//上传失败，服务端返回错误信息
+						file.setStatus(response.info);
+						isDelete = uploadComplete(response.message, file,
+								response);
+					}
+				} else {
+					isDelete = uploadComplete(file.getStatus(), file, null);//服务端没有数据
+				}
+				//isDelete为true，则从uploader队列中删除，可以再次点击上传相同的文件
+				return isDelete;
+			},
+			//验证出错
+			validateError : function(status) {
+				validateError(status);
+			},
+			uploadError : function(file) {
+				uploadComplete(file.getStatus(), file, null);
+			}
+		};
+		//创建上传对象
+		var uploader = $.createUploader(opts);
+		//向服务器提交字段
+		uploader.option('formData', {
+			sourceType : $("#file_upload_sourceType").val(),
+			sourceKey : $("#file_upload_sourceKey").val()
+		});
+
+	});
+</script>
+

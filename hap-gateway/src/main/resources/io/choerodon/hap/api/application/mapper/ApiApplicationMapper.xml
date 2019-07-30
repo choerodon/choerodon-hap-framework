@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.api.application.mapper.ApiApplicationMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.api.application.dto.ApiApplication" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="APPLICATION_ID" property="applicationId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CLI_ID" property="cliId" jdbcType="VARCHAR"/>
+        <association property="client" javaType="io.choerodon.hap.security.oauth.dto.Oauth2ClientDetails"
+                     resultMap="io.choerodon.hap.security.oauth.mapper.Oauth2ClientDetailsMapper.BaseResultMap">
+        </association>
+    </resultMap>
+
+    <select id="getById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        APP.APPLICATION_ID,
+        APP.CODE,
+        APP.NAME,
+        APP.CLI_ID,
+        APP.OBJECT_VERSION_NUMBER,
+        <include refid="io.choerodon.hap.security.oauth.mapper.Oauth2ClientDetailsMapper.authField"/>
+        FROM API_CONFIG_APPLICATION APP
+        LEFT OUTER JOIN SYS_OAUTH_CLIENT_DETAILS AUTH
+        ON APP.CLI_ID = AUTH.ID
+        WHERE APP.APPLICATION_ID = #{applicationId,jdbcType=DECIMAL}
+    </select>
+
+    <!-- 条件查询 -->
+    <select id="selectApplications" parameterType="io.choerodon.hap.api.application.dto.ApiApplication" resultMap="BaseResultMap">
+        SELECT
+        APP.APPLICATION_ID,
+        APP.CODE,
+        APP.NAME,
+        APP.CLI_ID,
+        APP.OBJECT_VERSION_NUMBER,
+        <include refid="io.choerodon.hap.security.oauth.mapper.Oauth2ClientDetailsMapper.authField"/>
+        FROM API_CONFIG_APPLICATION APP
+        LEFT OUTER JOIN SYS_OAUTH_CLIENT_DETAILS AUTH
+        ON APP.CLI_ID = AUTH.ID
+        <where>
+            <if test="null != code">
+                APP.CODE LIKE concat('%',concat(#{code,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="null != name">
+                AND APP.NAME LIKE concat('%',concat(#{name,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="null != clientId">
+                AUTH.CLIENT_ID = #{clientId}
+            </if>
+        </where>
+        ORDER BY APP.CODE
+    </select>
+
+</mapper>

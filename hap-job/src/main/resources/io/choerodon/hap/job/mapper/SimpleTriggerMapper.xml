@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.job.mapper.SimpleTriggerMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.job.dto.SimpleTriggerDto">
+        <id column="SCHED_NAME" property="schedName" jdbcType="VARCHAR"/>
+        <id column="TRIGGER_NAME" property="triggerName" jdbcType="VARCHAR"/>
+        <id column="TRIGGER_GROUP" property="triggerGroup" jdbcType="VARCHAR"/>
+        <result column="REPEAT_COUNT" property="repeatCount" jdbcType="BIGINT"/>
+        <result column="REPEAT_INTERVAL" property="repeatInterval" jdbcType="BIGINT"/>
+        <result column="TIMES_TRIGGERED" property="timesTriggered" jdbcType="BIGINT"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, REPEAT_COUNT, REPEAT_INTERVAL, TIMES_TRIGGERED
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="io.choerodon.hap.job.dto.SimpleTriggerDto">
+        select
+        <include refid="Base_Column_List"/>
+        from qrtz_simple_triggers
+        where SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+        and TRIGGER_NAME = #{triggerName,jdbcType=VARCHAR}
+        and TRIGGER_GROUP = #{triggerGroup,jdbcType=VARCHAR}
+    </select>
+</mapper>

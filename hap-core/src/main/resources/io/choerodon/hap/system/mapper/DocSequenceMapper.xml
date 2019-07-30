@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.system.mapper.DocSequenceMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.system.dto.DocSequence">
+        <result column="DOC_TYPE" jdbcType="VARCHAR" property="docType"/>
+        <result column="PK1_VALUE" jdbcType="VARCHAR" property="pk1Value"/>
+        <result column="PK2_VALUE" jdbcType="VARCHAR" property="pk2Value"/>
+        <result column="PK3_VALUE" jdbcType="VARCHAR" property="pk3Value"/>
+        <result column="PK4_VALUE" jdbcType="VARCHAR" property="pk4Value"/>
+        <result column="PK5_VALUE" jdbcType="VARCHAR" property="pk5Value"/>
+        <result column="NEXT_SEQ_NUMBER" jdbcType="DECIMAL" property="nextSeqNumber"/>
+        <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL"
+                property="objectVersionNumber"/>
+        <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId"/>
+        <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId"/>
+        <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate"/>
+        <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy"/>
+        <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy"/>
+        <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate"/>
+        <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory"/>
+        <result column="ATTRIBUTE1" jdbcType="VARCHAR" property="attribute1"/>
+        <result column="ATTRIBUTE2" jdbcType="VARCHAR" property="attribute2"/>
+        <result column="ATTRIBUTE3" jdbcType="VARCHAR" property="attribute3"/>
+        <result column="ATTRIBUTE4" jdbcType="VARCHAR" property="attribute4"/>
+        <result column="ATTRIBUTE5" jdbcType="VARCHAR" property="attribute5"/>
+        <result column="ATTRIBUTE6" jdbcType="VARCHAR" property="attribute6"/>
+        <result column="ATTRIBUTE7" jdbcType="VARCHAR" property="attribute7"/>
+        <result column="ATTRIBUTE8" jdbcType="VARCHAR" property="attribute8"/>
+        <result column="ATTRIBUTE9" jdbcType="VARCHAR" property="attribute9"/>
+        <result column="ATTRIBUTE10" jdbcType="VARCHAR" property="attribute10"/>
+        <result column="ATTRIBUTE11" jdbcType="VARCHAR" property="attribute11"/>
+        <result column="ATTRIBUTE12" jdbcType="VARCHAR" property="attribute12"/>
+        <result column="ATTRIBUTE13" jdbcType="VARCHAR" property="attribute13"/>
+        <result column="ATTRIBUTE14" jdbcType="VARCHAR" property="attribute14"/>
+        <result column="ATTRIBUTE15" jdbcType="VARCHAR" property="attribute15"/>
+    </resultMap>
+    <select id="lockDocSequence" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.system.dto.DocSequence">
+        SELECT ds.doc_type, ds.pk1_value, ds.pk2_value, ds.pk3_value,
+        ds.pk4_value, ds.pk5_value, ds.next_seq_number,
+        ds.object_version_number, ds.request_id, ds.program_id,
+        ds.creation_date, ds.created_by, ds.last_updated_by,
+        ds.last_update_date, ds.attribute_category,
+        ds.attribute1, ds.attribute2, ds.attribute3, ds.attribute4,
+        ds.attribute5, ds.attribute6,
+        ds.attribute7, ds.attribute8,
+        ds.attribute9, ds.attribute10, ds.attribute11,
+        ds.attribute12,
+        ds.attribute13, ds.attribute14, ds.attribute15
+        FROM sys_doc_sequences
+        ds
+        WHERE DS.DOC_TYPE = #{docType,jdbcType=VARCHAR}
+
+        <if test="docType != null">
+            AND DS.DOC_TYPE = #{docType,jdbcType=VARCHAR}
+        </if>
+        <if test="pk1Value != null">
+            AND DS.PK1_VALUE = #{pk1Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk2Value != null">
+            AND DS.PK2_VALUE = #{pk2Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk3Value != null">
+            AND DS.PK3_VALUE = #{pk3Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk4Value != null">
+            AND DS.PK4_VALUE = #{pk4Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk5Value != null">
+            AND DS.PK5_VALUE = #{pk5Value,jdbcType=VARCHAR}
+        </if>
+
+    </select>
+    <insert id="insert" parameterType="io.choerodon.hap.system.dto.DocSequence">
+        insert into SYS_DOC_SEQUENCES
+        (DOC_TYPE, PK1_VALUE, PK2_VALUE, PK3_VALUE,
+        PK4_VALUE, PK5_VALUE,
+        NEXT_SEQ_NUMBER, 
+        REQUEST_ID, PROGRAM_ID,
+        CREATION_DATE, CREATED_BY, LAST_UPDATED_BY,
+        LAST_UPDATE_DATE,
+        ATTRIBUTE_CATEGORY, ATTRIBUTE1,
+        ATTRIBUTE2,
+        ATTRIBUTE3, ATTRIBUTE4, ATTRIBUTE5, ATTRIBUTE6, ATTRIBUTE7,
+        ATTRIBUTE8, ATTRIBUTE9, ATTRIBUTE10, ATTRIBUTE11, ATTRIBUTE12,
+        ATTRIBUTE13, ATTRIBUTE14, ATTRIBUTE15) values
+        (#{docType,jdbcType=VARCHAR}, #{pk1Value,jdbcType=VARCHAR},
+        #{pk2Value,jdbcType=VARCHAR}, #{pk3Value,jdbcType=VARCHAR},
+        #{pk4Value,jdbcType=VARCHAR}, #{pk5Value,jdbcType=VARCHAR},
+        #{nextSeqNumber,jdbcType=DECIMAL},        
+        #{requestId,jdbcType=DECIMAL}, #{programId,jdbcType=DECIMAL},
+        CURRENT_TIMESTAMP, #{createdBy,jdbcType=DECIMAL},
+        #{lastUpdatedBy,jdbcType=DECIMAL},
+        CURRENT_TIMESTAMP,
+        #{attributeCategory,jdbcType=VARCHAR}, #{attribute1,jdbcType=VARCHAR},
+        #{attribute2,jdbcType=VARCHAR}, #{attribute3,jdbcType=VARCHAR},
+        #{attribute4,jdbcType=VARCHAR}, #{attribute5,jdbcType=VARCHAR},
+        #{attribute6,jdbcType=VARCHAR}, #{attribute7,jdbcType=VARCHAR},
+        #{attribute8,jdbcType=VARCHAR}, #{attribute9,jdbcType=VARCHAR},
+        #{attribute10,jdbcType=VARCHAR}, #{attribute11,jdbcType=VARCHAR},
+        #{attribute12,jdbcType=VARCHAR}, #{attribute13,jdbcType=VARCHAR},
+        #{attribute14,jdbcType=VARCHAR}, #{attribute15,jdbcType=VARCHAR})
+    </insert>
+
+    <update id="update" parameterType="io.choerodon.hap.system.dto.DocSequence">
+        update SYS_DOC_SEQUENCES DS
+        <set>
+            OBJECT_VERSION_NUMBER = OBJECT_VERSION_NUMBER+1,
+            LAST_UPDATE_DATE = CURRENT_TIMESTAMP,
+            <if test="nextSeqNumber != null">
+                NEXT_SEQ_NUMBER = #{nextSeqNumber,jdbcType=DECIMAL},
+            </if>
+            <if test="requestId != null">
+                REQUEST_ID = #{requestId,jdbcType=DECIMAL},
+            </if>
+            <if test="programId != null">
+                PROGRAM_ID = #{programId,jdbcType=DECIMAL},
+            </if>
+            <if test="lastUpdatedBy != null">
+                LAST_UPDATED_BY = #{lastUpdatedBy,jdbcType=DECIMAL},
+            </if>
+            <if test="attributeCategory != null">
+                ATTRIBUTE_CATEGORY =
+                #{attributeCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute1 != null">
+                attribute1 = #{attribute1,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute2 != null">
+                attribute2 = #{attribute2,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute3 != null">
+                attribute3 = #{attribute3,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute4 != null">
+                attribute4 = #{attribute4,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute5 != null">
+                attribute5 = #{attribute5,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute6 != null">
+                attribute6 = #{attribute6,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute7 != null">
+                attribute7 = #{attribute7,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute8 != null">
+                attribute8 = #{attribute8,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute9 != null">
+                attribute9 = #{attribute9,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute10 != null">
+                attribute10 = #{attribute10,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute11 != null">
+                attribute11 = #{attribute11,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute12 != null">
+                attribute12 = #{attribute12,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute13 != null">
+                attribute13 = #{attribute13,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute14 != null">
+                attribute14 = #{attribute14,jdbcType=VARCHAR},
+            </if>
+            <if test="attribute15 != null">
+                attribute15 = #{attribute15,jdbcType=VARCHAR},
+            </if>
+        </set>
+        WHERE DS.DOC_TYPE = #{docType,jdbcType=VARCHAR}
+
+        <if test="pk1Value != null">
+            AND DS.PK1_VALUE = #{pk1Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk2Value != null">
+            AND DS.PK2_VALUE = #{pk2Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk3Value != null">
+            AND DS.PK3_VALUE = #{pk3Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk4Value != null">
+            AND DS.PK4_VALUE = #{pk4Value,jdbcType=VARCHAR}
+        </if>
+        <if test="pk5Value != null">
+            AND DS.PK5_VALUE = #{pk5Value,jdbcType=VARCHAR}
+        </if>
+
+    </update>
+</mapper>

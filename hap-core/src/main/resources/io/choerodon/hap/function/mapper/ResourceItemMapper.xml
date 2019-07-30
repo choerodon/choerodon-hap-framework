@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.ResourceItemMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.ResourceItem"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="RESOURCE_ITEM_ID" property="resourceItemId" jdbcType="DECIMAL"/>
+        <result column="OWNER_RESOURCE_ID" property="ownerResourceId" jdbcType="DECIMAL"/>
+        <result column="TARGET_RESOURCE_ID" property="targetResourceId" jdbcType="DECIMAL"/>
+        <result column="ITEM_ID" property="itemId" jdbcType="VARCHAR"/>
+        <result column="ITEM_NAME" property="itemName" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="ITEM_TYPE" property="itemType" jdbcType="VARCHAR"/>
+        <result column="TARGET_RESOURCE_NAME" property="targetResourceName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectResourceItemsByResourceId" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.function.dto.Resource">
+        SELECT B.RESOURCE_ITEM_ID,
+               B.OWNER_RESOURCE_ID,
+               B.TARGET_RESOURCE_ID,
+               B.ITEM_ID,
+               T.ITEM_NAME,
+               T.DESCRIPTION,
+               B.ITEM_TYPE,
+               RT.NAME AS TARGET_RESOURCE_NAME,B.OBJECT_VERSION_NUMBER
+        FROM SYS_RESOURCE_ITEM_B B
+        LEFT OUTER JOIN SYS_RESOURCE_TL RT ON (B.TARGET_RESOURCE_ID = RT.RESOURCE_ID AND RT.LANG = #{request.locale,jdbcType=VARCHAR})
+        LEFT OUTER JOIN SYS_RESOURCE_ITEM_TL T ON (B.RESOURCE_ITEM_ID = T.RESOURCE_ITEM_ID AND T.LANG = #{request.locale,jdbcType=VARCHAR})
+        WHERE B.OWNER_RESOURCE_ID = #{resourceId,jdbcType=DECIMAL}
+        ORDER BY B.ITEM_TYPE DESC
+    </select>
+
+    <select id="selectResourceItemsByFunctionId" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.function.dto.Function">
+        SELECT SRI.RESOURCE_ITEM_ID,
+            SRI.ITEM_ID,
+            SRF.RESOURCE_ID       AS TARGET_RESOURCE_ID,
+            RTL.NAME              AS TARGET_RESOURCE_NAME,
+            SRI.OWNER_RESOURCE_ID,
+            SRIT.ITEM_NAME,
+            SRIT.DESCRIPTION,SRI.OBJECT_VERSION_NUMBER
+        FROM SYS_RESOURCE_ITEM_B   SRI,
+            SYS_FUNCTION_RESOURCE SRF,
+            SYS_RESOURCE_ITEM_TL  SRIT,
+            SYS_RESOURCE_TL       RTL
+        WHERE SRI.OWNER_RESOURCE_ID = SRF.RESOURCE_ID
+        AND SRI.RESOURCE_ITEM_ID = SRIT.RESOURCE_ITEM_ID
+        AND SRF.RESOURCE_ID = RTL.RESOURCE_ID
+        AND RTL.LANG = #{request.locale,jdbcType=VARCHAR}
+        AND SRIT.LANG = #{request.locale,jdbcType=VARCHAR}
+        AND SRF.FUNCTION_ID = #{functionId,jdbcType=DECIMAL}
+        ORDER BY SRI.RESOURCE_ITEM_ID
+    </select>
+
+    <select id="selectResourceItemByResourceIdAndItemId" resultMap="BaseResultMap"
+            parameterType="io.choerodon.hap.function.dto.ResourceItem">
+        SELECT SRI.RESOURCE_ITEM_ID
+        FROM SYS_RESOURCE_ITEM_B   SRI
+        WHERE SRI.OWNER_RESOURCE_ID = #{ownerResourceId,jdbcType=DECIMAL}
+        AND SRI.ITEM_ID = #{itemId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectForCache" resultMap="BaseResultMap">
+         SELECT * FROM SYS_RESOURCE_ITEM_B SRIB
+    </select>
+</mapper>

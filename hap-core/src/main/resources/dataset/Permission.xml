@@ -1,0 +1,79 @@
+<datsets>
+    <dataset id="PermissionRule" table="sys_permission_rule">
+        <select columns="ruleId,ruleCode,ruleName,permissionField"/>
+        <update columns="ruleName"/>
+        <insert columns="ruleCode,ruleName,permissionField"/>
+        <delete postfilter="@dataPermissionRuleServiceImpl.deletePostFilter(#request['ruleId'])" />
+    </dataset>
+    <dataset id="PermissionRuleDetailUser" table="sys_permission_rule_detail">
+        <select statementId="io.choerodon.hap.security.permission.mapper.DatasetMapper.selectRuleDetailUser"/>
+        <update columns="permissionFieldValue"
+                postfilter="@dataPermissionRuleDetailServiceImpl.updateCache(#request['ruleId'])"/>
+        <insert columns="ruleId,permissionFieldValue"
+                postfilter="@dataPermissionRuleDetailServiceImpl.updateCache(#request['ruleId'])"/>
+        <delete postfilter="@dataPermissionRuleDetailServiceImpl.deletePostFilter(#request['detailId'], #request['ruleId'])"/>
+    </dataset>
+    <dataset id="PermissionRuleDetailRole" table="sys_permission_rule_detail">
+        <select statementId="io.choerodon.hap.security.permission.mapper.DatasetMapper.selectRuleDetailRole"/>
+        <update columns="permissionFieldValue"
+                postfilter="@dataPermissionRuleDetailServiceImpl.updateCache(#request['ruleId'])"/>
+        <insert columns="ruleId,permissionFieldValue"
+                postfilter="@dataPermissionRuleDetailServiceImpl.updateCache(#request['ruleId'])"/>
+        <delete postfilter="@dataPermissionRuleDetailServiceImpl.deletePostFilter(#request['detailId'], #request['ruleId'])"/>
+    </dataset>
+    <dataset id="PermissionRuleDetailSQL" table="sys_permission_rule_detail">
+        <select columns="detailId,ruleId,permissionFieldSqlValue"/>
+        <update columns="permissionFieldSqlValue"
+                postfilter="@dataPermissionRuleDetailServiceImpl.updateCache(#request['ruleId'])"/>
+        <insert columns="ruleId,permissionFieldSqlValue"
+                postfilter="@dataPermissionRuleDetailServiceImpl.updateCache(#request['ruleId'])"/>
+        <delete postfilter="@dataPermissionRuleDetailServiceImpl.deletePostFilter(#request['detailId'], #request['ruleId'])"/>
+    </dataset>
+    <dataset id="PermissionRuleAssign" table="sys_permission_rule_assign">
+        <select statementId="io.choerodon.hap.security.permission.mapper.DatasetMapper.selectRuleDetailAssign"/>
+        <update columns="assignField,assignFieldValue"
+                postfilter="@dataPermissionRuleAssignServiceImpl.updateCache(#request['ruleId'])"/>
+        <insert columns="detailId,assignField,assignFieldValue"
+                postfilter="@dataPermissionRuleAssignServiceImpl.updateCache(#request['ruleId'])"/>
+        <delete postfilter="@dataPermissionRuleAssignServiceImpl.updateCache(#request['ruleId'])"/>
+    </dataset>
+    <dataset id="PermissionTable" table="sys_permission_table">
+        <select columns="tableId,tableName,description"/>
+        <update columns="description" />
+        <insert columns="tableName,description" />
+        <delete postfilter="@dataPermissionTableServiceImpl.deletePostFilter(#request)"/>
+    </dataset>
+    <dataset id="PermissionTableRule" table="sys_permission_table_rule">
+        <select sort="ruleName" desc="true" filterLogic="1">
+            <tables>
+                <!--主表由于已经标注在dataset块，不需要在这里加，如果没有关联表可以直接去掉。-->
+                <!--join可以填 left inner 其他情况按照 inner处理。-->
+                <table table="sys_permission_rule" parentTable="sys_permission_table_rule" join="left"
+                       masterColumnName="RULE_ID" relationColumnName="RULE_ID" filterLogic="1 AND 2">
+                    <!--filter 示例，拼接在 ON 块内-->
+                    <!--<filter columnName="RULE_NAME" operation="equal" type="fixedValue" value="test" />-->
+                    <!--<filter columnName="RULE_CODE" operation="equal" type="fixedValue" value="test" />-->
+                </table>
+            </tables>
+            <fields>
+                <!--主表的主键和ObjectVersionNumber是固定传回的，不需要在这里加-->
+                <field name="tableId" columnName="TABLE_ID" table="sys_permission_table_rule"/>
+                <field name="tableField" columnName="TABLE_FIELD" table="sys_permission_table_rule"/>
+                <field name="ruleId" columnName="RULE_ID" table="sys_permission_table_rule"/>
+                <!--高级模式由于多表查询，需要在此设置默认排序参数-->
+                <field name="ruleName" columnName="RULE_NAME" table="sys_permission_rule"/>
+            </fields>
+            <queryFields>
+                <!--实现的operation有： equals 相等 (默认)， startsWith 开头, contains 包含 (无法使用索引性能较差)-->
+                <field name="tableId" columnName="TABLE_ID" table="sys_permission_table_rule" operation="contains" />
+            </queryFields>
+            <!--filter 示例，拼接在 WHERE 块内-->
+            <!--<filter table="sys_permission_table_rule" columnName="TABLE_FIELD" operation="equal" type="fixedValue" value="CODE" />-->
+        </select>
+        <update columns="ruleId,tableField"
+                postfilter="@dataPermissionTableRuleServiceImpl.updatePostFilter(#request)"/>
+        <insert columns="tableId,ruleId,tableField"
+                postfilter="@dataPermissionTableRuleServiceImpl.updatePostFilter(#request)"/>
+        <delete postfilter="@dataPermissionTableRuleServiceImpl.deletePostFilter(#request)"/>
+    </dataset>
+</datsets>

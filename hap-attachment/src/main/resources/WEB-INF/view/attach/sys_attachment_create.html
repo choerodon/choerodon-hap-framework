@@ -1,0 +1,146 @@
+<#include "../include/header.html">
+<style>
+	.k-file-name{
+		font-size:14px;
+		color:#333;
+	}
+	.k-file-size{
+		margin-left:15px;
+		color:#9d9d9d;
+	}
+</style>
+<body>
+<script>
+    var viewModel = kendo.observable({
+        model:{
+            sourceKey:1
+        },
+        loadFiles:function(){
+            $("#file_view_list").data('kendoGrid').dataSource.read();
+		}
+    });
+
+
+    function onSuccess(e) {
+        if(e.response.success=== true){
+            $("#file_view_list").data('kendoGrid').dataSource.read();
+        }
+        kendo.ui.showInfoDialog({
+            message  : e.response.message
+        })
+    }
+
+    function onUpload(e){
+        e.data = {
+            sourceType : viewModel.model.sourceType || '',
+            sourceKey  : viewModel.model.sourceKey || '',
+        }
+    }
+</script>
+<div id="content-container">
+	<div id="page-content">
+		<form id="mainform" class="form-horizontal">
+			<div class="panel-body">
+				<div class="row">
+					<div class="form-group">
+						<label class="col-sm-3 control-label"><@spring.message "attachcategory.sourcetype"/></label>
+						<div class="col-sm-4">
+							<input type="text" style="width:100%" data-bind="value:model.sourceType" id="sourceType">
+							<script>
+								$("#sourceType").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "ATTACH_SOURCE_TYPE")},{
+                                    change:function(e){
+                                        viewModel.loadFiles();
+                                    }
+								}))
+								kendo.bind($('#sourceType'),viewModel);
+							</script>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group">
+						<label class="col-sm-3 control-label"><@spring.message "attachcategory.sourcekey"/></label>
+						<div class="col-sm-4">
+							<input type="text" style="width:100%" onchange="viewModel.loadFiles()" data-role="maskedtextbox"  data-bind="value:model.sourceKey" id="sourceKey">
+							<script>
+                                kendo.bind($('#sourceKey'),viewModel);
+							</script>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group">
+						<label class="col-sm-3 control-label"><@spring.message "attachcategory.attachment"/></label>
+						<div class="col-sm-4">
+								<div class="demo-section k-content">
+									<input name="files" id="files1" type="file" />
+								</div>
+
+							<script>
+								$(document).ready(function() {
+									$("#files1").kendoUpload({
+										async: {
+                                            saveUrl: "${base.contextPath}/sys/attach/upload?${_csrf.parameterName}=${_csrf.token}",
+											autoUpload: true
+										},
+                                        upload       : onUpload,
+                                        success      : onSuccess,
+										showFileList:false
+									});
+								});
+							</script>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group">
+						<label class="col-sm-3 control-label"></label>
+						<div class="col-sm-4">
+							<div id="file_view_list"></div>
+							<script>
+                                //数据源
+                                var dataSource = new kendo.data.DataSource({
+                                    transport: {
+                                        read: {
+                                            url: "${base.contextPath}/sys/attachment/query",
+                                            type: "POST",
+                                            dataType: "json"
+                                        },
+                                        parameterMap: function (options, type) {
+                                            if (type === "read") {
+                                                return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                                            }
+                                        }
+                                    },
+                                    schema: {
+                                        data: 'rows',
+                                        model: {
+                                            id: "fileId"
+                                        }
+                                    }
+
+                                });
+                                //定义一个Grid
+                                $("#file_view_list").kendoGrid({
+                                    dataSource: dataSource,
+                                    scrollable: false,
+                                    columns: [
+                                        {
+
+                                            field: "fileName",
+                                            title: "<@spring.message 'attachcategory.attachment'/>",
+											template:function(dataItem){
+                                                return '<span class="k-file-name-size-wrapper"><span class="k-file-name"><a target="_blank" href="${base.contextPath}/sys/attach/file/download?fileId='+dataItem.fileId+'&token='+dataItem._token+'">'+dataItem.fileName+'</a></span><span class="k-file-size">'+dataItem.fileSizeDesc+'</span></span>'
+											}
+                                        }
+                                    ]
+                                });
+							</script>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</body>

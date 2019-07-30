@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- ~ #{copyright}# -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.system.mapper.DashBoardMapper">
+    <resultMap id="DashBoardBaseResultMap" type="io.choerodon.hap.system.dto.DashBoard" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="DASHBOARD_ID" property="dashboardId" jdbcType="DECIMAL" />
+        <result column="DASHBOARD_CODE" property="dashboardCode" jdbcType="VARCHAR" />
+        <result column="DESCRIPTION" property="description"  jdbcType="VARCHAR" />
+        <result column="TITLE" property="title" jdbcType="VARCHAR" />
+        <result column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL" />
+        <result column="RESOURCE_NAME" property="resourceName" jdbcType="VARCHAR" />
+        <result column="URL" property="url" jdbcType="VARCHAR" />
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        DASHBOARD_ID, DASHBOARD_CODE, DESCRIPTION,RESOURCE_ID
+    </sql>
+    <select id="selectDashBoards" resultMap="DashBoardBaseResultMap"
+        parameterType="io.choerodon.hap.system.dto.DashBoard">
+        SELECT B.DASHBOARD_ID,B.ENABLED_FLAG, B.DASHBOARD_CODE,T.DESCRIPTION,T.TITLE,RT.NAME AS RESOURCE_NAME,B.RESOURCE_ID, R.URL,B.OBJECT_VERSION_NUMBER
+        FROM SYS_DASHBOARD_B B 
+        LEFT OUTER JOIN SYS_RESOURCE_B R ON (B.RESOURCE_ID = R.RESOURCE_ID)
+        LEFT OUTER JOIN SYS_DASHBOARD_TL T ON (B.DASHBOARD_ID=T.DASHBOARD_ID AND T.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        LEFT OUTER JOIN SYS_RESOURCE_TL RT ON (B.RESOURCE_ID=RT.RESOURCE_ID AND RT.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+        <where>
+            <if test="dashboardCode != null">
+                AND B.DASHBOARD_CODE like
+                concat('%',concat(#{dashboardCode,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="title != null">
+                AND B.TITLE like
+                concat('%',concat(#{title,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="enabledFlag != null">
+                AND B.ENABLED_FLAG = #{enabledFlag,jdbcType=VARCHAR}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName"
+                value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)" />
+            order by B.${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            order by DASHBOARD_CODE asc
+        </if>
+
+
+    </select>
+</mapper>

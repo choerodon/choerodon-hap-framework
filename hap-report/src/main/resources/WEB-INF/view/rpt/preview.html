@@ -1,0 +1,339 @@
+<#include "../include/header.html">
+<body>
+
+<span id="rightArrow" onclick="hide()" class="glyphicon glyphicon-chevron-right" aria-hidden="true"
+      style="display:none;position: fixed;font-size:15px;top:42%;left:79%;"></span>
+<span id="leftArrow" onclick="show()" class="glyphicon glyphicon-chevron-left" aria-hidden="true"
+      style="display:none;position: fixed;font-size:15px;top:42%;left:99%"></span>
+<div style="overflow: hidden;" id="mainForm" >
+      <div id="previewData" style="border-style:none;float:left;width:80%;border-right: 5px solid #d0d9df"></div>
+      <div id="dialog" style="float:right;width:20%;padding: 1%;"></div>
+</div>
+
+<script type="text/javascript">
+
+
+    function translateDate(date){
+        if(isNotEmpty(date)){
+            var  temp =  date.split(" ");
+            return temp[0];
+        }else{
+            return "";
+        }
+
+    }
+    function doReadOnly(readOnly,selector,type){
+        readOnly=="Y"?$("#"+selector).data(type).enable(false):"";
+    }
+    function doRequired(required,selector) {
+        required=='Y'?$("#"+selector).attr("required","required"):"";
+    }
+    function isNotEmpty(obj) {
+        if(obj!=undefined && obj!=null && obj!=""){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    function hide() {
+        $("#rightArrow").hide();
+        $("#leftArrow").show();
+        $("#dialog").hide();
+        $("#previewData").css("width", "100%")
+    }
+    function show() {
+        $("#rightArrow").show()
+        $("#leftArrow").hide()
+        $("#dialog").show();
+        $("#previewData").css("width","80%");
+    }
+
+    function getConditionUrl(map,url){
+        map.forEach(function (value, key, map) {
+            url += "&" + key + "=" + value;
+        });
+        return url;
+    }
+
+    function setDescription(description) {
+        if(isNotEmpty(description)){
+            $('<br><label style="margin-top:5px;color: #b1afaf">' + description + '</label>').appendTo($("#dialog"));
+        }
+        $('<br>').appendTo($("#dialog"));
+    }
+    function setTitle(title) {
+        $('<br><label>' + title + '</label><br>').appendTo($("#dialog"));
+    }
+
+    function changeIframeHeight() {
+        documentHeignt = $(document).height()>documentHeignt?$(document).height()-10:documentHeignt-10;
+        var iframeHeight = $(document.getElementById("iframe").contentWindow.document).height()>documentHeignt?$(document.getElementById("iframe").contentWindow.document).height():documentHeignt;
+        document.getElementById("iframe").height = iframeHeight;
+        if (top.autoResizeIframe) {
+            top.autoResizeIframe(window.parent.functionCode,iframeHeight+50 , function () {
+                var win = window.parent.$("#preview").data("kendoWindow")
+                win.maximize();
+            })
+        }
+    }
+
+    function apply() {
+        conditionUrl ="";
+        var validator = $("#mainForm").data("kendoValidator");
+        if (validator.validate()){
+            paramList.forEach(function (value, key, map) {
+                var paramValue = $("#"+key).val()
+                if(isNotEmpty(paramValue)){
+                    conditionUrl += "&" + key + "=" + paramValue;
+                }else{
+                    conditionUrl += "&" + key + "="
+                }
+            });
+            var changeUrl = baseUrl+conditionUrl;
+            $("#iframe").remove();
+            $("#previewData").append("<iframe id='iframe' style='border-style:none;width:100%;' onload=changeIframeHeight() src=" + changeUrl + "></iframe>");
+        }
+    }
+
+    function getDynamicDataSourceUrl(sourceType){
+        if(sourceType == 'LOV'){
+            return "getLov";
+        }else if(sourceType == 'CODE'){
+            return "getCode";
+        }
+    }
+
+    var paramList = new Map();
+    var conditionUrl ="";
+    var baseUrl="";
+    var requiredHasDefaultValue = true;
+    var documentHeignt;
+
+    //先获取报表设计时 设置的总参数列表
+    $.ajax({
+        type: "POST",
+        url: "${base.contextPath}/sys/report/queryReportFileParams?reportCode=" + '${RequestParameters.code!}',
+        dataType: "json",
+        async: false,
+        contentType: 'application/json',
+        success: function (data) {
+            if (data.success == true) {
+                var rows = data.rows;
+                if(rows.length!=0){
+                    for(var i=0;i<rows.length;i++){
+                        paramList.set(rows[i],"");
+                    }
+                }
+            } else {
+                kendo.ui.showErrorDialog({
+                    message: '<@spring.message "hap.error"/>!'
+                }).done(function (e) {
+
+                })
+            }
+        }
+    });
+
+    $.ajax({
+        type: "POST",
+        url: "${base.contextPath}/sys/parameter/config/queryReportParameter?reportCode="+'${RequestParameters.code!}',
+        dataType: "json",
+        contentType: 'application/json',
+        success: function (data) {
+            if (data.success == true) {
+                var rows = data.rows;
+                for (i = 0; i < rows.length; i++) {
+                    var sourceType = rows[i].sourceType;
+                    var sourceCode = rows[i].sourceCode;
+                    var display =  rows[i].display;
+                    var tableFieldName = rows[i].tableFieldName;
+                    var title = rows[i].title;
+                    var description =  rows[i].description;
+                    var required = rows[i].required;
+                    var readOnly = rows[i].readOnly;
+                    var enabled = rows[i].enabled;
+                    var defaultValue = rows[i].defaultValue || "";
+                    var defaultText = rows[i].defaultText;
+                    //获取额外属性json字符串  转换为json对象
+                    var extraAttribute = JSON.parse(rows[i].extraAttribute);
+                    var datePickerFrom =  translateDate(extraAttribute.datePickerFrom);
+                    var datePickerTo = translateDate(extraAttribute.datePickerTo);
+                    var cascadeFrom = extraAttribute.cascadeFrom;
+                    var cascadeFromField = extraAttribute.cascadeFromField;
+                    if('N' == enabled){
+                        continue;
+                    }
+                    paramList.set(tableFieldName,defaultValue);
+                    //如果查询条件为必输  但是没有默认值 不显示数据内容
+                    if("Y" == required && !(isNotEmpty(defaultValue))){
+                        requiredHasDefaultValue = false;
+                    }
+                    //如果是comboBox 并且数据类型是快码 查询带上快码值具体字段
+                    var codeValueField = '';
+                    if("comboBox" == display && sourceType == 'CODE'){
+                        codeValueField = (extraAttribute && extraAttribute.codeValueField) ? ("&codeValueField="+extraAttribute.codeValueField) : '';
+                    }
+                    var dataSource = new kendo.data.DataSource({
+                        transport: {
+                            dataType: "jsonp",
+                            read:  "${base.contextPath}/sys/parameter/config/"+getDynamicDataSourceUrl(sourceType)+"?sourceCode=" + sourceCode+codeValueField,
+                        },
+                        schema: {
+                            data: 'rows',
+                            total: 'total',
+                        }
+                    });
+                    if ("multiSelect" == display) {
+                        if(isNotEmpty(defaultValue)){
+                            defaultValue =  defaultValue.split(",");
+                        }
+                        setTitle(title);
+                        var multiSelect = $('<select id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;"></select>')
+                            .appendTo($("#dialog"))
+                            .kendoMultiSelect({
+                                dataSource: dataSource,
+                                dataTextField: "textField",
+                                dataValueField: "valueField",
+                                width: 100,
+                                height: 100,
+                                value:defaultValue || "",
+                            }).data("kendoMultiSelect");
+                        if(isNotEmpty(description)){
+                            $('<label style="margin-top:5px;color: #b1afaf">' + description + '</label>').appendTo($("#dialog"));
+                        }
+                        $('<br>').appendTo($("#dialog"));
+                        doReadOnly(readOnly,tableFieldName,"kendoMultiSelect");
+                        required == 'Y'?multiSelect.wrapper.find(".k-multiselect-wrap").css("background-color","rgb(255, 248, 197)"):"";
+                        readOnly == 'Y'?multiSelect.wrapper.find(".k-multiselect-wrap").css("background-color","#ededed"):"";
+                    }else if ("comboBox" == display) {
+                        setTitle(title);
+                        var comboBox;
+                        if(required=="Y"){
+                            comboBox  = $('<input required id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;">');
+                        }else{
+                            comboBox  = $('<input id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;">');
+                        }
+                        comboBox.appendTo($("#dialog"))
+                            .kendoComboBox({
+                                autoBind:!isNotEmpty(cascadeFrom) && isNotEmpty(defaultValue)?true:false,
+                                cascadeFrom:cascadeFrom || "",
+                                cascadeFromField:cascadeFromField || "",
+                                filter: "contains",
+                                valuePrimitive: true,
+                                value: defaultValue || "",
+                                dataTextField: "textField",
+                                dataValueField: "valueField",
+                                dataSource: dataSource,
+                            }).data("kendoComboBox");
+                        setDescription(description);
+                        doReadOnly(readOnly,tableFieldName,"kendoComboBox");
+                    } else if ("LOV" == display) {
+                        setTitle(title);
+                        var kendoLov;
+                        if(required=="Y"){
+                            kendoLov  = $('<input required id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;">');
+                        }else{
+                            kendoLov  = $('<input id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;">');
+                        }
+                         kendoLov.appendTo($("#dialog"))
+                          .kendoLov({
+                              code: sourceCode,
+                              contextPath: _basePath,
+                              locale: _locale,
+                          }).data("kendoLov");
+                        setDescription(description);
+                        if(isNotEmpty(defaultValue)){
+                            $("#"+tableFieldName).data("kendoLov").value(defaultValue);
+                            $("#"+tableFieldName).data("kendoLov").text(defaultText);
+                        }
+                        doReadOnly(readOnly,tableFieldName,"kendoLov");
+                    } else if ("textBox" == display) {
+                        setTitle(title);
+                        $('<input id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;">')
+                            .appendTo($("#dialog"))
+                            .kendoMaskedTextBox({
+                                width: 100,
+                                height: 100,
+                                value: defaultValue || "",
+                            }).data("kendoMaskedTextBox");
+                        setDescription(description);
+                        doReadOnly(readOnly,tableFieldName,"kendoMaskedTextBox");
+                    } else if("datePicker" == display){
+                        setTitle(title);
+                        $('<input id=' + tableFieldName + ' name=' + tableFieldName + ' style="width:100%;">')
+                            .appendTo($("#dialog"))
+                            .kendoDatePicker({
+                                format: "{0:yyyy-MM-dd}",
+                            }).data("kendoDatePicker");
+                        setDescription(description);
+                        if(isNotEmpty(defaultValue)){
+                            $("#"+tableFieldName).data("kendoDatePicker").value(new Date(defaultValue));
+                        }
+                        if(isNotEmpty(datePickerFrom)){
+                            $("#"+tableFieldName).data("kendoDatePicker").min(new Date(datePickerFrom));
+                        }
+                        if(isNotEmpty(datePickerTo)){
+                            $("#"+tableFieldName).data("kendoDatePicker").max(new Date(datePickerTo));
+                        }
+                        doReadOnly(readOnly,tableFieldName,"kendoDatePicker");
+                    }
+                    doRequired(required,tableFieldName);
+                }
+                //判断是否有参数 有则在右侧显示参数  否则全屏预览
+                if (data.total != undefined && data.total !=0) {
+                    $("#rightArrow").show()
+                    $("#dialog").append("<br>")
+                    $("#dialog").append("<button type='button' class='btn btn-success' onclick='apply()'>应用</button><br><br>  ")
+                } else {
+                    $("#dialog").remove()
+                    $("#previewData").css("width", "100%")
+                }
+                documentHeignt = $(document).height();
+                if (top.autoResizeIframe) {
+                    top.autoResizeIframe(window.parent.functionCode, $(document.body).height()+55, function () {
+                        var win = window.parent.$("#preview").data("kendoWindow")
+                        win.maximize();
+                    })
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "${base.contextPath}/sys/report/queryByCode?reportCode="+ "${RequestParameters.code!}",
+                    dataType: "json",
+                    contentType: 'application/json',
+                    success: function (data) {
+                        if (data.success == true) {
+                            var fileName = data["rows"][0].fileName
+                            var defaultQuery = data["rows"][0].defaultQuery
+                            conditionUrl = getConditionUrl(paramList,conditionUrl);
+                            baseUrl = '${base.contextPath}/ureport/preview?_u=database:' + fileName + "&_i=1&_r=1";
+                            var initUrl = baseUrl+conditionUrl;
+                            if ('Y' === defaultQuery && requiredHasDefaultValue){
+                                $("#previewData").append("<iframe id='iframe' style='border-style:none;width:100%;' onload=changeIframeHeight()  src=" +initUrl + "></iframe>")
+                            }
+                        } else {
+                            kendo.ui.showErrorDialog({
+                                message: '<@spring.message "hap.error"/>!'
+                            }).done(function (e) {
+
+                            })
+                        }
+                    }
+                });
+            }else{
+                kendo.ui.showErrorDialog({
+                    message: data.message
+                }).done(function (e) {
+
+                })
+            }
+        }
+    });
+    $("#mainForm").kendoValidator({
+        messages: {
+            required: '<@spring.message "parameterconfig.requiredfield"/>'
+        },
+        invalidMessageType : "tooltip"
+    });
+</script>
+</body>
+</html>

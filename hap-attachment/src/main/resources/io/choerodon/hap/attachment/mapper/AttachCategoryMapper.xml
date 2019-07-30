@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.attachment.mapper.AttachCategoryMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.attachment.dto.AttachCategory" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="LEAF_FLAG" property="leafFlag" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="PARENT_CATEGORY_ID" property="parentCategoryId" jdbcType="DECIMAL"/>
+        <result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR"/>
+        <result column="ALLOWED_FILE_TYPE" property="allowedFileType" jdbcType="VARCHAR"/>
+        <result column="ALLOWED_FILE_SIZE" property="allowedFileSize" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_PATH" property="categoryPath" jdbcType="VARCHAR"/>
+        <result column="IS_UNIQUE" property="isUnique" jdbcType="CHAR"/>
+    </resultMap>
+    <!-- find one -->
+    <select id="selectCategory" resultMap="BaseResultMap" parameterType="io.choerodon.hap.attachment.dto.AttachCategory">
+        select
+        *
+        from SYS_ATTACH_CATEGORY_B
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            1 = 1
+            <if test="sourceType != null">
+                AND SOURCE_TYPE = #{sourceType,jdbcType=VARCHAR}
+            </if>
+            <if test="parentCategoryId != null">
+                AND PARENT_CATEGORY_ID = #{parentCategoryId,jdbcType=VARCHAR}
+            </if>
+            <if test="status != null">
+                and STATUS = #{status,jdbcType=VARCHAR}
+            </if>
+        </trim>
+    </select>
+
+    <!-- 查找所有的SourceTypes -->
+    <select id="countSourceType" parameterType="string" resultType="int">
+   		 SELECT COUNT(1) FROM SYS_ATTACH_CATEGORY_B T WHERE T.SOURCE_TYPE = #{value} AND T.LEAF_FLAG = 1
+    </select>
+
+    <!-- 查找目录父节点 -->
+    <select id="selectAllParentCategory" resultMap="BaseResultMap">
+        select
+        b.category_id,
+        t.category_name,
+        b.leaf_flag,
+        t.description,
+        b.status,
+        b.parent_category_id,
+        b.source_type,
+        b.allowed_file_type,
+        b.allowed_file_size,
+        b.category_path,
+        b.is_unique
+        from SYS_ATTACH_CATEGORY_B B
+        LEFT JOIN SYS_ATTACH_CATEGORY_TL T
+        ON (B.category_id = T.category_id AND t.lang = #{request.locale,jdbcType=VARCHAR})
+        where b.category_id in
+        <foreach collection="collection" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+        order by b.category_id
+    </select>
+
+
+    <select id="selectAllLeafCategory" resultMap="BaseResultMap" parameterType="io.choerodon.hap.attachment.dto.AttachCategory">
+        select
+        b.category_id,
+        t.category_name,
+        b.leaf_flag,
+        t.description,
+        b.status,
+        b.parent_category_id,
+        b.source_type,
+        b.allowed_file_type,
+        b.allowed_file_size,
+        b.category_path,
+        b.is_unique
+        from SYS_ATTACH_CATEGORY_B B
+        LEFT OUTER JOIN SYS_ATTACH_CATEGORY_TL T
+        ON (B.category_id = T.category_id AND t.lang = #{request.locale,jdbcType=VARCHAR})
+        where b.leaf_flag = 1
+        <if test="categoryName!=null">
+            AND t.category_name like concat('%',concat(#{categoryName},'%'))
+        </if>
+        <if test="sourceType!=null">
+            AND b.source_type=#{sourceType}
+        </if>
+
+        order by b.category_id
+    </select>
+
+
+    <select id="queryTree" resultMap="BaseResultMap" parameterType="io.choerodon.hap.attachment.dto.AttachCategory">
+        SELECT * FROM SYS_ATTACH_CATEGORY_B B
+        LEFT JOIN SYS_ATTACH_CATEGORY_TL T
+        ON (B.category_id = T.category_id AND t.lang = #{request.locale,jdbcType=VARCHAR})
+    </select>
+</mapper>

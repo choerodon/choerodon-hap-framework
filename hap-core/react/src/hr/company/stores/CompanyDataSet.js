@@ -1,0 +1,36 @@
+import { $l } from '@choerodon/boot';
+
+export default {
+  primaryKey: 'companyId',
+  autoQuery: true,
+  pageSize: 20,
+  name: 'Company',
+  fields: [
+    { name: 'companyCode', type: 'string', label: $l('company.companycode'), required: true, unique: true },
+    { name: 'companyShortName', type: 'string', label: $l('company.companyshortname'), required: true },
+    { name: 'companyFullName', type: 'string', label: $l('company.companyfullname'), required: true },
+    { name: 'companyLevelId', type: 'string', label: $l('company.companylevelid'), lookupCode: 'FND.COMPANY_LEVEL' },
+    { name: 'companyType', type: 'string', label: $l('company.companytype'), lookupCode: 'FND.COMPANY_TYPE' },
+    { name: 'company', type: 'object', textField: 'companyFullName', label: $l('company.parentcompanyname'), lovCode: 'LOV_COMPANY' },
+    { name: 'parentCompanyId', bind: 'company.companyId', type: 'number' },
+    { name: 'parentCompanyName', bind: 'company.companyFullName', type: 'string', label: $l('company.parentcompanyname') },
+    { name: 'position', type: 'object', textField: 'name', label: $l('company.positionname'), lovCode: 'LOV_POSITION' },
+    { name: 'chiefPositionId', bind: 'position.positionId', type: 'number' },
+    { name: 'positionName', bind: 'position.name', type: 'string', label: $l('company.positionname') },
+    { name: 'startDateActive', type: 'dateTime', label: $l('user.startactivedate') },
+    { name: 'endDateActive', type: 'dateTime', label: $l('user.endactivedate') },
+    { name: 'zipcode', type: 'string', label: $l('company.zipcode') },
+    { name: 'fax', type: 'string', label: $l('company.fax') },
+    { name: 'phone', type: 'string', label: $l('company.phone') },
+    { name: 'contactPerson', type: 'string', label: $l('company.contactperson') },
+    { name: 'address', type: 'string', label: $l('company.address') },
+  ],
+  queryFields: [
+    { name: 'companyCode', type: 'string', label: $l('company.companycode') },
+    { name: 'companyShortName', type: 'string', label: $l('company.companyshortname') },
+    { name: 'companyType', type: 'string', lookupCode: 'FND.COMPANY_TYPE', label: $l('company.companytype') },
+    { name: 'company', type: 'object', textField: 'companyFullName', lovCode: 'LOV_COMPANY', label: $l('company.parentcompanyname') },
+    { name: 'parentCompanyId', bind: 'company.companyId', type: 'number' },
+    { name: 'parentCompanyName', bind: 'company.companyfullname', type: 'string' },
+  ],
+};

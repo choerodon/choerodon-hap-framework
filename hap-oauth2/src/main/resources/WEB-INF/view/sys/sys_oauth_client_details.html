@@ -1,0 +1,131 @@
+<#include "../include/header.html">
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel("#Grid");
+</script>
+<body>
+<div id="dialog"></div>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="createClient()"><@spring.message "hap.new"/></span>
+        <span class="btn btn-danger" style="float:left;" data-bind="click:remove" ><@spring.message "hap.delete"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input  data-role="maskedtextbox" placeholder ="<@spring.message "oauth2clientdetails.clientid"/>" type="text"  class="k-textbox"  type="text" style="float:left;width:150px;margin-right:5px;" data-bind="value:model.clientId"/>
+        <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:query" type="submit"><@spring.message "hap.query"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="Grid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    Hap.initEnterQuery('#query-form', viewModel.query);
+
+    var dialog = $("#dialog").kendoWindow({
+        actions: ["Close"],
+        width: '90%',
+        height: '560px',
+        title: '<@spring.message "hap.edit"/>',
+        iframe: true,
+        visible: false,
+        resizable: false,
+        modal: true,
+        deactivate: function() {
+            grid.refresh();
+        }
+    }).data("kendoWindow");
+
+    var createClient = function () {
+        dialog.refresh('sys_oauth_client_edit.html');
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 700, function () {
+                dialog.center().open();
+            })
+        }else {
+            dialog.center().open();
+        }
+
+    };
+
+    var crudServiceBaseUrl = '${base.contextPath}/sys/client/details/',
+        dataSource = Hap.createGridDataSource({
+            url: crudServiceBaseUrl,
+            model: {
+                id: "id",
+                fields: {
+                    authorizedGrantTypes:{type:"string",validation: { required: true }},
+                    clientId:{type:"string",validation: { required: true }}
+                }
+            }
+        });
+
+    var grid = $("#Grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        dataBound: function(){
+            if(parent.autoResizeIframe){
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        columns: [
+             {
+                attributes: {style: "text-align:center"},
+                title:'<@spring.message "hap.edit"/>',
+                command : [{
+                    name:'edit',
+                    template : '<a href="javascript:void(0)" class="k-grid-edit"><@spring.message "hap.edit"/></a>',
+                    click: function(e){
+                        var data = this.dataItem($(e.target).closest("tr"));
+
+                        dialog.refresh('sys_oauth_client_edit.html?id='+data.id);
+                        if (parent.autoResizeIframe) {
+                            parent.autoResizeIframe('${RequestParameters.functionCode!}', 700, function () {
+                                dialog.center().open();
+                            })
+                        }else {
+                            dialog.center().open();
+                        }
+
+
+                    }
+                }],
+                width : 60,
+                headerAttributes: {
+                    style: "text-align: center"
+                }
+            },
+            {
+                field: "clientId",
+                title: '<@spring.message "oauth2clientdetails.clientid"/>',
+                width: 80
+            },
+            {
+                field: "clientSecret",
+                title: '<@spring.message "oauth2clientdetails.clientsecret"/>',
+                width: 180
+            },
+            {
+                field: "authorizedGrantTypes",
+                title: '<@spring.message "oauth2clientdetails.granttypes"/>',
+                width: 280
+            }
+
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.FunctionMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.Function" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="FUNCTION_ID" property="functionId" jdbcType="DECIMAL"/>
+        <result column="MODULE_CODE" property="moduleCode" jdbcType="VARCHAR"/>
+        <result column="FUNCTION_ICON" property="functionIcon" jdbcType="VARCHAR"/>
+        <result column="FUNCTION_CODE" property="functionCode" jdbcType="VARCHAR"/>
+        <result column="FUNCTION_NAME" property="functionName" jdbcType="VARCHAR"/>
+        <result column="FUNCTION_DESCRIPTION" property="functionDescription" jdbcType="VARCHAR"/>
+        <result column="LANG" property="lang" jdbcType="VARCHAR"/>
+        <result column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL"/>
+        <result column="PARENT_FUNCTION_ID" property="parentFunctionId" jdbcType="DECIMAL"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="FUNCTION_SEQUENCE" property="functionSequence" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <resultMap id="CacheResultMap" extends="BaseResultMap" type="io.choerodon.hap.function.dto.Function" >
+        <result column="RESOURCE_URL" property="resourceUrl" jdbcType="VARCHAR" />
+        <result column="RESOURCE_TYPE" property="resourceType" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        FUNCTION_ID, MODULE_CODE, FUNCTION_ICON,FUNCTION_SEQUENCE, FUNCTION_CODE, FUNCTION_NAME, FUNCTION_DESCRIPTION, RESOURCE_ID, TYPE,
+        PARENT_FUNCTION_ID, OBJECT_VERSION_NUMBER, REQUEST_ID, PROGRAM_ID, CREATION_DATE, CREATED_BY,
+        LAST_UPDATED_BY, LAST_UPDATE_DATE, ATTRIBUTE_CATEGORY, ATTRIBUTE1,
+        ATTRIBUTE2, ATTRIBUTE3, ATTRIBUTE4, ATTRIBUTE5, ATTRIBUTE6, ATTRIBUTE7, ATTRIBUTE8,
+        ATTRIBUTE9, ATTRIBUTE10, ATTRIBUTE11, ATTRIBUTE12, ATTRIBUTE13, ATTRIBUTE14, ATTRIBUTE15
+    </sql>
+
+    <resultMap id="ResourceResultMap" type="io.choerodon.hap.function.dto.Resource"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL"/>
+        <result column="URL" property="url" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="LOGIN_REQUIRE" property="loginRequire" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectExistsResourcesByFunction" resultMap="ResourceResultMap" parameterType="map">
+        SELECT
+        B.RESOURCE_ID, B.URL, B.TYPE, T.NAME, T.DESCRIPTION, B.LOGIN_REQUIRE, B.OBJECT_VERSION_NUMBER,
+        B.REQUEST_ID, B.PROGRAM_ID, B.CREATION_DATE, B.CREATED_BY, B.LAST_UPDATED_BY, B.LAST_UPDATE_DATE,
+        B.ATTRIBUTE_CATEGORY, B.ATTRIBUTE1, B.ATTRIBUTE2, B.ATTRIBUTE3, B.ATTRIBUTE4,
+        B.ATTRIBUTE5, B.ATTRIBUTE6, B.ATTRIBUTE7, B.ATTRIBUTE8, B.ATTRIBUTE9, B.ATTRIBUTE10, B.ATTRIBUTE11,
+        B.ATTRIBUTE12, B.ATTRIBUTE13, B.ATTRIBUTE14, B.ATTRIBUTE15
+        FROM SYS_RESOURCE_B B
+        LEFT OUTER JOIN SYS_RESOURCE_TL T
+        ON(B.RESOURCE_ID = T.RESOURCE_ID AND T.LANG = #{request.locale,jdbcType=VARCHAR})
+        JOIN SYS_FUNCTION_RESOURCE SFR
+        ON(B.RESOURCE_ID=SFR.RESOURCE_ID AND SFR.FUNCTION_ID=#{function.functionId,jdbcType=DECIMAL})
+        <where>
+            <if test="resource.url != null">
+                AND B.URL LIKE CONCAT('%',CONCAT(#{resource.url,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="resource.name != null">
+                AND T.NAME LIKE CONCAT('%',CONCAT(#{resource.name,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="resource.type != null">
+                AND B.TYPE LIKE CONCAT('%',CONCAT(#{resource.type,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="resource.description != null">
+                AND T.DESCRIPTION LIKE CONCAT('%',CONCAT(#{resource.description,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY B.RESOURCE_ID
+    </select>
+
+    <select id="selectNotExistsResourcesByFunction" resultMap="ResourceResultMap" parameterType="map">
+        SELECT
+        B.RESOURCE_ID, B.URL, B.TYPE, T.NAME, T.DESCRIPTION, B.LOGIN_REQUIRE, B.OBJECT_VERSION_NUMBER,
+        B.REQUEST_ID, B.PROGRAM_ID, B.CREATION_DATE, B.CREATED_BY, B.LAST_UPDATED_BY, B.LAST_UPDATE_DATE,
+        B.ATTRIBUTE_CATEGORY, B.ATTRIBUTE1, B.ATTRIBUTE2, B.ATTRIBUTE3, B.ATTRIBUTE4,
+        B.ATTRIBUTE5, B.ATTRIBUTE6, B.ATTRIBUTE7, B.ATTRIBUTE8, B.ATTRIBUTE9, B.ATTRIBUTE10, B.ATTRIBUTE11,
+        B.ATTRIBUTE12, B.ATTRIBUTE13, B.ATTRIBUTE14, B.ATTRIBUTE15
+        FROM SYS_RESOURCE_B B
+        LEFT OUTER JOIN SYS_RESOURCE_TL T
+        ON(B.RESOURCE_ID = T.RESOURCE_ID AND T.LANG = #{request.locale,jdbcType=VARCHAR})
+        <where>
+            B.RESOURCE_ID NOT IN (
+            SELECT SFR.RESOURCE_ID FROM SYS_FUNCTION_RESOURCE SFR
+            WHERE SFR.FUNCTION_ID = #{function.functionId,jdbcType=DECIMAL})
+            <if test="resource.url != null">
+                AND B.URL LIKE CONCAT('%',CONCAT(#{resource.url,jdbcType=VARCHAR},'%'))
+            </if>
+            <if test="resource.name != null">
+                AND T.NAME LIKE CONCAT('%',CONCAT(#{resource.name,jdbcType=VARCHAR},'%'))
+            </if>
+        </where>
+        ORDER BY B.RESOURCE_ID
+    </select>
+
+    <select id="selectForCache" resultMap="CacheResultMap">
+        SELECT SFB.FUNCTION_ID,
+               SFB.MODULE_CODE,
+               SFB.FUNCTION_ICON,
+               SFB.FUNCTION_SEQUENCE,
+               SFB.FUNCTION_CODE,
+               SFT.FUNCTION_NAME,
+               SFT.FUNCTION_DESCRIPTION,
+               SFB.RESOURCE_ID,
+               SFB.TYPE,
+               SFB.PARENT_FUNCTION_ID,
+               SFT.LANG,
+               SRB.URL as RESOURCE_URL,
+               SRB.TYPE as RESOURCE_TYPE
+        FROM SYS_FUNCTION_B SFB
+        LEFT OUTER JOIN SYS_FUNCTION_TL SFT ON (SFB.FUNCTION_ID = SFT.FUNCTION_ID)
+        LEFT outer join SYS_RESOURCE_B SRB ON (SFB.RESOURCE_ID = SRB.RESOURCE_ID)
+        WHERE SFT.LANG IS NOT NULL
+    </select>
+
+    <select id="selectForReloadCache" resultMap="CacheResultMap" parameterType="io.choerodon.hap.function.dto.Function">
+        SELECT SFB.FUNCTION_ID,
+        SFB.MODULE_CODE,
+        SFB.FUNCTION_ICON,
+        SFB.FUNCTION_SEQUENCE,
+        SFB.FUNCTION_CODE,
+        SFT.FUNCTION_NAME,
+        SFT.FUNCTION_DESCRIPTION,
+        SFB.RESOURCE_ID,
+        SFB.TYPE,
+        SFB.PARENT_FUNCTION_ID,
+        SFT.LANG,
+        SRB.URL as RESOURCE_URL,
+        SRB.TYPE as RESOURCE_TYPE
+        FROM SYS_FUNCTION_B SFB
+        LEFT OUTER JOIN SYS_FUNCTION_TL SFT ON (SFB.FUNCTION_ID = SFT.FUNCTION_ID  AND SFT.LANG =  #{request.locale,jdbcType=VARCHAR})
+        LEFT OUTER JOIN SYS_RESOURCE_B SRB ON (SFB.RESOURCE_ID = SRB.RESOURCE_ID)
+        WHERE  SFB.FUNCTION_ID = #{functionId,jdbcType=DECIMAL}
+    </select>
+
+    <select id="selectFunctionIdByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT SFB.FUNCTION_ID
+        FROM SYS_FUNCTION_B SFB
+        WHERE  SFB.PARENT_FUNCTION_ID = #{parentId,jdbcType=DECIMAL}
+    </select>
+
+</mapper>

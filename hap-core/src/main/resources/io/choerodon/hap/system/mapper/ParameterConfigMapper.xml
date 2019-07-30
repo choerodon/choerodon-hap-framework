@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.system.mapper.ParameterConfigMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.system.dto.ParameterConfig"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="PARAMETER_ID" property="parameterId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="TARGET_ID" property="targetId" jdbcType="DECIMAL"/>
+        <result column="DISPLAY" property="display" jdbcType="VARCHAR"/>
+        <result column="TABLE_FIELD_NAME" property="tableFieldName" jdbcType="VARCHAR"/>
+        <result column="TITLE" property="title" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="INTEGER"/>
+        <result column="COLUMN_NUMBER" property="columnNumber" jdbcType="INTEGER"/>
+        <result column="DISPLAY_LENGTH" property="displayLength" jdbcType="INTEGER"/>
+        <result column="LABEL_WIDTH" property="labelWidth" jdbcType="INTEGER"/>
+        <result column="DATA_LENGTH" property="dataLength" jdbcType="INTEGER"/>
+        <result column="REQUIRED" property="required" jdbcType="VARCHAR"/>
+        <result column="READ_ONLY" property="readOnly" jdbcType="VARCHAR"/>
+        <result column="ENABLED" property="enabled" jdbcType="VARCHAR"/>
+        <result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR"/>
+        <result column="SOURCE_CODE" property="sourceCode" jdbcType="VARCHAR"/>
+        <result column="SOURCE_NAME" property="sourceName" jdbcType="VARCHAR"/>
+        <result column="DEFAULT_TYPE" property="defaultType" jdbcType="VARCHAR"/>
+        <result column="DEFAULT_VALUE" property="defaultValue"/>
+        <result column="DEFAULT_TEXT" property="defaultText" jdbcType="VARCHAR"/>
+        <result column="EXTRA_ATTRIBUTE" property="extraAttribute"/>
+    </resultMap>
+
+    <select id="selectByCodeAndTargetId" resultMap="BaseResultMap">
+        SELECT SPC.PARAMETER_ID,SPC.CODE, SPC.TARGET_ID,SPC.DISPLAY, SPC.TABLE_FIELD_NAME,
+        SPC.TITLE,SPC.DESCRIPTION, SPC.LINE_NUMBER,SPC.COLUMN_NUMBER,SPC.DISPLAY_LENGTH,SPC.LABEL_WIDTH,SPC.DATA_LENGTH,
+        SPC.REQUIRED,SPC.READ_ONLY,SPC.ENABLED,SPC.SOURCE_TYPE,SPC.SOURCE_CODE,SPC.DEFAULT_TYPE,
+        SPC.DEFAULT_VALUE,  SPC.DEFAULT_TEXT, SPC.EXTRA_ATTRIBUTE, SPC.OBJECT_VERSION_NUMBER,
+        (CASE SPC.SOURCE_TYPE
+        WHEN 'LOV'  THEN (SELECT SL.DESCRIPTION FROM SYS_LOV SL WHERE  SL.CODE = SPC.SOURCE_CODE)
+        WHEN 'CODE' THEN (SELECT  SCB.DESCRIPTION FROM SYS_CODE_B SCB WHERE  SCB.CODE = SPC.SOURCE_CODE)
+        ELSE '' END) as SOURCE_NAME
+        FROM SYS_PARAMETER_CONFIG SPC
+        WHERE SPC.CODE =  #{code,jdbcType=VARCHAR} AND SPC.TARGET_ID = #{targetId,jdbcType=DECIMAL}
+        ORDER BY SPC.LINE_NUMBER ASC
+
+    </select>
+
+    <select id="selectByReportCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT  SPC.*
+        FROM SYS_PARAMETER_CONFIG SPC
+        LEFT  JOIN SYS_REPORT SR ON SR.REPORT_ID = SPC.TARGET_ID
+        WHERE  SPC.CODE='REPORT' AND SR.REPORT_CODE =  #{reportCode}
+        ORDER BY SPC.LINE_NUMBER
+    </select>
+
+    <delete id="deleteByCodeAndTargetId">
+        DELETE FROM SYS_PARAMETER_CONFIG
+        WHERE  CODE = #{code}  AND  TARGET_ID = #{targetId}
+    </delete>
+
+    <delete id="deleteByTaskId">
+        DELETE FROM SYS_PARAMETER_CONFIG
+        WHERE CODE = 'TASK' AND TARGET_ID = #{taskId}
+    </delete>
+
+</mapper>

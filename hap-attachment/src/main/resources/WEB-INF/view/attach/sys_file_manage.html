@@ -1,0 +1,221 @@
+<#--
+* description: 文件管理界面
+* author:jialong.zuo@hand-china.com
+* author:yuliao.chen@hand-china.com
+* version: 1.0
+*
+-->
+<#include "../include/header.html">
+<body>
+<style type="text/css">
+
+  .left{
+  	margin: 7px;
+  	width: 16%;
+    float: left;
+   	position: absolute;
+    top:0px;
+    bottom: 0px;
+    left: 0px;
+    background-color: #FFFFFF;
+  }
+  #treeView{
+    height: 100%;
+  }
+
+
+  .right{
+    float: right;
+    width: 83%;
+  }
+</style>
+
+<div class="panel-body">
+    <div class="row">
+        <div class="left">
+            <div id="treeView" ></div>
+        </div>
+
+
+        <div class="right">
+            <div class="form-group">
+                <div id='grid-container'>
+                    <div id="sysfile_grid" style="clear: both"></div>
+              	</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    window.viewModel = kendo.observable({
+        categoryId : 0
+    });
+
+    function convertToTree(datas){
+    	
+    	var map={};
+    	$.each(datas,function(i,r){
+    		map[r.categoryId]=r;
+    	});
+    	
+    	function build(d){
+    		if(d.parentCategoryId){
+    			var p = map[d.parentCategoryId];
+    			if(p){
+    				var items = p.items||[]
+    				if(items.indexOf(d)<0)
+    					p.items=items.concat(d);
+    				build(p);
+    			}
+    		}
+    	}
+    	
+    	$.each(datas,function(i,r){
+    		build(r);
+    	});
+    	var arr=[]
+    	$.each(map,function(i,r){
+    		if(!r.parentCategoryId){
+    			arr.push(r);
+    		}
+    	});
+    	
+    	return arr;
+    }
+    
+    var datas=[];
+    $.ajax({
+    	  url: "${base.contextPath}/sys/attachment/category/queryTree",
+          type: "post",
+          dataType: "json",
+          async:false,
+          success:function(args){
+        	  datas=convertToTree(args);
+          }
+    });
+   
+
+    $("#treeView").kendoTreeView({
+  		dataSource : {
+  			data:datas
+  		},
+      template: function(e){
+        
+        if(e.item.leafFlag==='1'){
+            return "<span onclick='searchFile(" + e.item.categoryId + ")'  >"+  e.item.categoryName +"</span>";
+        }else{
+            return e.item.categoryName;
+        }
+      }
+      
+  	});
+
+
+   var gridDataSource=new kendo.data.DataSource({
+      transport:{
+          read: {
+              url: '${base.contextPath}/sys/attach/file/query',
+              type: "post",
+              dataType: "json"
+          },
+          destroy: {
+              url: '${base.contextPath}/sys/attach/file/remove',
+              contentType: "application/json",
+              type : "POST"
+          },
+          parameterMap: function (options, type) {
+             
+              if (type !== "read" && options.models) {
+                  return kendo.stringify(options.models);
+              }else if (type === "read") {
+                  var map = {};
+                  if (options) {
+                      map.page = options.page;
+                      map.pagesize = options.pageSize;
+                      if (options.sort && options.sort.length > 0) {
+                          map.sortname = options.sort[0].field;
+                          map.sortorder = options.sort[0].dir;
+                      }
+                  }
+                  map.categoryId = viewModel.get("categoryId");
+                  return map;
+              }
+          }
+      },
+       batch: true,
+       serverPaging : true,
+       serverSorting: true,
+       pageSize: 20,
+       schema: {
+           model:{
+               id:'fileId'
+           },
+           data:'rows',
+           total:'total'
+       }
+   });
+
+    var grid= $("#sysfile_grid").kendoGrid({
+        dataSource: gridDataSource,
+        navigatable: true,
+        dataBound: function(){
+            if(parent.autoResizeIframe){
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        resizable: true,
+        sortable: true,
+        scrollable: true,
+        editable:false,
+        selectable : 'multiple, rowbox',
+        pageable: {
+            pageSizes:[5, 10, 20, 50],
+            refresh:true,
+            buttonCount:5
+        },
+        toolbar: [{
+                template:'<span  onclick="deleteData()"  class="btn btn-danger"><i class="fa fa-trash-o" style="margin-right:3px;"></i><@spring.message "hap.delete"/></span>'
+            }],
+            columns: [
+            { field: "fileName", title: '<@spring.message "sysfile.filename"/>', width: 60 },
+            { field: "fileSize", title:'<@spring.message "sysfile.filesize"/>', width: 60 },
+            { field: "uploadDate", title:'<@spring.message "sysfile.uploaddate"/>', width: 80 },
+            { field: "fileType", title:'<@spring.message "sysfile.filetype"/>', width: 260 },
+             {
+                template:function(e){
+                            return '<a target="_blank" href="${base.contextPath}/sys/attach/file/download?fileId='+ e.fileId+'&token='+ e._token+'"><@spring.message "hap.download"/></a>';
+                    },width:30
+                } ]
+    }).data("kendoGrid");
+
+
+   function searchFile(id){
+       viewModel.set('categoryId',id);
+       gridDataSource.page(1);
+   }
+
+    function deleteData() {
+
+    	 var checked = grid.selectedDataItems();
+         if(grid.selectedDataItems().length){  
+	        kendo.ui.showConfirmDialog({
+	        	title:$l('hap.tip.info'),
+	        	message: $l('hap.tip.delete_confirm')
+	        }).done(function (event) {
+	            if (event.button == 'OK') {
+	            	$.each(checked,function(i,v){
+	            		grid.dataSource.remove(v)
+	            	})
+	                grid.dataSource.sync();
+	            }
+	        }) 
+         }
+
+    }
+
+
+</script>
+</body>
+</html>

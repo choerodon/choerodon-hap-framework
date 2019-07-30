@@ -1,0 +1,320 @@
+<#include "../include/header.html" />
+
+<body>
+<div id="assignRoleEdit" ></div>
+<script type="text/javascript">
+    var taskId = '${RequestParameters.taskId!0}';
+    var BaseUrl = _basePath;
+    var viewModel = kendo.observable({
+        isEnabled: false,
+        model: {},
+        closeWin: function (e) {
+            window.parent.$("#assignEdit").data("kendoWindow").close();
+        },
+    });
+    var viewModel2 = Hap.createGridViewModel("#grid");
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <form class="form-horizontal">
+            <div class="panel-body">
+                <div id="editForm">
+
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"taskdetail.code"/></label>
+                            <div class="col-xs-8">
+                                <input id="code" name="code" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.code'/>"
+                                       required data-bind="enabled:isEnabled,value: model.code"/>
+                                <script>kendo.bind($('#code'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><@spring.message"taskdetail.name"/></label>
+                            <div class="col-xs-8">
+                                <input id="name" name="name" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.name'/>"
+                                       required data-bind="enabled:isEnabled,value: model.name"/>
+                                <script>kendo.bind($('#name'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12" id="mappingClassDiv" style="display: none">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label"><@spring.message"taskdetail.taskclass"/></label>
+                            <div class="col-xs-10">
+                                <input id="taskClass" name="taskClass" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.taskClass'/>"
+                                       required data-bind="enabled:isEnabled,value: model.taskClass"/>
+                                <script>kendo.bind($('#taskClass'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label"><@spring.message"taskdetail.description"/></label>
+                            <div class="col-xs-10">
+                                <input id="description" name="description" data-role="maskedtextbox" type="text"
+                                       style="width: 100%" class="k-textbox"
+                                       data-label="<@spring.message'task.description'/>"
+                                       data-bind="enabled:isEnabled,value: model.description"/>
+                                <script>kendo.bind($('#description'), viewModel);</script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label"><@spring.message "user.allocationrole"/></label>
+                            <div class="col-xs-10">
+                                <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                                    <span class="btn btn-primary" onclick="assign()" style="float:left;margin-right:5px;"><@spring.message "hap.add"/></span>
+                                    <span class="btn btn-danger" onclick="remove()" style="float:left;"><@spring.message "hap.delete"/></span>
+                                </div>
+                                <div style="clear: both;">
+                                    <div id="grid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="text-right k-window-toolbar">
+    <span class="btn btn-primary k-grid-save-changes" id="save" onclick="save()" style="margin-right:5px"><@spring.message "hap.save"/></span>
+    <span class="btn btn-default" id="cancel" type="button" data-bind="click:closeWin" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+    <script>
+        kendo.bind($('#cancel'), viewModel);
+    </script>
+</div>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        if (taskId != 0) {
+            var dtoData = {
+                taskId: taskId,
+            };
+            $.ajax({
+                url: BaseUrl + '/sys/task/detail/getById',
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(dtoData),
+                success: function (args) {
+                    var profile = args.rows[0] || {};
+                    for (var i in profile) {
+                        if (profile[i] != null) {
+                            viewModel.set("model." + i, profile[i]);
+                        }
+                    }
+                    if (profile['type'] == "TASK"){
+                        $("#mappingClassDiv").show();
+                    }
+                }
+            });
+        }
+    });
+
+    viewModel2.model.taskId = taskId;
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/sys/task/assign/query",
+                type: "POST",
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel2.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "roleId",
+                fields: {
+                    "role.roleCode":{editable: false},
+                    "role.roleName":{editable: false},
+                    "role.active":{editable: false},
+                    "role.enableFlag":{editable: false},
+                    startDate: {type: "date"},
+                    endDate: {type: 'date'},
+                }
+            }
+        }
+    });
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: dataSource,
+        height:'260px',
+        selectable : 'multiple, rowbox',
+        navigatable: true,
+        resizable: true,
+        scrollable: true,
+        editable: true,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        columns: [
+            {
+                field: "role.roleCode",
+                title: '<@spring.message "role.rolecode"/>',
+                width: 80,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+            {
+                field: "role.roleName",
+                title: '<@spring.message "role.rolename"/>',
+                width: 100,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+            {
+                field: "startDate",
+                attributes: {style: "text-align:center"},
+                title: '<@spring.message "user.startActiveDate"/>',
+                width: 120,
+                headerAttributes: {style: "text-align: center"},
+                format: "{0:yyyy-MM-dd}",
+                editor: function (container, options) {
+                    var end = options.model.endDate;
+                    var opts = {
+                        format: "yyyy-MM-dd"
+                    };
+                    if (end) {
+                        opts.max = end;
+                    }
+                    $('<input name="' + options.field + '"/>')
+                        .appendTo(container)
+                        .kendoDatePicker(opts);
+                }
+            },
+            {
+                field: "endDate",
+                attributes: {style: "text-align:center"},
+                title: '<@spring.message "user.endActiveDate"/>',
+                width: 120,
+                headerAttributes: {style: "text-align: center"},
+                format: "{0:yyyy-MM-dd}",
+                editor: function (container, options) {
+                    var start = options.model.startDate;
+                    var opts = {
+                        format: "yyyy-MM-dd"
+                    };
+                    if (start) {
+                        opts.min = start;
+                    }
+                    $('<input name="' + options.field + '"/>')
+                        .appendTo(container)
+                        .kendoDatePicker(opts);
+                }
+            }
+        ],
+
+    }).data("kendoGrid");
+
+    function assign(){
+        var ids = "";
+        var data = dataSource.data();
+        if (data.length){
+            $.each(data, function (i, v) {
+                ids = ids + v.role.roleId + ",";
+            })
+        }
+        var url = '${base.contextPath}/task/task_assign_role.html?1=1';
+        if(ids){
+            url = url + "&ids="+ids;
+        }
+        if(taskId){
+            url = url + "&taskId="+taskId;
+        }
+        var assignRoleWin = Hap.createWindow('#assignRoleEdit', {
+            width: '80%',
+            height: 400,
+            title: '<@spring.message "hap.edit"/>',
+            url: url
+        })
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 500, function () {
+                assignRoleWin.center().open();
+            })
+        } else {
+            assignRoleWin.center().open();
+        }
+    }
+    
+    function remove() {
+        var selectedData = grid.selectedDataItems();
+        if (selectedData.length > 0){
+            kendo.ui.showConfirmDialog({
+                title: '提示',
+                message: '确认删除么?'
+            }).done(function (e) {
+                if (e.button == "OK"){
+                    $.ajax({
+                        url: BaseUrl + "/sys/task/assign/remove",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: JSON.stringify(selectedData),
+                        success: function (args) {
+                            if (selectedData.length) {
+                                $.each(selectedData, function (i, v) {
+                                    grid.dataSource.remove(v);
+                                });
+                                Hap.showToast({
+                                    type: 'success',
+                                    message: $l('hap.tip.success')
+                                });
+                            }
+                            grid.refresh();
+                        }
+                    });
+                }
+            })
+        }
+    }
+    
+    function save() {
+        var data = dataSource.data();
+        $.ajax({
+            url: BaseUrl + "/sys/task/assign/submit",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (args) {
+                Hap.showToast({
+                    type: 'success',
+                    message: $l('hap.tip.success')
+                });
+                window.parent.$("#assignEdit").data("kendoWindow").close();
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

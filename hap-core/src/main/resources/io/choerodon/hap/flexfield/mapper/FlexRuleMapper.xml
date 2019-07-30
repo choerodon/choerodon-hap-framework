@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.flexfield.mapper.FlexRuleMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.flexfield.dto.FlexRule">
+        <result column="RULE_ID" property="ruleId" jdbcType="DECIMAL"/>
+        <result column="RULE_SET_ID" property="ruleSetId" jdbcType="DECIMAL"/>
+        <result column="RULE_CODE" property="ruleCode" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+        <collection property="flexRuleDetailList" ofType="io.choerodon.hap.flexfield.dto.FlexRuleDetail">
+            <result property="roleId" column="ROLE_ID" jdbcType="DECIMAL"/>
+            <result property="fieldName" column="FIELD_NAME" jdbcType="VARCHAR"/>
+            <result property="fieldValue" column="FIELD_VALUE" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="matchingRule" resultMap="BaseResultMap">
+      select v.RULE_ID,v.RULE_CODE,d.FIELD_NAME,d.FIELD_VALUE from (select r.RULE_ID,r.RULE_CODE from FND_FLEX_RULE r ,FND_FLEX_RULE_SET s
+      where s.RULE_SET_CODE=#{ruleSetCode} and s.RULE_SET_ID = r.RULE_SET_ID and s.ENABLE_FLAG='Y' and r.ENABLE_FLAG='Y') v
+      LEFT JOIN FND_FLEX_RULE_DETAIL d on (v.RULE_ID=d.RULE_ID )
+    </select>
+</mapper>

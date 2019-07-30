@@ -1,0 +1,328 @@
+<#include "../include/header.html" >
+<script src="${base.contextPath}/common/code?taskType=TASK.TYPE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?taskExecuteStatus=TASK.EXECUTE.STATUS" type="text/javascript"></script>
+<script type="text/javascript">
+    var reduceTaskExecuteStatus=[];
+    $.each(taskExecuteStatus,function (i,v) {
+        if(v.value!="ROLLBACK"){
+            reduceTaskExecuteStatus.push(v);
+        }
+    })
+    var viewModel = Hap.createGridViewModel("#grid",{
+        taskType: taskType,
+        taskExecuteStatus: reduceTaskExecuteStatus,
+    });
+
+</script>
+<body>
+<div id="page-content">
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "task.execution.executionnumber"/>'
+               data-bind="value:model.executionNumber" class="k-textbox">
+        <input type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;"
+               placeholder='<@spring.message "taskdetail.name"/>' data-bind="value:model.name" class="k-textbox">
+        <select data-role="combobox" data-value-primitive="true" placeholder='<@spring.message "taskdetail.type"/>'
+                data-text-field="meaning" data-value-field="value"
+                data-bind="source: taskType,value: model.type" style="width:150px; margin-right:5px;">
+        </select>
+        <select data-role="combobox" data-value-primitive="true" placeholder='<@spring.message "task.execution.status"/>'
+                data-text-field="meaning" data-value-field="value"
+                data-bind="source:taskExecuteStatus,value: model.status" style="width:150px;margin-right:5px;">
+        </select>
+        <span class="btn btn-primary" style="width:70px" data-bind="click:query" type="submit">
+            <@spring.message "hap.query"/>
+        </span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="grid"></div>
+    </div>
+    <div id="taskExecutionDetail"></div>
+    <div id="groupExecutionDetail"></div>
+</div>
+
+<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+    var datasourceUrl ='${base.contextPath}/sys/task/execution/query';
+    <#if isAdmin!false >
+        datasourceUrl = datasourceUrl + "?isAdmin=true";
+    </#if>
+
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: datasourceUrl,
+                type: "POST",
+                dataType: "json",
+            },
+            parameterMap: function (options, type) {
+                if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        serverSorting:true,
+        pageSize: 20,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "executionId",
+                fields: {},
+            }
+        }
+    });
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        editable: false,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        sortable: true,
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "executionNumber",
+                title: '<@spring.message "task.execution.executionnumber"/>',
+                width: 100,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+            }, {
+                field: "taskDetail.code",
+                title: '<@spring.message "taskdetail.code"/>',
+                width: 80,
+                sortable: false,
+            }, {
+                field: "taskDetail.name",
+                title: '<@spring.message "taskdetail.name"/>',
+                width: 100,
+                sortable: false
+            }, {
+                field: "taskDetail.type",
+                title: '<@spring.message "taskdetail.type"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                sortable: false,
+                template: function (dataItem) {
+                    var v = dataItem.taskDetail.type ? dataItem.taskDetail.type : "";
+                    $.each(taskType, function (i, n) {
+                        if ((n.value || '').toLowerCase() == (v || '').toLowerCase()) {
+                            v = n.meaning;
+                            return v;
+                        }
+                    });
+                    return v;
+                },
+            }, {
+                field: "status",
+                title: '<@spring.message "task.execution.status"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                sortable: false,
+                template: function (rowdata) {
+                    var v = rowdata.status ? rowdata.status : "";
+                    var styl = '';
+                    $.each(taskExecuteStatus, function (i, n) {
+                        if ((n.value || '').toUpperCase() == (v || '').toUpperCase()) {
+                            v = n.meaning;
+                            if(n.value == 'SUCCESS'){
+                                styl = '<span style="color:#00AA00 ">'+v+'</span>';
+                            }else if (n.value == 'FAILURE'){
+                                styl=  '<span style="color:#DD0000 ">'+v+'</span>' ;
+                            }else if (n.value == 'READY'){
+                                styl=  '<span style="color:#EFA90D ">'+v+'</span>' ;
+                            }else if (n.value == 'EXECUTING'){
+                                styl=  '<span style="color:#006BB0 ">'+v+'</span>' ;
+                            }else if (n.value == 'UNEXECUTED'){
+                                styl=  '<span style="color:#808080 ">'+v+'</span>' ;
+                            }else if (n.value == 'ROLLBACK'){
+                                styl=  '<span style="color:#BA55D3 ">'+v+'</span>' ;
+                            }else if (n.value == 'CANCEL'){
+                                styl=  '<span style="color:#A52A2A ">'+v+'</span>' ;
+                            }else if (n.value == 'CANCELING'){
+                                styl=  '<span style="color:#CD5C5C ">'+v+'</span>' ;
+                            }
+                            return styl;
+                        }
+                    });
+                    return styl;
+                },
+            },
+            {
+                field: "startTime",
+                title: '<@spring.message "taskdetail.starttime"/>',
+                width: 100,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+            },
+            {
+                field: "endTime",
+                title: '<@spring.message "taskdetail.endtime"/>',
+                width: 100,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+            },
+            {
+                title: '<@spring.message "hap.action"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                sortable: false,
+                template: function (rowdata) {
+                    if (!!rowdata.executionId) {
+                        if('GROUP' == rowdata.taskDetail.type) {
+                            return Hap.createAnchor('<@spring.message "task.execution.detail"/>', groupExecutionDetail, rowdata.executionId);
+                        }else {
+                            return Hap.createAnchor('<@spring.message "task.execution.detail"/>', taskExecutionDetail, rowdata.executionId);
+                        }
+                    }
+                    return '';
+                }
+            },
+            {
+                title: '<@spring.message "task.execution.result.download"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                sortable: false,
+                template: function (rowdata) {
+                    if (!!rowdata.executionId && rowdata.taskDetail.type == "TASK" && rowdata.status == "SUCCESS" && rowdata.executeResultPath != null && rowdata.executeResultPath.trim() != "") {
+                        return '<a target="_blank" href="${base.contextPath}/sys/task/execution/resultDownload?executionId=' + rowdata.executionId + '"><@spring.message "task.execution.result.download"/></a>';
+                    }
+                    return '';
+                }
+            },
+            {
+                title: '<@spring.message "task.execution.cancel"/>',
+                width: 60,
+                headerAttributes: {
+                    style  : "text-align: center"
+                },
+                attributes: {
+                    style: "text-align: center"
+                },
+                sortable: false,
+                template: function (rowdata) {
+                    if (!!rowdata.executionId && (rowdata.status == "EXECUTING" || rowdata.status == "READY") ) {
+                        return Hap.createAnchor('<@spring.message "task.execution.cancel"/>', cancleExecution, rowdata.executionId, rowdata.status);
+                    }
+                    return '';
+                }
+            }
+        ],
+    }).data("kendoGrid");
+
+    function groupExecutionDetail(executionId) {
+        var url = "${base.contextPath}/task/task_execution_group.html";
+        url += "?executionId=" + executionId;
+        var detail = Hap.createWindow('#groupExecutionDetail', {
+            width: '80%',
+            height: 500,
+            title: '<@spring.message "task.execution.detail"/>',
+            url: url
+        });
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 600, function () {
+                detail.center().open();
+            })
+        } else {
+            detail.center().open();
+        }
+    }
+
+    function taskExecutionDetail(executionId , groupExecutionNumber) {
+        var url = "${base.contextPath}/task/task_execution_detail.html?executionId=" + executionId;
+        if (groupExecutionNumber){
+            url = url + "&groupExecutionNumber="+groupExecutionNumber;
+        }
+        var detail = $("#taskExecutionDetail").kendoWindow({
+            resizable: false,
+            width: '80%',
+            height:500,
+            title: false,
+            content: url,
+            iframe: true,
+            visible: false,
+            modal: true,
+        }).data("kendoWindow");
+
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 600, function () {
+                detail.center().open();
+            })
+        } else {
+            detail.center().open();
+        }
+    }
+    
+    function cancleExecution(executionId,status) {
+
+        kendo.ui.showConfirmDialog({
+            title: '提示',
+            message: '确认取消任务的执行吗?'
+        }).done(function (e) {
+            if (e.button == "OK"){
+                var data = {
+                    executionId:executionId,
+                    status:status,
+                };
+                $.ajax({
+                    url: '${base.contextPath}/sys/task/execution/cancleExecute',
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (args) {
+                        dataSource.read();
+                    }
+                });
+            }
+        });
+
+    }
+
+</script>
+</body>
+</html>

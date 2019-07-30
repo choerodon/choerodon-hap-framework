@@ -1,0 +1,17 @@
+.core-employee-wrap {
+  display: flex;
+
+  .core-employee-label {
+    width: 100px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: .1rem .05rem;
+    text-align: right;
+  }
+
+  .core-employee-table {
+    margin-top: .05rem;
+    padding-left: .05rem;
+    margin-right: .4rem;
+  }
+}

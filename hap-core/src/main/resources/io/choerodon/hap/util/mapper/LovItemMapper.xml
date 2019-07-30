@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.util.mapper.LovItemMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.util.dto.LovItem" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="LOV_ITEM_ID" jdbcType="DECIMAL" property="lovItemId"/>
+        <result column="LOV_ID" jdbcType="DECIMAL" property="lovId"/>
+        <result column="DISPLAY" jdbcType="VARCHAR" property="display"/>
+        <result column="GRID_FIELD_NAME" jdbcType="VARCHAR" property="gridFieldName"/>
+        <result column="GRID_FIELD_ALIGN" jdbcType="VARCHAR" property="gridFieldAlign"/>
+        <result column="GRID_FIELD_WIDTH" jdbcType="DECIMAL" property="gridFieldWidth"/>
+        <result column="CONDITION_FIELD" jdbcType="VARCHAR" property="conditionField"/>
+        <result column="IS_AUTOCOMPLETE" jdbcType="VARCHAR" property="isAutocomplete"/>
+        <result column="GRID_FIELD" jdbcType="CHAR" property="gridField"/>
+        <result column="CONDITION_FIELD_WIDTH" jdbcType="DECIMAL" property="conditionFieldWidth"/>
+        <result column="CONDITION_FIELD_LABEL_WIDTH" jdbcType="DECIMAL" property="conditionFieldLabelWidth"/>
+        <result column="CONDITION_FIELD_TYPE" jdbcType="VARCHAR" property="conditionFieldType"/>
+        <result column="CONDITION_FIELD_NAME" jdbcType="VARCHAR" property="conditionFieldName"/>
+        <result column="CONDITION_FIELD_TEXTFIELD" jdbcType="VARCHAR" property="conditionFieldTextfield"/>
+        <result column="CONDITION_FIELD_NEWLINE" jdbcType="VARCHAR" property="conditionFieldNewline"/>
+        <result column="CONDITION_FIELD_SELECT_URL" jdbcType="VARCHAR" property="conditionFieldSelectUrl"/>
+        <result column="CONDITION_FIELD_SELECT_VF" jdbcType="VARCHAR" property="conditionFieldSelectVf"/>
+        <result column="CONDITION_FIELD_SELECT_TF" jdbcType="VARCHAR" property="conditionFieldSelectTf"/>
+        <result column="CONDITION_FIELD_SELECT_CODE" jdbcType="VARCHAR" property="conditionFieldSelectCode"/>
+        <result column="CONDITION_FIELD_LOV_CODE" jdbcType="VARCHAR" property="conditionFieldLovCode"/>
+        <result column="CONDITION_FIELD_SEQUENCE" jdbcType="DECIMAL" property="conditionFieldSequence"/>
+        <result column="GRID_FIELD_SEQUENCE" jdbcType="DECIMAL" property="gridFieldSequence"/>
+        <result column="AUTOCOMPLETE_FIELD" jdbcType="VARCHAR" property="autocompleteField"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    LOV_ITEM_ID, LOV_ID, DISPLAY, GRID_FIELD_NAME, GRID_FIELD_ALIGN,AUTOCOMPLETE_FIELD, GRID_FIELD_WIDTH, CONDITION_FIELD,  
+    CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE,
+    IS_AUTOCOMPLETE, OBJECT_VERSION_NUMBER, REQUEST_ID, PROGRAM_ID, GRID_FIELD, CONDITION_FIELD_WIDTH,CONDITION_FIELD_LABEL_WIDTH,
+    CONDITION_FIELD_TYPE, CONDITION_FIELD_NAME,CONDITION_FIELD_TEXTFIELD,CONDITION_FIELD_NEWLINE,  
+    CONDITION_FIELD_SELECT_URL,CONDITION_FIELD_SELECT_VF, CONDITION_FIELD_SELECT_TF, CONDITION_FIELD_SELECT_CODE,
+    CONDITION_FIELD_LOV_CODE,CONDITION_FIELD_SEQUENCE,GRID_FIELD_SEQUENCE
+    </sql>
+
+    <select id="selectByLovId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM SYS_LOV_ITEM
+        WHERE LOV_ID = #{lov_id,jdbcType=DECIMAL}
+    </select>
+
+    <select id="selectByLovCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT  SLI.LOV_ITEM_ID, SLI.LOV_ID, SLI.DISPLAY, SLI.GRID_FIELD_NAME, SLI.GRID_FIELD_ALIGN,SLI.AUTOCOMPLETE_FIELD, SLI.GRID_FIELD_WIDTH, SLI.CONDITION_FIELD,
+        SLI.CREATION_DATE, SLI.CREATED_BY, SLI.LAST_UPDATED_BY, SLI.LAST_UPDATE_DATE,
+        SLI.IS_AUTOCOMPLETE, SLI.OBJECT_VERSION_NUMBER, SLI.REQUEST_ID, SLI.PROGRAM_ID, SLI.GRID_FIELD, SLI.CONDITION_FIELD_WIDTH,SLI.CONDITION_FIELD_LABEL_WIDTH,
+        SLI.CONDITION_FIELD_TYPE, SLI.CONDITION_FIELD_NAME,SLI.CONDITION_FIELD_TEXTFIELD,SLI.CONDITION_FIELD_NEWLINE,
+        SLI.CONDITION_FIELD_SELECT_URL,SLI.CONDITION_FIELD_SELECT_VF, SLI.CONDITION_FIELD_SELECT_TF, SLI.CONDITION_FIELD_SELECT_CODE,
+        SLI.CONDITION_FIELD_LOV_CODE,SLI.CONDITION_FIELD_SEQUENCE,SLI.GRID_FIELD_SEQUENCE
+        FROM SYS_LOV_ITEM SLI LEFT JOIN SYS_LOV SL ON SLI.LOV_ID = SL.LOV_ID
+        WHERE SL.CODE = #{lovCode,jdbcType=VARCHAR,javaType=java.lang.String}
+    </select>
+
+    <delete id="deleteByLovId" parameterType="java.lang.Long">
+        DELETE FROM SYS_LOV_ITEM
+        WHERE LOV_ID = #{lovId,jdbcType=DECIMAL}
+   </delete>
+</mapper>

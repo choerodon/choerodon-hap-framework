@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.function.mapper.ResourceItemAssignMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.function.dto.ResourceItemAssign"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="ASSIGN_ID" property="assignId" jdbcType="DECIMAL"/>
+        <result column="ASSIGN_TYPE" property="assignType" jdbcType="VARCHAR"/>
+        <result column="TYPE_ID" property="typeId" jdbcType="DECIMAL"/>
+        <result column="ELEMENT_ID" property="elementId" jdbcType="DECIMAL"/>
+        <result column="FUNCTION_ID" property="functionId" jdbcType="DECIMAL"/>
+        <result column="ENABLE" property="enable" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectByTypeId" resultMap="BaseResultMap" parameterType="io.choerodon.hap.function.dto.ResourceItemAssign">
+        SELECT ASSIGN_ID,ASSIGN_TYPE,TYPE_ID,ELEMENT_ID,FUNCTION_ID,ENABLE
+        FROM SYS_RESOURCE_ITEM_ASSIGN
+        WHERE ASSIGN_TYPE = #{assignType,jdbcType=VARCHAR} AND TYPE_ID =  #{typeId,jdbcType=DECIMAL}
+    </select>
+
+    <delete id="deleteByRoleIdAndFunctionId">
+        DELETE FROM SYS_RESOURCE_ITEM_ASSIGN
+        WHERE TYPE_ID = #{roleId}  AND ASSIGN_TYPE = 'role' AND FUNCTION_ID = #{functionId}
+   </delete>
+
+    <delete id="deleteByUserIdAndFunctionId">
+        DELETE FROM SYS_RESOURCE_ITEM_ASSIGN
+        WHERE TYPE_ID = #{userId}  AND ASSIGN_TYPE = 'user' AND FUNCTION_ID = #{functionId}
+    </delete>
+
+    <delete id="deleteByElementId">
+        DELETE FROM SYS_RESOURCE_ITEM_ASSIGN
+        WHERE  ELEMENT_ID = #{elementId}
+    </delete>
+
+    <delete id="deleteByResourceItemId">
+        DELETE FROM SYS_RESOURCE_ITEM_ASSIGN
+        WHERE  ELEMENT_ID IN (
+        SELECT  SRIE.ELEMENT_ID
+        FROM SYS_RESOURCE_ITEM_ELEMENT SRIE WHERE SRIE.RESOURCE_ITEM_ID = #{resourceItemId}
+        )
+    </delete>
+
+</mapper>

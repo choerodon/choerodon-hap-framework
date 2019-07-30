@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.intergration.mapper.HapInterfaceHeaderMapper">
+
+    <!--获取所有的header-->
+    <resultMap id="headerResultMap" type="io.choerodon.hap.intergration.dto.HapInterfaceHeader" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="HEADER_ID" property="headerId" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_CODE" property="interfaceCode" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_TYPE" property="interfaceType" jdbcType="VARCHAR"/>
+        <result column="BODY_HEADER" property="bodyHeader" jdbcType="VARCHAR"/>
+        <result column="BODY_TAIL" property="bodyTail" jdbcType="VARCHAR"/>
+        <result column="NAMESPACE" property="namespace" jdbcType="VARCHAR"/>
+        <result column="DOMAIN_URL" property="domainUrl" jdbcType="VARCHAR"/>
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="REQUEST_FORMAT" property="requestFormat" jdbcType="VARCHAR"/>
+        <result column="REQUEST_CONTENTTYPE" property="requestContentType" jdbcType="VARCHAR"/>
+        <result column="REQUEST_ACCEPT" property="requestAccept" jdbcType="VARCHAR"/>
+        <result column="AUTH_FLAG" property="authFlag" jdbcType="VARCHAR"/>
+        <result column="AUTH_USERNAME" property="authUsername" jdbcType="VARCHAR"/>
+        <result column="AUTH_PASSWORD" property="authPassword" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+        <result column="MAPPER_CLASS" property="mapperClass" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_TYPE" property="systemType" jdbcType="VARCHAR"/>
+        <result column="AUTH_TYPE" property="authType" jdbcType="VARCHAR"/>
+        <result column="AUTH_URL" property="authUrl" jdbcType="VARCHAR"/>
+        <result column="ACCESS_TOKEN_URL" property="accessTokenUrl" jdbcType="VARCHAR"/>
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR"/>
+        <result column="CLIENT_SECRET" property="clientSecret" jdbcType="VARCHAR"/>
+        <result column="GRANT_TYPE" property="grantType" jdbcType="VARCHAR"/>
+        <result column="SCOPE" property="scope" jdbcType="VARCHAR"/>
+        <result column="SOAP_ACTION" property="soapAction" jdbcType="VARCHAR"/>
+        <result property="lang" column="LANG" jdbcType="VARCHAR"/>
+        <result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="description" column="DESCRIPTION" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <!--获取header对象和关联的line集合-->
+    <resultMap id="headerLineResultMap" type="io.choerodon.hap.intergration.dto.HapInterfaceHeader">
+        <!--HmsInterfaceHeader-->
+        <id column="HEADER_ID" property="headerId" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_CODE" property="interfaceCode" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_TYPE" property="interfaceType" jdbcType="VARCHAR"/>
+        <result column="BODY_HEADER" property="bodyHeader" jdbcType="VARCHAR"/>
+        <result column="BODY_TAIL" property="bodyTail" jdbcType="VARCHAR"/>
+        <result column="NAMESPACE" property="namespace" jdbcType="VARCHAR"/>
+        <result column="DOMAIN_URL" property="domainUrl" jdbcType="VARCHAR"/>
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="REQUEST_FORMAT" property="requestFormat" jdbcType="VARCHAR"/>
+        <result column="REQUEST_CONTENTTYPE" property="requestContenttype" jdbcType="VARCHAR"/>
+        <result column="REQUEST_ACCEPT" property="requestAccept" jdbcType="VARCHAR"/>
+        <result column="AUTH_FLAG" property="authFlag" jdbcType="VARCHAR"/>
+        <result column="AUTH_USERNAME" property="authUsername" jdbcType="VARCHAR"/>
+        <result column="AUTH_PASSWORD" property="authPassword" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+        <result column="MAPPER_CLASS" property="mapperClass" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_TYPE" property="systemType" jdbcType="VARCHAR"/>
+        <result column="AUTH_TYPE" property="authType" jdbcType="VARCHAR"/>
+        <result column="AUTH_URL" property="authUrl" jdbcType="VARCHAR"/>
+        <result column="ACCESS_TOKEN_URL" property="accessTokenUrl" jdbcType="VARCHAR"/>
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR"/>
+        <result column="CLIENT_SECRET" property="clientSecret" jdbcType="VARCHAR"/>
+        <result column="GRANT_TYPE" property="grantType" jdbcType="VARCHAR"/>
+        <result column="SCOPE" property="scope" jdbcType="VARCHAR"/>
+        <result column="SOAP_ACTION" property="soapAction" jdbcType="VARCHAR"/>
+        <!--HmsInterfaceHeaderTl-->
+        <result property="lang" column="LANG" jdbcType="VARCHAR"/>
+        <result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="description" column="DESCRIPTION" jdbcType="VARCHAR"/>
+        <collection property="lineList" ofType="io.choerodon.hap.intergration.dto.HapInterfaceLine">
+            <!--HmsInterfaceLine-->
+            <id property="lineId" column="LINE_ID" jdbcType="VARCHAR"/>
+            <result property="headerId" column="HEADER_ID" jdbcType="VARCHAR"/>
+            <result property="lineCode" column="LINE_CODE" jdbcType="VARCHAR"/>
+            <result property="iftUrl" column="IFT_URL" jdbcType="VARCHAR"/>
+            <result property="enableFlag" column="ENABLE_FLAG" jdbcType="VARCHAR"/>
+            <!--HmsInterfaceLineTl-->
+            <result property="lang" column="LANG" jdbcType="VARCHAR"/>
+            <result property="lineName" column="LINE_NAME" jdbcType="VARCHAR"/>
+            <result property="lineDescription" column="LINE_DESCRIPTION" jdbcType="VARCHAR"/>
+        </collection>
+
+    </resultMap>
+
+    <resultMap id="headerLineResultMap2" type="io.choerodon.hap.intergration.dto.HapInterfaceHeader">
+        <result column="HEADER_ID" property="headerId" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_CODE" property="interfaceCode" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_TYPE" property="interfaceType" jdbcType="VARCHAR"/>
+        <result column="BODY_HEADER" property="bodyHeader" jdbcType="VARCHAR"/>
+        <result column="BODY_TAIL" property="bodyTail" jdbcType="VARCHAR"/>
+        <result column="NAMESPACE" property="namespace" jdbcType="VARCHAR"/>
+        <result column="DOMAIN_URL" property="domainUrl" jdbcType="VARCHAR"/>
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="REQUEST_FORMAT" property="requestFormat" jdbcType="VARCHAR"/>
+        <result column="REQUEST_CONTENTTYPE" property="requestContentType" jdbcType="VARCHAR"/>
+        <result column="REQUEST_ACCEPT" property="requestAccept" jdbcType="VARCHAR"/>
+        <result column="AUTH_FLAG" property="authFlag" jdbcType="VARCHAR"/>
+        <result column="AUTH_USERNAME" property="authUsername" jdbcType="VARCHAR"/>
+        <result column="AUTH_PASSWORD" property="authPassword" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+        <result column="MAPPER_CLASS" property="mapperClass" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_TYPE" property="systemType" jdbcType="VARCHAR"/>
+        <result column="AUTH_TYPE" property="authType" jdbcType="VARCHAR"/>
+        <result column="AUTH_URL" property="authUrl" jdbcType="VARCHAR"/>
+        <result column="ACCESS_TOKEN_URL" property="accessTokenUrl" jdbcType="VARCHAR"/>
+        <result column="CLIENT_ID" property="clientId" jdbcType="VARCHAR"/>
+        <result column="CLIENT_SECRET" property="clientSecret" jdbcType="VARCHAR"/>
+        <result column="GRANT_TYPE" property="grantType" jdbcType="VARCHAR"/>
+        <result column="SCOPE" property="scope" jdbcType="VARCHAR"/>
+        <result column="SOAP_ACTION" property="soapAction" jdbcType="VARCHAR"/>
+
+        <!--HmsInterfaceLine-->
+
+        <result property="lineId" column="LINE_ID" jdbcType="VARCHAR"/>
+        <result property="lineCode" column="LINE_CODE" jdbcType="VARCHAR"/>
+        <result property="iftUrl" column="IFT_URL" jdbcType="VARCHAR"/>
+        <result property="enableFlag" column="ENABLE_FLAG" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        header.HEADER_ID,header.SOAP_ACTION,header.INTERFACE_CODE,header.INTERFACE_TYPE,header.BODY_HEADER,
+        header.BODY_TAIL,header.NAMESPACE,header.DOMAIN_URL,header.REQUEST_METHOD,
+        header.REQUEST_FORMAT,header.REQUEST_CONTENTTYPE,header.REQUEST_ACCEPT,
+        header.AUTH_FLAG,header.AUTH_USERNAME,header.AUTH_PASSWORD, header.ENABLE_FLAG,header.MAPPER_CLASS,header.SYSTEM_TYPE,
+        header.AUTH_TYPE,header.AUTH_URL,header.ACCESS_TOKEN_URL,header.CLIENT_ID,
+        header.CLIENT_SECRET,header.GRANT_TYPE,header.SCOPE,header.OBJECT_VERSION_NUMBER
+    </sql>
+
+
+    <select id="getAllHeader" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceHeader" resultMap="headerResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>,
+        headerTl.LANG ,headerTl.NAME ,headerTl.DESCRIPTION
+        from SYS_IF_CONFIG_HEADER_B header,SYS_IF_CONFIG_HEADER_TL headerTl
+        WHERE header.HEADER_ID = headerTl.HEADER_ID
+        <if test="interfaceCode != null ">
+            AND header.INTERFACE_CODE LIKE concat('%', concat(#{interfaceCode,jdbcType=VARCHAR}, '%'))
+        </if>
+        <if test="name != null">
+            AND headerTl.NAME LIKE concat('%', concat(#{name,jdbcType=VARCHAR}, '%'))
+        </if>
+        and headerTl.LANG = #{request.locale,jdbcType=VARCHAR}
+        order by header.INTERFACE_CODE DESC
+    </select>
+
+
+    <select id="getHeaderAndLineList" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceHeader" resultMap="headerLineResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>,
+
+        headerTl.LANG ,headerTl.NAME ,headerTl.DESCRIPTION,
+
+        line.LINE_ID, line.HEADER_ID, line.LINE_CODE ,line.IFT_URL , line.ENABLE_FLAG,
+
+        lineTl.LANG , lineTl.LINE_NAME ,lineTl.LINE_DESCRIPTION
+
+        from
+        SYS_IF_CONFIG_HEADER_B header,
+        SYS_IF_CONFIG_HEADER_TL headerTl,
+        SYS_IF_CONFIG_LINE_B line,
+        SYS_IF_CONFIG_LINE_TL lineTl
+        WHERE header.HEADER_ID = headerTl.HEADER_ID
+        and headerTl.LANG = #{request.locale,jdbcType=VARCHAR}
+        and header.HEADER_ID = line.HEADER_ID
+        and line.HEADER_ID = #{headerId}
+        and lineTl.LINE_ID = line.LINE_ID
+        and lineTl.LANG = #{request.locale,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getHeaderByHeaderId" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceHeader" resultMap="headerResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>,
+
+        headerTl.LANG ,headerTl.NAME ,headerTl.DESCRIPTION
+        from
+        SYS_IF_CONFIG_HEADER_B header,
+        SYS_IF_CONFIG_HEADER_TL headerTl
+        WHERE header.HEADER_ID = headerTl.HEADER_ID
+        and header.HEADER_ID = #{headerId}
+        and headerTl.LANG = #{request.locale,jdbcType=VARCHAR}
+    </select>
+
+    <!--根据sysName 和 apiName 获取header和line-->
+    <select id="getHeaderAndLineBySysNameAndApiName" resultMap="headerLineResultMap2">
+        SELECT
+        <include refid="Base_Column_List"/>,
+
+        line.LINE_CODE ,line.IFT_URL , line.ENABLE_FLAG
+        FROM
+        SYS_IF_CONFIG_HEADER_B header,
+        SYS_IF_CONFIG_LINE_B line
+        WHERE
+        header.HEADER_ID = line.HEADER_ID
+        and header.INTERFACE_CODE = #{sysName}
+        and header.ENABLE_FLAG = 'Y'
+        and line.LINE_CODE = #{apiName}
+        and line.ENABLE_FLAG = 'Y'
+
+    </select>
+
+    <!--获取header和line 放于catch中-->
+    <select id="getAllHeaderAndLine" resultMap="headerLineResultMap2">
+        SELECT
+        <include refid="Base_Column_List"/>,
+
+        line.LINE_ID,line.LINE_CODE ,line.IFT_URL , line.ENABLE_FLAG
+        FROM
+        SYS_IF_CONFIG_HEADER_B header,
+        SYS_IF_CONFIG_LINE_B line
+        WHERE
+        header.HEADER_ID = line.HEADER_ID
+        and header.ENABLE_FLAG = 'Y'
+        and line.ENABLE_FLAG = 'Y'
+
+    </select>
+
+    <select id="getHeaderAndLineBylineId" resultMap="headerLineResultMap2">
+        SELECT
+        <include refid="Base_Column_List"/>,
+
+        line.LINE_ID, line.LINE_CODE ,line.IFT_URL , line.ENABLE_FLAG
+        FROM
+        SYS_IF_CONFIG_HEADER_B header,
+        SYS_IF_CONFIG_LINE_B line
+        WHERE
+        header.HEADER_ID = line.HEADER_ID
+        and line.LINE_ID = #{lineId}
+        and header.ENABLE_FLAG = 'Y'
+        and line.ENABLE_FLAG = 'Y'
+
+    </select>
+
+</mapper>

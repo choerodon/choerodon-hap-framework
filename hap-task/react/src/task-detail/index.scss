@@ -1,0 +1,35 @@
+.task-detail-taskAssign-modal {
+  .task-wrap {
+    display: flex;
+
+    .task-label {
+      width: 75px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      padding: .1rem .05rem;
+      text-align: right;
+    }
+
+    .task-table {
+      margin-top: .05rem;
+      padding-left: .05rem;
+    }
+  }
+}
+
+.task-subtask-wrap {
+  display: flex;
+
+  .task-subtask-label {
+    width: 75px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: .1rem .05rem;
+    text-align: right;
+  }
+
+  .task-subtask-table {
+    margin-top: .05rem;
+    padding-left: .05rem;
+  }
+}

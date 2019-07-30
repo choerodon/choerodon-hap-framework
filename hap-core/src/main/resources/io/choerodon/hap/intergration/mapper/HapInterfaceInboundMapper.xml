@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.hap.intergration.mapper.HapInterfaceInboundMapper">
+
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.intergration.dto.HapInterfaceInbound" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <id column="INBOUND_ID" property="inboundId" jdbcType="DECIMAL"/>
+        <result column="INTERFACE_NAME_F" property="interfaceName" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_URL" property="interfaceUrl" jdbcType="VARCHAR"/>
+        <result column="REQUEST_TIME" property="requestTime" javaType="DATE" />
+        <result column="REQUEST_HEADER_PARAMETER" property="requestHeaderParameter" jdbcType="VARCHAR"/>
+        <result column="REQUEST_BODY_PARAMETER" property="requestBodyParameter"/>
+        <result column="RESPONSE_CONTENT" property="responseContent" />
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="REQUEST_STATUS" property="requestStatus" jdbcType="VARCHAR"/>
+        <result column="RESPONSE_TIME" property="responseTime"  jdbcType="DECIMAL"/>
+        <result column="STACKTRACE" property="stackTrace" jdbcType="VARCHAR"/>
+        <result column="IP" property="ip" jdbcType="VARCHAR"/>
+        <result column="REFERER" property="referer" jdbcType="VARCHAR"/>
+        <result column="USER_AGENT" property="userAgent" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        INBOUND_ID,INTERFACE_NAME,INTERFACE_URL,REQUEST_TIME,REQUEST_HEADER_PARAMETER,REQUEST_BODY_PARAMETER,REQUEST_METHOD,REQUEST_STATUS,
+        RESPONSE_CONTENT,RESPONSE_TIME,STACKTRACE,IP,REFERER,USER_AGENT
+    </sql>
+
+    <select id="select" resultMap="BaseResultMap" parameterType="io.choerodon.hap.intergration.dto.HapInterfaceInbound">
+        SELECT
+        <include refid="Base_Column_List"/> ,
+        COALESCE (p.description,INTERFACE_NAME) as INTERFACE_NAME_F
+        FROM SYS_IF_INVOKE_INBOUND left OUTER  join sys_prompts p
+        on (INTERFACE_NAME = p.prompt_Code and p.lang=#{request.locale})
+        <where>
+
+            <if test="interfaceName!=null">
+                AND COALESCE (p.description,INTERFACE_NAME) LIKE  concat('%', concat(#{interfaceName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="interfaceUrl!=null">
+                AND INTERFACE_URL LIKE concat('%', concat(#{interfaceUrl,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="requestStatus!=null">
+                AND REQUEST_STATUS = #{requestStatus}
+            </if>
+            <if test="startDate!=null">
+                AND REQUEST_TIME &gt;=  #{startDate}
+            </if>
+            <if test="endDate!=null">
+                AND REQUEST_TIME &lt;=  #{endDate}
+            </if>
+        </where>
+        <if test="sortname !=null">
+            <bind name="_colName" value="@io.choerodon.mybatis.util.OGNL@camelHumpToUnderline(sortname)"/>
+            order by ${_colName} ${sortorder}
+        </if>
+        <if test="sortname ==null">
+            order by REQUEST_TIME  desc
+        </if>
+
+    </select>
+
+</mapper>

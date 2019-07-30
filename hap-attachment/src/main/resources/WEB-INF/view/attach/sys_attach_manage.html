@@ -1,0 +1,142 @@
+<#--
+ * description: 附件管理页面
+ * version: 1.0
+ * author: hua.xiao@hand-china.com
+ * #{copyright}#.
+-->
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <@spring.message "attachcategory.attachmentmanagement"/>
+    </title>
+    <!--[if lt IE 9]>
+        <script src="${base.contextPath}/resources/js/attach/html5shiv.js"></script>
+        <script src="${base.contextPath}/resources/js/attach/respond.min.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/bootstrap-theme.css">
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/font-awesome.css">
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/syntax.css">
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/style.css">
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/webuploader.css">
+    <link rel="stylesheet" type="text/css" href="${base.contextPath}/resources/css/attach/uploader.css">
+    
+</head>
+<body  style="padding: 3px; overflow: hidden;">
+<#if message?? >
+<div id="wrapper">
+ <div class="page-body">
+<div id="post-container" class="container">
+<input type="hidden" id="sourceType" name="sourceType" value="${sourceType!""}"/>
+<input type="hidden" id="sourceKey" name="sourceKey" value="${sourceKey!""}"/>
+<input type="hidden" id="contextPath" name="contextPath" value="${base.contextPath}"/>
+<input type="hidden" id="typeorkey_empty" name="typeorkey_empty" 
+	value="<@spring.message "msg.hand.warning.upload.typeorkey_empty" />"/>
+<input type="hidden" id="file_disallowd_error" name="file_disallowd_error" 
+	value="<@spring.message "msg.hand.warning.upload.file_type_not_allowed" />"/>
+<input type="hidden" id="single_file_size_max_error" name="single_file_size_max_error" 
+	value="<@spring.message "msg.hand.warning.upload.filesize_not_allow" />"/>
+<input type="hidden" id="database_error" name="database_error" 
+	value="<@spring.message "msg.hand.warning.upload.database_error" />"/>
+<input type="hidden" id="default_error" name="default_error" 
+	value="<@spring.message "msg.hand.warning.upload.default_error" />"/>
+<input type="hidden" id="btn_choose_file" name="btn_choose_file" 
+	value="<@spring.message "msg.hand.upload.btn.choose_file" />"/>
+<input type="hidden" id="btn_con_add" name="btn_con_add" 
+	value="<@spring.message "msg.hand.upload.btn.continue_adding"/>"/>
+<input type="hidden" id="queue_btn_del" name="queue_btn_del" 
+	value="<@spring.message "msg.hand.upload.btn.queue_btn_del"/>"/>
+<input type="hidden" id="btn_rotateleft" name="btn_rotateleft" 
+	value="<@spring.message "msg.hand.upload.btn.btn_rotateleft"/>"/>
+<input type="hidden" id="btn_rotateright" name="btn_rotateright" 
+	value="<@spring.message "msg.hand.upload.btn.btn_rotateright"/>"/>
+<input type="hidden" id="pic_preview" name="pic_preview" 
+	value="<@spring.message "msg.hand.note.preview"/>"/>
+<input type="hidden" id="pic_cannot_preview" name="pic_cannot_preview" 
+	value="<@spring.message "msg.warning.upload.can_not_preview"/>"/>
+<input type="hidden" id="pic_btn_view" name="pic_btn_view" 
+	value="<@spring.message "msg.hand.btn.view"/>"/>
+<input type="hidden" id="pic_btn_del" name="pic_btn_del" 
+	value="<@spring.message "hap.delete"/>"/>
+<input type="hidden" id="upload_not_support" name="upload_not_support" 
+	value="<@spring.message "msg.hand.warning.upload.not_support"/>"/>
+<input type="hidden" id="queue_num_not_allowed" name="queue_num_not_allowed" 
+	value="<@spring.message "msg.hand.warning.upload.queue_num_not_allowed"/>"/>
+<input type="hidden" id="pause_upload" name="pause_upload" 
+	value="<@spring.message "msg.hand.note.upload.pause_upload"/>"/>
+<input type="hidden" id="resume_upload" name="resume_upload" 
+	value="<@spring.message "msg.hand.note.upload.resume_upload"/>"/>
+<input type="hidden" id="start_upload" name="start_upload" 
+	value="<@spring.message "msg.hand.note.upload.start_upload"/>"/>
+<input type="hidden" id="upload_interrupt" name="upload_interrupt" 
+	value="<@spring.message "msg.hand.warning.upload.interrupt"/>"/>
+	
+	
+<input type="hidden" id="interrupt" name="interrupt" value="interrupt">
+<input type="hidden" id="exceed_size" name="exceed_size" value="exceed_size">
+<div class="page-container">
+<div id="uploader" class="wu-example">
+    <div class="queueList">
+        <div id="dndArea" class="placeholder">
+        <!--  选择上传附件-->
+            <div class="webuploader-container" id="filePicker"><div class="webuploader-pick"><@spring.message "msg.hand.warning.upload.default_error" /></div><div style="position: absolute; top: 0px; left: 448px; width: 168px; height: 44px; overflow: hidden; bottom: auto; right: auto;" id="rt_rt_1aa5jkjpkk101tin12rl1irhlof1"><input accept="image/*" multiple="multiple" class="webuploader-element-invisible" name="file" type="file"><label style="opacity: 0; width: 100%; height: 100%; display: block; cursor: pointer; background: none repeat scroll 0% 0% rgb(255, 255, 255);"></label></div></div>
+        </div>
+    <ul class="filelist"></ul></div>
+    <div class="statusBar" style="display:none;">
+        <div style="display: none;" class="progress">
+            <span class="text">0%</span>
+            <span style="width: 0%;" class="percentage"></span>
+        </div><div class="info">共0张（0B），已上传0张</div>
+        <div class="btns">
+            <div class="webuploader-container" id="filePicker2">
+            <!--  继续添加 -->
+            <div class="webuploader-pick"><@spring.message "msg.hand.upload.btn.continue_adding"/></div><div style="position: absolute; top: 0px; left: 0px; width: 1px; height: 1px; overflow: hidden;" id="rt_rt_1aa5jkjpo7ep1r4k1nmi90d1s5c6"><input accept="image/*" multiple="multiple" class="webuploader-element-invisible" name="file" type="file"><label style="opacity: 0; width: 100%; height: 100%; display: block; cursor: pointer; background: none repeat scroll 0% 0% rgb(255, 255, 255);"></label></div></div><div class="uploadBtn state-pedding"><@spring.message 'attachcategory.beginupload'/></div>
+        </div>
+    </div>
+</div>
+<div id="attach_list" >
+    <table class="table">
+        <thead>
+        <tr>
+            <th><@spring.message "sysfile.filename"/></th>
+            <th><@spring.message "sysfile.filesize"/></th>
+             <th><@spring.message "sysfile.uploaddate"/></th>
+            <th>   </th>
+        </tr>
+        </thead>
+        <tbody id="attach_list_body">
+        <#if files??> 
+	 				<#list files as file>
+		        <tr id="${file.fileId}">
+		            <td>${file.fileName}</td>
+		            <td>${file.fileSize}</td>
+		            <td>${(file.uploadDate?string("yyyy-MM-dd"))!''}</td>
+		            <td><a target="_blank" href="${base.contextPath}/sys/attach/file/view?fileId=${file.fileId}"><@spring.message "msg.hand.btn.view"/></a>|<span><a href="javascript:void(0)" onclick="rmfile('${file.fileId}')"><@spring.message "hap.delete"/></a></span></td>
+		        </tr>
+	        </#list>
+        </#if>
+        </tbody>
+    </table>
+</div>
+</div>
+</div></div>
+</div>
+    <script type="text/javascript">
+    // 添加全局站点信息
+    var BASE_URL = '/webuploader';
+    </script>
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/jquery-1.js"></script>
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/bootstrap.js"></script>
+    <script type="text/javascript" src="${base.contextPath}/resources/js/attach/global.js"></script>
+     <script type="text/javascript" src="${base.contextPath}/resources/js/attach/webuploader.js"></script>
+      <script type="text/javascript" src="${base.contextPath}/resources/js/attach/common.js"></script>
+     <script type="text/javascript" src="${base.contextPath}/resources/js/attach/uploader.js"></script>
+<#else>
+	<@spring.message "msg.warning.dto.attachcategory.not_appoint" />
+</#if>
+    </body>
+</html>

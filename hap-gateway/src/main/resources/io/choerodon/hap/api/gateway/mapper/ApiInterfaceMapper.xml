@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.api.gateway.mapper.ApiInterfaceMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.api.gateway.dto.ApiInterface" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="INTERFACE_ID" property="interfaceId" jdbcType="BIGINT"/>
+        <result column="SERVER_ID" property="serverId" jdbcType="BIGINT"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="SOAP_VERSION" property="soapVersion" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_URL" property="interfaceUrl" jdbcType="VARCHAR"/>
+        <result column="MAPPING_URL" property="mappingUrl" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+        <result column="MAPPING_CLASS" property="mappingClass" jdbcType="VARCHAR"/>
+        <result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="REQUEST_HEAD" property="requestHead" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="SOAP_ACTION" property="soapAction" jdbcType="VARCHAR"/>
+        <result column="INVOKE_RECORD_DETAILS" property="invokeRecordDetails" jdbcType="VARCHAR"/>
+        <association property="apiAccessLimit" javaType="io.choerodon.hap.api.application.dto.ApiAccessLimit"
+                     resultMap="io.choerodon.hap.api.application.mapper.ApiAccessLimitMapper.BaseResultMap">
+        </association>
+    </resultMap>
+
+    <sql id="interfaceField">
+        I.INTERFACE_ID, I.SERVER_ID, I.CODE, I.NAME, I.SOAP_VERSION, I.INTERFACE_URL, I.MAPPING_URL, I.ENABLE_FLAG,
+        I.MAPPING_CLASS, I.REQUEST_METHOD, I.DESCRIPTION, I.SOAP_ACTION, I.INVOKE_RECORD_DETAILS, I.REQUEST_HEAD,I.OBJECT_VERSION_NUMBER
+    </sql>
+    <delete id="removeByServerId" parameterType="java.lang.Long">
+        DELETE FROM API_CONFIG_INTERFACE
+        WHERE SERVER_ID = #{serverId}
+    </delete>
+
+    <select id="selectByServerId" parameterType="io.choerodon.hap.api.gateway.dto.ApiInterface" resultMap="BaseResultMap">
+        SELECT
+        <include refid="interfaceField"/>
+        FROM API_CONFIG_INTERFACE I
+        WHERE SERVER_ID = #{serverId}
+    </select>
+    <select id="selectByServerIdWithLimit" parameterType="io.choerodon.hap.api.gateway.dto.ApiInterface" resultMap="BaseResultMap">
+        SELECT
+        <include refid="interfaceField"/>,
+        A.ID,
+        A.CLIENT_ID,
+        A.INTERFACE_CODE,
+        A.SERVER_CODE,
+        A.ACCESS_FLAG,
+        A.ACCESS_FREQUENCY
+        FROM API_CONFIG_INTERFACE I
+        LEFT OUTER JOIN
+        API_CLIENT_INTERFACE_LIMIT A
+        ON A.CLIENT_ID = #{clientId}
+        AND I.CODE = A.INTERFACE_CODE
+        WHERE
+        I.SERVER_ID = #{serverId}
+    </select>
+
+    <select id="selectInterfacesByServerCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="interfaceField"/>
+        FROM
+        API_CONFIG_INTERFACE I,
+        API_CONFIG_SERVER CSERVER
+        WHERE CSERVER.CODE = #{serverCode}
+        AND I.SERVER_ID = CSERVER.SERVER_ID
+    </select>
+</mapper>

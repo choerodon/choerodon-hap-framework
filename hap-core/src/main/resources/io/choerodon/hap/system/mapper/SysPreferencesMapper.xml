@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.system.mapper.SysPreferencesMapper" >
+  <resultMap id="BaseResultMap" type="io.choerodon.hap.system.dto.SysPreferences" >
+    <id column="PREFERENCES_ID" property="preferencesId" jdbcType="DECIMAL" />
+    <result column="PREFERENCES" property="preferences" jdbcType="VARCHAR" />
+    <result column="PREFERENCES_VALUE" property="preferencesValue" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <select id="selectUserPreference" parameterType="io.choerodon.hap.system.dto.SysPreferences" resultMap="BaseResultMap">
+    SELECT PREFERENCES_ID, PREFERENCES, PREFERENCES_VALUE
+      FROM SYS_PREFERENCES
+     WHERE PREFERENCES =#{preferences,jdbcType=VARCHAR}
+       AND USER_ID = #{userId,jdbcType=DECIMAL}
+  </select>
+  
+  <update id="updatePreferLine" parameterType="io.choerodon.hap.system.dto.SysPreferences" >
+    UPDATE SYS_PREFERENCES
+       SET PREFERENCES_VALUE = #{preferencesValue,jdbcType=VARCHAR},
+           OBJECT_VERSION_NUMBER = OBJECT_VERSION_NUMBER + 1,
+           LAST_UPDATE_DATE = CURRENT_TIMESTAMP
+   <where>
+     PREFERENCES = #{preferences,jdbcType=VARCHAR}
+     <if test="userId != null">
+      AND USER_ID = #{userId,jdbcType=DECIMAL}
+     </if>
+   </where>
+
+  </update>
+  
+  
+</mapper>

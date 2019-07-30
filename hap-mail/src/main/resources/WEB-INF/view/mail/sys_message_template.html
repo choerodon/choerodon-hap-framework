@@ -1,0 +1,126 @@
+<#-- 
+ * description: 消息模板页面
+ * author:xiangyu.qi
+ * version: 1.0 
+-->
+<#include "../include/header.html">
+<body>
+<script src="${base.contextPath}/common/code?messageTypeData=SYS.MESSAGE_TYPE" type="text/javascript"></script>
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel('#grid',{
+        newEmailTemplate:function(){
+            emailTemplateWindow();
+        }
+    });
+</script>
+<!-- 编辑 新建 弹出window -->
+<div id="editWin"></div>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span  id ="create" class="btn btn-primary k-grid-add" data-bind="click:newEmailTemplate" style="float:left;margin-right:5px;"><i class="fa fa-plus-square" style="margin-right:3px;"></i><@spring.message "hap.new"/></span>
+        <span  class="btn btn-danger" style="float:left;" data-bind="click:remove"><i class="fa fa-trash-o" style="margin-right:3px;"></i><@spring.message "hap.delete"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input  placeholder='<@spring.message "messagetemplate.templatecode"/>' type="text" style="float:left;width:150px;margin-right:5px;" data-bind="value:model.templateCode" class="k-textbox">
+        <input  placeholder='<@spring.message "messagetemplate.description"/>' type="text" style="width: 150px;float:left;margin-right:5px;" data-bind="value:model.description" class="k-textbox">
+        <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" data-bind="click:query" type="submit"><i class="fa fa-search" style="margin-right:3px;"></i><@spring.message "hap.query"/></span>
+        <span class="btn btn-default" style="float:left;width:70px"  data-bind="click:reset" type="button"><i class="fa fa-eraser" style="margin-right:3px;"></i><@spring.message "hap.reset"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="grid"></div>
+    </div>
+</div>
+	<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+
+    var dataSource = Hap.createGridDataSource({
+        url:"${base.contextPath}/sys/messageTemplate/",
+        model: {
+            id: "templateId",
+            fields: {
+                templateCode: {},
+                description : {}
+
+            }
+        }
+    })
+
+
+    function emailTemplateWindow(id) {
+        var url = 'sys_message_template_edit.html';
+        if (id) {
+            url = url + '?isedit=1&id=' + id;
+        }
+        var editWin = Hap.createWindow('#editWin',{
+            width: 900,
+            height: 630,
+            title: '<@spring.message "hap.edit"/>',
+            url: url
+        })
+
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 800, function () {
+                editWin.center().open();
+            })
+        }else {
+            editWin.center().open();
+        }
+
+    };
+    
+    function editTemplate(templateId){
+    	 var win = $("#editWin").data("kendoWindow");
+         win.refresh('sys_message_template_edit.html?id='+templateId);
+         win.center().open();
+    }
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: dataSource,
+        width: '50%',
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        resizable: true,
+        scrollable: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "templateCode",
+                title: '<@spring.message "messagetemplate.templatecode"/>',
+                width: 100,
+            },
+            {
+                field: "description",
+                title: '<@spring.message "hap.description"/>',
+                width: 250,
+            },
+            {
+                title: '<@spring.message "hap.edit"/>',
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                width: 80,
+                template: function (rowdata) {
+                    if (!!rowdata.templateId) {
+                        return '<a href="#" onclick="emailTemplateWindow(' + rowdata.templateId + ')"><@spring.message "hap.edit"/></a>'
+                    } else return ''
+                }
+
+            }
+        ],
+        editable: false,
+    }).data("kendoGrid");
+</script>
+</body>
+</html>

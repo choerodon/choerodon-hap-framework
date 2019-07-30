@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.report.mapper.ReportFilesMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.report.dto.ReportFiles"
+               extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="FILE_ID" property="fileId" jdbcType="DECIMAL"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CONTENT" property="content" />
+        <result column="PARAMS" property="params" jdbcType="VARCHAR"/>
+        <result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectReportFileParams" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT SRF.FILE_ID,SRF.NAME,SRF.CONTENT,SRF.PARAMS,SRF.SOURCE_TYPE,SRF.OBJECT_VERSION_NUMBER
+        FROM SYS_REPORT_FILE SRF LEFT  JOIN SYS_REPORT SR ON SRF.FILE_ID = SR.FILE_ID
+        WHERE SR.REPORT_CODE = #{reportCode,jdbcType=VARCHAR,javaType=java.lang.String}
+    </select>
+
+    <select id="selectByName" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT  SRF.FILE_ID,SRF.NAME,SRF.CONTENT,SRF.PARAMS,SRF.SOURCE_TYPE,SRF.OBJECT_VERSION_NUMBER
+        FROM SYS_REPORT_FILE SRF
+        WHERE SRF.NAME = #{name,jdbcType=VARCHAR,javaType=java.lang.String}
+    </select>
+
+    <delete id="deleteByName">
+        DELETE  FROM SYS_REPORT_FILE
+        WHERE NAME = #{name,jdbcType=VARCHAR,javaType=java.lang.String}
+    </delete>
+</mapper>

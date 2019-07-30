@@ -1,0 +1,153 @@
+<#include "../include/header.html" />
+
+<body>
+<div id="assignRoleEdit" ></div>
+<script type="text/javascript">
+    var ids = '${RequestParameters.ids!}';
+    var taskId = '${RequestParameters.taskId!}';
+    var BaseUrl = _basePath;
+    var viewModel = kendo.observable({
+        isEnabled: false,
+        model: {},
+        confirm: function (e) {
+            var selectedData = grid.selectedDataItems();
+            if (selectedData.length) {
+                $.each(selectedData, function (i, v) {
+                    var data = {role:{}};
+                    data.role.roleId = v.roleId;
+                    data.role.roleCode = v.roleCode;
+                    data.role.roleName = v.roleName;
+                    data.role.roleDescription = v.roleDescription;
+                    data.role.active = v.active;
+                    data.role.enableFlag = v.enableFlag;
+                    data.taskId = taskId;
+                    data.assignId = v.roleId;
+                    data.assignType = "ROLE";
+                    data.dirty = true;
+                    data.__status = 'add'
+                    window.parent.grid.dataSource.add(data);
+                });
+            }
+            window.parent.grid.refresh();
+            window.parent.$("#assignRoleEdit").data("kendoWindow").close();
+        },
+        closeWin: function (e) {
+            window.parent.$("#assignRoleEdit").data("kendoWindow").close();
+        },
+    });
+</script>
+<div id="content-container">
+    <div class="col-xs-12">
+        <div style="clear: both;margin-top: 10px;">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+<div class="text-right k-window-toolbar">
+    <span class="btn btn-primary" id="confirm" data-bind="click:confirm" style="margin-right:5px"><@spring.message "hap.confirm"/></span>
+    <span class="btn btn-default" id="cancel" type="button" data-bind="click:closeWin" style="margin-right:25px"><@spring.message "hap.cancel"/></span>
+    <script>
+        kendo.bind($('#confirm'), viewModel);
+        kendo.bind($('#cancel'), viewModel);
+    </script>
+</div>
+<script type="text/javascript">
+
+    viewModel.model.ids = ids;
+    roleDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/sys/task/assign/selectUnbound",
+                type: "POST",
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "roleId",
+                fields: {}
+            }
+        }
+    });
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: roleDataSource,
+        height:'340px',
+        selectable : 'multiple, rowbox',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        editable: false,
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        columns: [
+            {
+                field: "roleCode",
+                title: '<@spring.message "role.rolecode"/>',
+                width: 120,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+            {
+                field: "roleName",
+                title: '<@spring.message "role.rolename"/>',
+                width: 100,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+            {
+                field: "roleDescription",
+                title: '<@spring.message "role.roledescription"/>',
+                width: 100,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+            {
+                field: "active",
+                template: function (e) {
+                    return e.active ? '<@spring.message "hap.no"/>' : '<@spring.message "hap.yes"/>'
+                },
+                title: '<@spring.message "role.isexpired"/>',
+                width: 80,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+            {
+                field: "enableFlag",
+                title: '<@spring.message "hap.enableflag"/>',
+                width: 80,
+                template: function (e) {
+                    return (e.enableFlag == 'Y') ? '<@spring.message "hap.yes"/>' : '<@spring.message "hap.no"/>'
+                },
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            }
+        ],
+    }).data("kendoGrid");
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.mail.mapper.MessageTransactionMapper" >
+  <resultMap id="BaseResultMap" type="io.choerodon.hap.mail.dto.MessageTransaction" extends="io.choerodon.mybatis.mapper.StdMapper.STD" >
+    <id column="TRANSACTION_ID" property="transactionId" jdbcType="DECIMAL" />
+    <result column="MESSAGE_ID" property="messageId" jdbcType="DECIMAL" />
+    <result column="TRANSACTION_STATUS" property="transactionStatus" jdbcType="VARCHAR" />
+    <result column="TRANSACTION_MESSAGE" property="transactionMessage" />
+  </resultMap>
+
+  <select id="selectSuccessCountByMessageId" resultType="java.lang.Long" parameterType="java.lang.Long" >
+    SELECT COUNT(1)
+    FROM SYS_MESSAGE_TRANSACTION
+    WHERE MESSAGE_ID = #{messageId,jdbcType=DECIMAL}
+    AND TRANSACTION_STATUS = 'SUCCESS'
+  </select>
+  <delete id="deleteByMessageId" parameterType="java.lang.Long" >
+    DELETE FROM SYS_MESSAGE_TRANSACTION
+    WHERE MESSAGE_ID = #{messageId,jdbcType=DECIMAL}
+  </delete>
+
+</mapper>

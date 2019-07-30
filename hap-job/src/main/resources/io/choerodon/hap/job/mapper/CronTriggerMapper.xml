@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.job.mapper.CronTriggerMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.job.dto.CronTriggerDto">
+        <id column="SCHED_NAME" property="schedName" jdbcType="VARCHAR"/>
+        <id column="TRIGGER_NAME" property="triggerName" jdbcType="VARCHAR"/>
+        <id column="TRIGGER_GROUP" property="triggerGroup" jdbcType="VARCHAR"/>
+        <result column="CRON_EXPRESSION" property="cronExpression" jdbcType="VARCHAR"/>
+        <result column="TIME_ZONE_ID" property="timeZoneId" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, CRON_EXPRESSION, TIME_ZONE_ID
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="io.choerodon.hap.job.dto.CronTriggerDto">
+        select
+        <include refid="Base_Column_List"/>
+        from qrtz_cron_triggers
+        where SCHED_NAME = #{schedName,jdbcType=VARCHAR}
+        and TRIGGER_NAME = #{triggerName,jdbcType=VARCHAR}
+        and TRIGGER_GROUP = #{triggerGroup,jdbcType=VARCHAR}
+    </select>
+</mapper>

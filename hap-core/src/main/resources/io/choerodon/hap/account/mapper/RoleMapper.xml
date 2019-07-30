@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.hap.account.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="io.choerodon.hap.account.dto.Role" extends="io.choerodon.mybatis.mapper.StdMapper.STD">
+        <result column="ROLE_ID" property="roleId" jdbcType="DECIMAL"/>
+        <result column="ROLE_CODE" property="roleCode" jdbcType="VARCHAR"/>
+        <result column="ROLE_NAME" property="roleName" jdbcType="VARCHAR"/>
+        <result column="ROLE_DESCRIPTION" property="roleDescription" jdbcType="VARCHAR"/>
+    </resultMap>
+    <resultMap id="BaseResultMapExt" type="io.choerodon.hap.account.dto.RoleExt" extends="BaseResultMap">
+        <result column="SUR_ID" property="surId" jdbcType="DECIMAL"/>
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL"/>
+        <result column="END_ACTIVE_DATE" property="endActiveDate"/>
+        <result column="START_ACTIVE_DATE" property="startActiveDate"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_DESCRIPTION
+    </sql>
+
+    <select id="selectRoleNotUserRoles" parameterType="io.choerodon.hap.account.dto.RoleExt" resultMap="BaseResultMap">
+        SELECT
+        B.ROLE_ID,
+        B.ROLE_CODE,
+        TL.ROLE_NAME,
+        TL.ROLE_DESCRIPTION
+        FROM SYS_ROLE_B B
+        LEFT OUTER JOIN SYS_ROLE_TL TL
+        ON TL.ROLE_ID = B.ROLE_ID
+        AND TL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String}
+        WHERE
+        B.ROLE_ID NOT IN (
+        SELECT ROLE_ID
+        FROM SYS_USER_ROLE
+        WHERE USER_ID = #{userId,jdbcType=DECIMAL,javaType=java.lang.Long}
+        )
+        AND (
+        B.START_ACTIVE_DATE IS NULL
+        OR CURRENT_TIMESTAMP > B.START_ACTIVE_DATE
+        ) AND (
+        B.END_ACTIVE_DATE IS NULL
+        OR B.END_ACTIVE_DATE > CURRENT_TIMESTAMP
+        )
+        AND B.ENABLE_FLAG='Y'
+        <if test="roleCode!=null">
+            AND B.ROLE_CODE LIKE CONCAT('%',CONCAT(#{roleCode},'%'))
+        </if>
+        <if test="roleName!=null">
+            AND TL.ROLE_NAME LIKE CONCAT('%',CONCAT(#{roleName},'%'))
+        </if>
+        ORDER BY B.ROLE_CODE ASC
+    </select>
+
+    <select id="selectUserRolesByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+            R.ROLE_ID,
+            R.ROLE_CODE,
+            R.ROLE_NAME,
+            R.ROLE_DESCRIPTION,
+            R.ENABLE_FLAG,
+            R.END_ACTIVE_DATE
+        FROM
+            SYS_USER_ROLE UR
+            LEFT OUTER JOIN SYS_ROLE_B R
+            ON UR.ROLE_ID = R.ROLE_ID
+        WHERE UR.USER_ID = #{userId,jdbcType=DECIMAL,javaType=java.lang.Long}
+            AND R.ENABLE_FLAG = 'Y'
+    </select>
+
+    <select id="selectUserRoles" parameterType="java.lang.Long" resultMap="BaseResultMapExt">
+        SELECT
+            UR.SUR_ID,
+            UR.USER_ID,
+            R.ROLE_ID,
+            R.ROLE_CODE,
+            R.ROLE_NAME,
+            R.ROLE_DESCRIPTION,
+            R.ENABLE_FLAG,
+            R.END_ACTIVE_DATE,
+            R.START_ACTIVE_DATE
+        FROM
+            SYS_USER_ROLE UR,
+            SYS_ROLE_B R
+                LEFT OUTER JOIN SYS_ROLE_TL TL
+                ON (
+                    R.ROLE_ID = TL.ROLE_ID
+                    AND TL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String}
+                )
+        WHERE
+            UR.USER_ID = #{userId,jdbcType=DECIMAL,javaType=java.lang.Long}
+            AND UR.ROLE_ID = R.ROLE_ID
+        ORDER BY R.ROLE_CODE ASC
+    </select>
+
+    <select id="selectUserActiveRoles" parameterType="java.lang.Long" resultMap="BaseResultMapExt">
+        SELECT
+            UR.SUR_ID ,
+            UR.USER_ID ,
+            R.ROLE_ID,
+            R.ROLE_CODE,
+            R.ROLE_NAME
+        FROM
+            SYS_USER_ROLE UR
+                LEFT OUTER JOIN SYS_ROLE_B R
+                ON UR.ROLE_ID = R.ROLE_ID
+        WHERE
+            UR.USER_ID = #{userId,jdbcType=DECIMAL,javaType=java.lang.Long}
+            AND  R.ENABLE_FLAG = 'Y'
+            AND (
+                R.END_ACTIVE_DATE IS NULL
+                OR R.END_ACTIVE_DATE > current_timestamp
+            ) AND (
+                R.START_ACTIVE_DATE IS NULL
+                OR CURRENT_TIMESTAMP > R.START_ACTIVE_DATE
+            )
+        ORDER BY R.ROLE_CODE ASC
+    </select>
+
+    <select id="selectUserRoleCount" resultType="int">
+        SELECT count(1)
+        FROM SYS_USER_ROLE T
+        WHERE T.USER_ID = #{userId} AND T.ROLE_ID = #{roleId}
+    </select>
+
+
+    <select id="selectByUser" resultMap="BaseResultMap" parameterType="io.choerodon.hap.account.dto.User">
+        SELECT
+            SUR.ROLE_ID,
+            SR_TL.ROLE_NAME
+        FROM SYS_USER_ROLE SUR
+            LEFT OUTER JOIN SYS_ROLE_TL SR_TL
+                ON (
+                    SUR.ROLE_ID = SR_TL.ROLE_ID
+                    AND SR_TL.lang = #{request.locale,jdbcType=VARCHAR}
+                )
+            LEFT JOIN SYS_ROLE_B B
+                ON (
+                    B.ROLE_ID = SUR.ROLE_ID
+                )
+        WHERE
+            SUR.USER_ID = #{userId, jdbcType = DECIMAL}
+            AND (
+                B.END_ACTIVE_DATE IS NULL
+                OR B.END_ACTIVE_DATE > CURRENT_TIMESTAMP
+            ) AND (
+                B.START_ACTIVE_DATE IS NULL
+                OR CURRENT_TIMESTAMP > B.START_ACTIVE_DATE
+            )
+            AND B.ENABLE_FLAG = 'Y'
+    </select>
+
+    <select id="selectRolesByUserWithoutLang" resultMap="BaseResultMap" parameterType="io.choerodon.hap.account.dto.User">
+        SELECT SUR.ROLE_ID
+        FROM SYS_USER_ROLE SUR
+        WHERE SUR.USER_ID = #{userId, jdbcType = DECIMAL}
+    </select>
+
+    <select id="selectActiveRoles" resultMap="BaseResultMap" parameterType="io.choerodon.hap.account.dto.Role">
+        SELECT
+        R.ROLE_ID,
+        R.ROLE_CODE,
+        TL.ROLE_NAME,
+        TL.ROLE_DESCRIPTION,
+        R.ENABLE_FLAG
+        FROM SYS_ROLE_B R
+        LEFT OUTER JOIN SYS_ROLE_TL TL
+        ON ( R.ROLE_ID = TL.ROLE_ID
+        AND TL.LANG = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String}
+        )
+        WHERE
+        R.ENABLE_FLAG = 'Y'
+        AND (R.END_ACTIVE_DATE IS NULL OR R.END_ACTIVE_DATE>current_timestamp)
+        AND (R.START_ACTIVE_DATE IS NULL OR CURRENT_TIMESTAMP>R.start_active_date )
+        <if test="roleId!=null">
+            AND R.ROLE_ID = #{roleId}
+        </if>
+        <if test="roleCode!=null">
+            AND R.ROLE_CODE LIKE CONCAT('%',CONCAT(#{roleCode},'%'))
+        </if>
+        <if test="roleName!=null">
+            AND TL.ROLE_NAME LIKE CONCAT('%',CONCAT(#{roleName},'%'))
+        </if>
+        ORDER BY
+        R.ROLE_CODE ASC
+    </select>
+</mapper>

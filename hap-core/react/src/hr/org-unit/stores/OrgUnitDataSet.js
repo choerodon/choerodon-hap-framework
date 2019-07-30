@@ -1,0 +1,37 @@
+import { $l } from '@choerodon/boot';
+
+export default {
+  primaryKey: 'unitId',
+  name: 'OrgUnit',
+  autoQuery: true,
+  pageSize: 20,
+  fields: [
+    { name: 'unitId', type: 'number' },
+    { name: 'unitCode', type: 'string', label: $l('hrorgunit.unitcode'), required: true, unique: true },
+    { name: 'name', type: 'intl', label: $l('hrorgunit.name'), required: true },
+    { name: 'unitCategory', type: 'string', label: $l('hrorgunit.unitcategory'), lookupCode: 'SYS.UNIT_CATEGORY', defaultValue: 'G' },
+    { name: 'unitType', type: 'string', label: $l('hrorgunit.unittype'), lookupCode: 'SYS.UNIT_TYPE', defaultValue: 'GROUP' },
+    { name: 'parentId', bind: 'parent.unitId', type: 'number' },
+    { name: 'parentCode', bind: 'parent.unitCode', type: 'string', label: $l('hrorgunit.parentcode') },
+    { name: 'parentName', bind: 'parent.name', type: 'string', label: $l('hrorgunit.parentName') },
+    { name: 'parent', type: 'object', label: $l('hrorgunit.parentname'), textField: 'name', lovCode: 'LOV_UNIT' },
+    { name: 'companyId', type: 'number', bind: 'company.companyId' },
+    { name: 'companyCode', type: 'string', bind: 'company.companyCode', label: $l('company.companycode') },
+    { name: 'companyName', type: 'string', bind: 'company.companyFullName', label: $l('hrorgunit.companyname') },
+    { name: 'company', type: 'object', label: $l('hrorgunit.companyname'), textField: 'companyFullName', lovCode: 'LOV_COMPANY' },
+    { name: 'description', type: 'intl', label: $l('resource.description') },
+    { name: 'managerPosition', type: 'number', bind: 'position.positionId' },
+    { name: 'positionName', type: 'string', bind: 'position.name', label: $l('hrorgunit.department_manager') },
+    { name: 'position', type: 'object', label: $l('hrorgunit.department_manager'), textField: 'name', lovCode: 'LOV_POSITION' },
+    { name: 'enabledFlag', type: 'boolean', label: $l('hap.enableflag'), required: true, defaultValue: 'Y', trueValue: 'Y', falseValue: 'N' },
+    { name: 'objectVersionNumber', type: 'number' },
+  ],
+  queryFields: [
+    { name: 'unitCode', type: 'string', label: $l('hrorgunit.unitcode') },
+    { name: 'name', type: 'string', label: $l('hrorgunit.name') },
+    { name: 'unitType', type: 'string', lookupCode: 'SYS.UNIT_TYPE', label: $l('hrorgunit.unitcategory') },
+    { name: 'parentId', type: 'number', bind: 'parent.unitId' },
+    { name: 'parentName', type: 'object', bind: 'parent.name' },
+    { name: 'parent', type: 'object', textField: 'name', lovCode: 'LOV_UNIT', label: $l('hrorgunit.parentname') },
+  ],
+};

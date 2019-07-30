@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright Hand China Co.,Ltd.
+  -->
+<extension-register>
+    <extension target="io.choerodon.hap.testext.dto.UserDemo" extension="io.choerodon.hap.testext.dto.UserDemoExt">
+
+    </extension>
+</extension-register>

@@ -1,0 +1,294 @@
+<#include "../include/header.html" >
+    <script type="text/javascript" src="${base.contextPath}/resources/js/rpt/dynamic-form.js"></script>
+    <script src="${base.contextPath}/common/code?taskType=TASK.TYPE" type="text/javascript"></script>
+    <script type="text/javascript">
+        var taskId = '${RequestParameters.taskId}';
+        var ids = '${RequestParameters.ids!}';
+        var viewModel = Hap.createGridViewModel("#grid",{});
+
+
+        $(document).ready(function() {
+            var data = {taskId: taskId, ids: ids};
+            $.ajax({
+                url: '${base.contextPath}/sys/task/detail/detail',
+                type: 'POST',
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (args) {
+                    if (args.success == true){
+                        viewModel.set('model', args.rows[0]);
+                        createTitle();
+                    }else {
+                        kendo.ui.showErrorDialog({
+                            title: $l('<@spring.message "hap.error"/>'),
+                            message: "<@spring.message '" + args.message + "'/>",
+                        }).done(function (e) {
+                            window.parent.$("#executeForm").data("kendoWindow").close();
+                        });
+                    }
+                }
+            });
+        });
+
+        function createTitle() {
+
+            var dataSource = viewModel.model;
+
+            var contentString = '<div id="panel-body">';
+
+            var contentString = titleString(contentString, dataSource);
+
+            if("GROUP" == dataSource.type) {
+                // task and task parameter
+                var childrenTasks = dataSource.childrenTasks;
+                // 任务组没有绑定任务时，禁用执行按钮
+                if(0 == childrenTasks.length) {
+                    $('#execute').attr('disabled',"true");
+                    $('#execute').unbind("click");
+                } else {
+                    childrenTasks.forEach(function (childrenTask) {
+                        contentString = titleString(contentString, childrenTask);
+                    });
+                }
+            }
+
+            contentString += "</div>";
+
+            $("#panel").append(contentString);
+        }
+
+        /**
+         * 拼接任务头信息
+         * @param contentString
+         * @param data
+         */
+        function titleString(contentString, data) {
+
+            var group = '';
+            var fontSize = 14;
+            var border = 'border-bottom: 1px solid #ccc;';
+            if("GROUP" == data.type ) {
+                group = taskType[1].meaning + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                fontSize = 16;
+            }
+
+            contentString += '<div class="row">';
+
+            contentString += '<div class="col-xs-12">';
+
+            contentString += '<div class="form-group">';
+
+            contentString += ' <div style="margin-left: 20px;margin-top: 20px; ' + border + '">';
+
+            contentString += '<span style="color: #efa90d; font-size: ' + fontSize + 'px; ">' + group + '</span>';
+
+            contentString +=  '<span style="font-size: ' + (fontSize-2) + 'px;font-weight: bold; ">' + data.name
+                + '</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
+            contentString += '<span style="font-size: ' + (fontSize-4) + 'px; color: #808080;">' + data.code + '</span>';
+
+            contentString += '</div>';
+
+            contentString += '</div>';
+
+            contentString += '</div>';
+
+            contentString += '</div>';
+
+            //Task parameter
+            if(data.parameterConfigs.length != 0) {
+                contentString += paramConfig(data.parameterConfigs);
+            }
+
+            return contentString;
+        }
+
+        /**
+         * 拼接参数表单
+         * @param contentString
+         * @param data
+         */
+        function paramConfig(data) {
+            //  行分组
+            var group = {};
+            data.forEach(function (value) {
+                var line = value.lineNumber;
+                if(null == group[line]){
+                    var array = [];
+                    array[0] = value;
+                    group[line] = array;
+                } else {
+                    var array = [];
+                    array = group[line];
+                    array.push(value);
+                }
+            });
+            // 列排序
+            for(var key in group) {
+                var array = group[key];
+                array = array.sort(function (a, b) {
+                    return a.columnNumber - b.columnNumber;
+                });
+            }
+
+            var contentString = "";
+
+            window.dataSources = new Object();
+
+            contentString += '<form id="task_form" class="form-horizontal" style="margin-top: 20px;padding-right: 20px;">';
+            for(var key in group) {
+                contentString += createFormLine(group[key]);
+            }
+            contentString += '</form>';
+
+            return contentString;
+        }
+
+
+        var url = "${base.contextPath}/sys/task/detail/execute";
+        var viewModel = kendo.observable({
+            execute: function (e) {
+                var validator = $("#task_form").kendoValidator({
+                    rules: {
+                        customRule1: function(input){
+                            var length = input[0].getAttribute("dataLength");
+                            if(undefined != length && length > 0) {
+                                return length >= input.val().length;
+                            } else {
+                                return true;
+                            }
+                        }
+                    },
+                    messages: {
+                        customRule1: '<@spring.message "task.input.length.error" />',
+                    },
+                    invalidMessageType : "tooltip"
+                }).data("kendoValidator");
+
+                if (validator == undefined || validator.validate()) {
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: setData(),
+                        success: function (args) {
+                            if (true == args.success) {
+                                window.parent.resultView(args.rows, viewModel.model.type);
+                                window.parent.$("#executeForm").data("kendoWindow").close();
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    message: args.message,
+                                });
+                            }
+                        }
+                    });
+                }
+            },
+
+            close: function (e) {
+                window.parent.$("#executeForm").data("kendoWindow").close();
+            }
+        });
+
+
+        function setData() {
+            var obj = new Object();
+            var data = viewModel.model;
+            obj['taskId'] = data.taskId;
+            obj['description'] = data.executionDescription;
+            obj['taskClass'] = data.taskClass;
+            obj['type'] = data.type;
+            if('GROUP' == data.type) {
+                var taskDatas = [];
+                data.childrenTasks.forEach(function(task) {
+                    var taskData = new Object();
+                    taskData['taskId'] = task.taskId;
+                    taskData['taskClass'] = task.taskClass;
+                    taskData['param'] = getTaskParam(task);
+                    taskDatas.push(taskData);
+                });
+                obj['taskDatas'] = taskDatas;
+            } else {
+                obj['param'] = getTaskParam(data);
+            }
+            return JSON.stringify(obj);
+        }
+
+        function getTaskParam(task){
+            var resultData = [];
+            task.parameterConfigs.forEach(function (param) {
+                var config = new Object();
+                config.key = param.tableFieldName;
+                config.name = param.title ;
+                var value = $('#' + param.tableFieldName).val();
+                var inputData = dataSources[param.tableFieldName];
+                var display = param.display;
+                if (display == "datePicker" || display == "textBox") {
+                    config.value = value;
+                    config.text = value;
+                } else if(isNotEmpty(value) && isNotEmpty(inputData)) {
+                    var data = inputData[value];
+                    if (display == 'comboBox') {
+                        config.value = isNotEmpty(data.value) ? data.value : data.valueField;
+                        config.text = data.textField;
+                    } else if (display == 'LOV') {
+                        config.value = value;
+                        config.text = data.textField;
+                    } else if (display == 'multiSelect') {
+                        var values = new Array();
+                        var text = new Array();
+                        value.forEach(function (v) {
+                            values.push(inputData[v].valueField);
+                            text.push(inputData[v].textField);
+                        });
+                        config.text = text;
+                        config.value = values;
+                    }
+                }
+                resultData.push(config);
+            });
+            return resultData;
+        }
+        function isNotEmpty(str) {
+            return str != undefined && str != "";
+        }
+    </script>
+    <body>
+    <div id="content-container" style="overflow: hidden;">
+        <div class="panel" id="panel" style="height:430px; border:none; box-shadow: none; overflow-y: auto;overflow-x: hidden; "></div>
+        <div class="k-window-toolbar" id="gridToolbar" style="height: 60px;">
+            <div class="row" style="height: 45px; overflow: hidden">
+                <div class="col-xs-8">
+                    <input id="executionDescription" type="text" data-role="maskedtextbox" style="width:90%;margin-right:5px;" placeholder='<@spring.message "task.execution.description"/>'
+                           data-bind="value:model.executionDescription" class="k-textbox">
+                    <script>kendo.bind("#executionDescription", viewModel)</script>
+                </div>
+                <div class="col-xs-4 text-right">
+                <span id="execute" class="btn btn-primary" style="margin-right: 10px" data-bind="click:execute">
+                    <@spring.message "task.execute"/>
+                </span>
+                    <span id="close" class="btn btn-default" type="button" data-bind="click:close">
+                    <@spring.message "hap.cancel"/>
+                </span>
+                    <script>
+                        kendo.bind($("#execute"), viewModel);
+                        kendo.bind($("#close"), viewModel);
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="resultView"></div>
+    <script type="text/javascript">
+        $("#panel").kendoValidator({
+            messages: {
+                required: '<@spring.message "parameterconfig.requiredfield"/>'
+            },
+            invalidMessageType : "tooltip"
+        });
+
+    </script>
+    </body>
+    </html>

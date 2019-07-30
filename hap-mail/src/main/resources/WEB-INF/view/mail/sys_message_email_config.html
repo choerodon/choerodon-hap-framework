@@ -1,0 +1,165 @@
+<#include "../include/header.html">
+<body >
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel('#grid',{
+        newEmailAccount:function(){
+            emailAccountWindow();
+        }
+    });
+</script>
+<div id="editWin" style="clear: both"></div>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" data-bind="click:newEmailAccount"><i class="fa fa-plus-square" style="margin-right:3px;"></i><@spring.message "hap.new"/></span>
+        <span class="btn btn-danger" style="float:left;" data-bind="click:remove"><i class="fa fa-trash-o" style="margin-right:3px;"></i><@spring.message "hap.delete"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input type="text" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "messageemailconfig.configCode"/>' data-bind="value:model.configCode" class="k-textbox">
+        <input type="text" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "messageemailconfig.description"/>' data-bind="value:model.description" class="k-textbox">
+        <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" data-bind="click:query" type="submit"><i class="fa fa-search" style="margin-right:3px;"></i><@spring.message "hap.query"/></span>
+        <span class="btn btn-default" style="float:left;width:70px" data-bind="click:reset" type="button"><i class="fa fa-eraser" style="margin-right:3px;"></i><@spring.message "hap.reset"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="grid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+    var dataSource = Hap.createGridDataSource({
+        url:"${base.contextPath}/sys/messageEmailConfig/",
+        model: {
+            id: "configId",
+            fields: {
+                configCode: {validation: {required: true}},
+                description: {validation: {required: false}},
+                host: {validation: {required: true}},
+                port: {type: "number", validation: {min: 0, required: true}},
+                tryTimes: {type: "number", validation: {min: 0, required: true}},
+                useWhiteList: {validation: {required: true}}
+            }
+        }
+    })
+
+    function emailAccountWindow(id) {
+        var url = 'sys_message_email_config_edit.html';
+        if (id) {
+            url = url + '?configId=' + id;
+        }
+        var editWin = Hap.createWindow('#editWin',{
+            width: 900,
+            height: 600,
+            title: '<@spring.message "hap.edit"/>',
+            url: url
+        })
+
+        if (parent.autoResizeIframe) {
+            parent.autoResizeIframe('${RequestParameters.functionCode!}', 750, function () {
+                editWin.center().open();
+            })
+        }else{
+            editWin.center().open();
+        }
+
+    };
+
+    $("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        selectable: 'multiple, rowbox',
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "configCode",
+                title: '<@spring.message "messageemailconfig.configCode"/>',
+                width: 100
+            }, {
+                field: "description",
+                title: '<@spring.message "messageemailconfig.description"/>',
+                width: 100
+            }, {
+                field: "host",
+                title: '<@spring.message "messageemailconfig.host"/>',
+                width: 100
+            }, {
+                field: "port",
+                title: '<@spring.message "messageemailconfig.port"/>',
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                width: 50
+            }, /*{
+                field: "tryTimes",
+                title: '<@spring.message "messageemailconfig.tryTimes"/>',
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                width: 60
+            },*/ {
+                field: "useWhiteList",
+                title: '<@spring.message "messageemailconfig.usewhitelist"/>',
+                width: 60,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                template: function (rowdata) {
+                        return rowdata.useWhiteList == 'Y' ? '<@spring.message "hap.yes"/>' :　'<@spring.message "hap.no"/>';
+                }
+            },/*{
+                field: "serverEnable",
+                title: '<@spring.message "messageemailconfig.serverenable"/>',
+                attributes: {style: "text-align:center"},
+                width: 70,
+                template: function (e) {
+                    return e.serverEnable == 'Y' ? '<@spring.message "hap.yes"/>' : '<@spring.message "hap.no"/>'
+                },
+                headerAttributes: {
+                    style: "text-align: center"
+                }
+            },*/{
+                field: "enable",
+                title: '<@spring.message "hap.enableflag"/>',
+                attributes: {style: "text-align:center"},
+                width: 60,
+                template: function (e) {
+                    return e.enable == 'Y' ? '<@spring.message "hap.yes"/>' : '<@spring.message "hap.no"/>'
+                },
+                headerAttributes: {
+                    style: "text-align: center"
+                }
+            },  {
+                title: '<@spring.message "hap.edit"/>',
+                width: 50,
+                headerAttributes: {
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"},
+                template: function (rowdata) {
+                    if (!!rowdata.configId) {
+                        return Hap.createAnchor('<@spring.message "hap.edit"/>', emailAccountWindow, rowdata.configId);
+                    }
+                    return '';
+                }
+            }
+        ],
+        editable: false
+    });
+</script>
+</body>
+</html>
