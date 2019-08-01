@@ -31,7 +31,7 @@
     </modules>
 
     <properties>
-        <choerodon.starters.version>0.11.1.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.12.0.RELEASE</choerodon.starters.version>
     </properties>
 
     <dependencyManagement>
@@ -281,7 +281,7 @@
             <plugin>
                 <groupId>io.choerodon</groupId>
                 <artifactId>choerodon-maven-plugin</artifactId>
-                <version>0.11.1.RELEASE</version>
+                <version>${choerodon.starters.version}</version>
                 <executions>
                     <execution>
                         <goals>
