@@ -85,8 +85,8 @@ export default class Index extends PureComponent {
           <Column name="name" />
           <Column name="interfaceType" />
           <Column name="domainUrl" />
-          <Column name="enableFlag" editor={<CheckBox disabled />} width={120} />
-          <Column name="authFlag" editor={<CheckBox disabled />} width={120} />
+          <Column name="enableFlag" width={120} />
+          <Column name="authFlag" width={120} />
           <Column
             renderer={({ record, text, name }) => (
               <Button funcType="flat" icon="mode_edit" onClick={() => this.openLineModal()} />

@@ -17,7 +17,7 @@ export default {
     { name: 'bodyHeader', type: 'string', label: $l('interface.soapheader') },
     { name: 'bodyTail', type: 'string', label: $l('interface.soaptail') },
     { name: 'soapAction', type: 'String', label: 'soapAction' },
-    { name: 'enableFlag', type: 'boolean', label: $l('interface.enableflag'), defaultValue: 'Y', trueValue: 'Y', falseValue: 'N', readOnly: true },
+    { name: 'enableFlag', type: 'boolean', label: $l('interface.enableflag'), defaultValue: 'Y', trueValue: 'Y', falseValue: 'N' },
     {
       name: 'authFlag',
       type: 'boolean',
@@ -26,7 +26,6 @@ export default {
       defaultValue: 'N',
       trueValue: 'Y',
       falseValue: 'N',
-      readOnly: true,
     },
     { name: 'authType', type: 'String', label: $l('interface.authtype'), lookupCode: 'IF.AUTH_TYPE', defaultValue: 'BASIC_AUTH' },
     { name: 'authUsername', type: 'String', label: $l('interface.checkusername') },
