@@ -1,0 +1,72 @@
+/* here you can put your own css to customize and override the theme */
+.dropdown-menu>li>a {
+  position: relative;
+}
+
+.dropdown-menu>li>a .close-btn {
+  position: absolute;
+  right: 5px;
+  top: 8px;
+}
+
+.page-header .page-title {
+  color: #e6e6e6;
+}
+
+.page-sidebar-closed .page-header .page-title {
+  display: none;
+}
+
+.page-header.navbar .page-logo {
+  min-width:320px;
+  width: auto;
+}
+.page-header.navbar .page-logo a{
+  margin-right:20px;
+}
+
+.page-content-wrapper .page-content {
+  padding-top: 0px;
+}
+
+#page-content-loading {
+  font-size: 22px;
+  text-align: center;
+  padding: 100px 0px;
+}
+
+.page-head {
+  padding: 5px 20px !important;
+  background-color: #fff;
+  border: 1px solid #e7ecf1;
+}
+
+.page-head .page-title>h1 {
+  font-size: 16px !important;
+}
+
+.page-content-main {
+  margin-bottom: 10px;
+}
+
+.nav-link i {
+  top: 2px;
+  margin-left: 1px;
+  margin-right: 8px !important;
+}
+
+.page-content-main {
+  background-color: #fff;
+  border: 1px solid #e7ecf1;
+  border-top-width: 0;
+}
+
+#mainTab>.k-tabstrip-items {
+  display: none;
+}
+
+#mainTab>.k-content {
+  border: none;
+  background-color:#e9ecf3 !important;
+  padding:0px !important;
+}
