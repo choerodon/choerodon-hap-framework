@@ -7,7 +7,7 @@ export default {
   autoQuery: true,
   pageSize: 20,
   fields: [
-    { name: 'inboundId', type: 'string', label: '' },
+    { name: 'inboundId', type: 'number', label: '' },
     { name: 'interfaceName', type: 'string', label: $l('interface.line.interfacename') },
     { name: 'interfaceUrl', type: 'string', label: $l('interface.lind.interfaceurl') },
     { name: 'requestTime', type: 'dateTime', label: $l('interface.invoke.requesttime') },
@@ -15,7 +15,7 @@ export default {
     { name: 'endDate', type: 'dateTime', label: $l('interface.invoke.endsenddate') },
     { name: 'requestMethod', type: 'string', label: $l('interface.requestmethod') },
     { name: 'ip', type: 'string', label: $l('interface.invoke.requestip') },
-    { name: 'responseTime', type: 'string', label: $l('interface.invoke.responsetime') },
+    { name: 'responseTime', type: 'number', label: $l('interface.invoke.responsetime') },
     { name: 'requestStatus', type: 'string', label: $l('interface.invoke.requeststatus'), lookupCode: 'SYS.IF.REQUEST_STATUS' },
     { name: 'responseContent', type: 'string', label: $l('interface.invoke.responsecontent') },
     { name: 'stackTrace', type: 'string', label: $l('interface.invoke.stacktrace') },

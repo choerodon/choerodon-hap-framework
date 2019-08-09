@@ -12,6 +12,7 @@ import io.choerodon.hap.intergration.service.IHapInterfaceInboundService;
 import io.choerodon.base.annotation.Dataset;
 import io.choerodon.hap.dataset.exception.DatasetException;
 import io.choerodon.hap.dataset.service.IDatasetService;
+import io.choerodon.mybatis.entity.Criteria;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,9 @@ public class HapInterfaceInboundServiceImpl extends BaseServiceImpl<HapInterface
         try {
             HapInterfaceInbound hapInterfaceInbound = null;
             hapInterfaceInbound = objectMapper.readValue(objectMapper.writeValueAsString(body), HapInterfaceInbound.class);
-            return inboundMapper.select(hapInterfaceInbound);
+            Criteria criteria = new Criteria().select("inboundId","interfaceName", "interfaceUrl", "requestTime",
+                    "requestMethod", "ip", "responseTime", "requestStatus");
+            return selectOptions(hapInterfaceInbound, criteria, page, pageSize);
         } catch (IOException e) {
             throw new DatasetException("dataset.error", e);
         }
