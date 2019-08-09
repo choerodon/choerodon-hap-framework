@@ -1,7 +1,5 @@
 import React, { PureComponent } from 'react';
-import { inject, observer } from 'mobx-react';
 import { $l, ContentPro as Content } from '@choerodon/boot';
-import { withRouter } from 'react-router-dom';
 import { Button, DataSet, Modal, Table, Tabs, TextField } from 'choerodon-ui/pro';
 import InboundDataSet from './stores/InboundDataSet';
 import OutboundDataSet from './stores/OutboundDataSet';
@@ -10,9 +8,9 @@ import OutContentModal from './view/OutContentModal';
 
 
 const { Column } = Table;
-const textField = <TextField />;
 const { TabPane } = Tabs;
-const modalKey = Modal.key();
+const inboundModalKey = Modal.key();
+const outboundModalKey = Modal.key();
 
 
 function time({ record }) {
@@ -31,7 +29,7 @@ export default class Index extends PureComponent {
 
   openInContentModal(isNew = false) {
     this.modal = Modal.open({
-      modalKey,
+      key: inboundModalKey,
       title: $l('interface.invoke.detail'),
       drawer: true,
       destroyOnClose: true,
@@ -48,7 +46,7 @@ export default class Index extends PureComponent {
 
   openOutContentModal(isNew = false) {
     this.modal = Modal.open({
-      modalKey,
+      key: outboundModalKey,
       title: $l('interface.invoke.detail'),
       drawer: true,
       destroyOnClose: true,
