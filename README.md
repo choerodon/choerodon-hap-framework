@@ -1,10 +1,9 @@
 <h1 align="center">Welcome to Choerodon HAP Framework 👋</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-4.0.x-blue.svg?cacheSeconds=2592000" />
-  <a href="http://wiki.choerodon.com.cn/share/5ebc04885b7fdaaa">
-    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" target="_blank" />
-  </a>
 </p>
+
+> Choerodon HAP Framework 是一个使用与 Choerodon 相同技术栈的单体应用开发框架
 
 ### 🏠 [Homepage](https://github.com/choerodon/choerodon-hap-framework)
 
